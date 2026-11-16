@@ -16,9 +16,9 @@
   * { box-sizing:border-box; }
   html, body { width:100%; height:100%; margin:0; overflow:hidden; }
   body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; color:#f5f5f6; background:var(--bg); }
-  button, input { font:inherit; }
+  button, input, textarea { font:inherit; }
   button { cursor:pointer; color:inherit; }
-  button:focus-visible, input:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
   .app { display:flex; flex-direction:column; height:100%; height:100dvh; }
   .topbar { background:var(--nav); border-bottom:1px solid var(--nav-border); display:flex; align-items:center; gap:14px; flex:none; min-height:68px; padding:10px 20px; position:relative; z-index:3; }
   .menu-toggle { width:36px; height:36px; flex:none; display:grid; place-items:center; padding:5px; background:transparent; border:0; border-radius:7px; color:#f5f5f5; }
@@ -107,11 +107,45 @@
   /* XMind 风格的内嵌横纵矩阵：没有表格上方的额外中心主题标题。 */
   .matrix-node { position:absolute; color:#f5f5f5; user-select:none; overflow:visible; cursor:default; touch-action:none; }
   .matrix-node .matrix-table { border-collapse:collapse; border-spacing:0; table-layout:fixed; background:#363638; border:1px solid #bfc0c2; width:100%; }
-  .matrix-node .matrix-table td { height:66px; padding:0; border:1px solid #bfc0c2; vertical-align:middle; position:relative; }
-  .matrix-node .matrix-table tr:first-child td { height:68px; background:#38383a; }
+  .matrix-node .matrix-table td { padding:0; border:1px solid #bfc0c2; vertical-align:middle; position:relative; }
+  /* 可抓取的列宽边界：外观平时透明，悬停和拖动时整条线高亮蓝色。 */
+  .matrix-node .matrix-col-resizer { position:absolute; top:0; bottom:0; width:16px; margin-left:-8px; z-index:12;
+    cursor:col-resize; touch-action:none; user-select:none; -webkit-user-select:none; }
+  .matrix-node .matrix-col-resizer::before { content:""; position:absolute; left:7px; top:0; bottom:0;
+    width:2px; background:transparent; pointer-events:none; }
+  .matrix-node .matrix-col-resizer:hover::before,
+  .matrix-node .matrix-col-resizer.resizing::before { background:#20b9ff; width:3px; left:6px; box-shadow:0 0 0 2px #20b9ff33; }
+  .matrix-node .matrix-col-resizer::after { content:"↔"; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    min-width:29px; height:27px; line-height:24px; text-align:center; border-radius:7px; font-size:22px; font-weight:700;
+    color:#fff; background:#168fc9; border:1px solid #55c7ff; box-shadow:0 3px 9px #0007;
+    opacity:0; pointer-events:none; }
+  .matrix-node .matrix-col-resizer:hover::after,
+  .matrix-node .matrix-col-resizer.resizing::after { opacity:1; }
+  body.matrix-resizing, body.matrix-resizing * { cursor:col-resize!important; }
+  /* 行高抓手独立于列宽抓手：拖动水平边界，只改变上方这一行的高度。 */
+  .matrix-node .matrix-row-resizer { position:absolute; left:0; right:0; height:16px; margin-top:-8px; z-index:13;
+    cursor:row-resize; touch-action:none; user-select:none; -webkit-user-select:none; }
+  .matrix-node .matrix-row-resizer::before { content:""; position:absolute; top:7px; left:0; right:0;
+    height:2px; background:transparent; pointer-events:none; }
+  .matrix-node .matrix-row-resizer:hover::before,
+  .matrix-node .matrix-row-resizer.resizing::before { background:#20b9ff; height:3px; top:6px; box-shadow:0 0 0 2px #20b9ff33; }
+  .matrix-node .matrix-row-resizer::after { content:"↕"; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    min-width:29px; height:27px; line-height:24px; text-align:center; border-radius:7px; font-size:22px; font-weight:700;
+    color:white; background:#168fc9; border:1px solid #55c7ff; box-shadow:0 3px 9px #0007;
+    opacity:0; pointer-events:none; }
+  .matrix-node .matrix-row-resizer:hover::after,
+  .matrix-node .matrix-row-resizer.resizing::after { opacity:1; }
+  body.matrix-row-resizing, body.matrix-row-resizing * { cursor:row-resize!important; }
+
+
+  .matrix-node .matrix-table tr:first-child td { background:#38383a; }
   .matrix-node .matrix-table .matrix-corner { background:#727274!important; }
   .matrix-node .matrix-table tr:not(:first-child) td:first-child { background:#69696b; }
-  .matrix-node .matrix-table .matrix-cell-input { box-sizing:border-box; display:block; width:100%; height:100%; padding:8px 8px; background:transparent; color:#fff; border:0; border-radius:0; outline:none; resize:none; text-align:center; font-size:15px; font-weight:500; line-height:1.4; font-family:inherit; overflow-wrap:anywhere; }
+  /* 长文本模式：自动换行、逐行显示，整行高度跟着最长单元格增长。 */
+  .matrix-node .matrix-table .matrix-cell-input { box-sizing:border-box; display:block; width:100%; margin:0; padding:10px 12px; background:transparent; color:#fff; border:0; border-radius:0; outline:none; resize:none; text-align:left; font-size:15px; font-weight:500; line-height:1.5; font-family:inherit; overflow:hidden; white-space:pre-wrap; overflow-wrap:anywhere; word-break:break-word; }
+  .matrix-node .matrix-table td:first-child .matrix-cell-input,
+  .matrix-node .matrix-table tr:first-child .matrix-cell-input { text-align:center; }
+  .matrix-node .matrix-table .matrix-cell-input:not([readonly]) { cursor:text; user-select:text; -webkit-user-select:text; }
   .matrix-node .matrix-table .matrix-header { font-weight:650; }
   .matrix-node .matrix-table tr:first-child td:not(:first-child) .matrix-cell-input { color:#c4c5c7; }
   .matrix-node .matrix-table .matrix-cell-input::placeholder { color:#b8babd; opacity:.75; }
@@ -125,9 +159,9 @@
   .matrix-node .matrix-plus.row { left:calc(50% - 16px); bottom:-46px; }
   .matrix-node .matrix-plus:hover { background:#57b9ff; }
   .matrix-node .matrix-table td:focus-within { outline:2px solid var(--blue); outline-offset:-2px; }
-  .matrix-node .matrix-table input:focus-visible { outline:none; }
-  .matrix-node .matrix-table input { touch-action:manipulation; user-select:text; -webkit-user-select:text; }
-  .matrix-node .matrix-table input::selection { background:#49a9f088; }
+  .matrix-node .matrix-table textarea:focus-visible { outline:none; }
+  .matrix-node .matrix-table textarea { touch-action:manipulation; user-select:text; -webkit-user-select:text; }
+  .matrix-node .matrix-table textarea::selection { background:#49a9f088; }
   /* 单击仅选中：单元格、行、列高亮。双击才可输入。 */
   .matrix-node .matrix-cell-input[readonly] { cursor:pointer; caret-color:transparent; user-select:none; -webkit-user-select:none; }
   .matrix-node .matrix-table td:focus-within:not(.editing-cell) { outline:none; }
@@ -249,6 +283,42 @@
     #zoomValue { font-size:10px; min-width:31px; }
   }
   @media(max-width:365px) { .brand small { display:none; } .top-actions button { padding:6px; } .brand-icon { display:none; } }
+
+/* 局部文字标注：普通 textarea 保留文本编辑与中文输入，后层只负责安全绘制彩色片段。 */
+.matrix-node .matrix-table td { overflow:hidden; }
+.matrix-node .matrix-table .matrix-cell-visual { position:absolute;z-index:0;inset:0;pointer-events:none;
+ padding:10px 12px;box-sizing:border-box;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;
+ overflow:hidden;font-family:inherit;font-size:15px;font-weight:500;line-height:1.5;color:#fff;text-align:left; }
+.matrix-node .matrix-table tr:first-child .matrix-cell-visual,
+.matrix-node .matrix-table td:first-child .matrix-cell-visual { font-weight:650;text-align:center; }
+.matrix-node .matrix-table tr:first-child td:not(:first-child) .matrix-cell-visual {color:#c4c5c7;}
+.matrix-node .matrix-table .matrix-cell-visual.is-placeholder {color:#aeb1b7;opacity:.72;}
+.matrix-node .matrix-table .matrix-cell-input {position:relative;z-index:1;color:transparent!important;caret-color:#fff;}
+.matrix-node .matrix-table .matrix-cell-input::selection {color:transparent!important;background:#48a4f077;}
+.matrix-node .matrix-table .matrix-cell-input::placeholder {color:transparent;}
+.topic-text .rich-fragment,.matrix-cell-visual .rich-fragment{border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
+.rich-toolbar {position:fixed;z-index:230;display:flex;align-items:center;gap:4px;padding:6px;
+ color:#fff;background:#373b48;border:1px solid #747a8c;border-radius:11px;box-shadow:0 12px 30px #0009;
+ max-width:min(94vw,440px);}
+.rich-toolbar[hidden],.rich-popover[hidden],.rich-custom[hidden]{display:none!important;}
+.rich-toolbar button{border:0;border-radius:7px;background:transparent;color:#f8f8fa;padding:7px 9px;min-width:30px;font-size:14px;}
+.rich-toolbar button:hover,.rich-toolbar button.active{background:#555c6e;}
+.rich-toolbar .rich-preview{font-weight:750;min-width:34px;border-bottom:3px solid #f6df77;}
+.rich-toolbar .rich-arrow{border-left:1px solid #666a75;border-radius:0 7px 7px 0;padding:7px 7px;}
+.rich-popover{position:fixed;z-index:235;width:min(314px,calc(100vw - 20px));max-height:65vh;overflow-y:auto;
+ padding:12px;color:#222934;background:#fff;border-radius:13px;border:1px solid #d9dfe9;box-shadow:0 14px 38px #0009;}
+.rich-popover .rich-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;margin:0 0 9px;}
+.rich-popover .rich-list{display:flex;flex-direction:column;gap:7px;}
+.rich-popover button{color:#27313b;border:1px solid #e1e5ed;background:#fff;border-radius:8px;padding:8px 10px;}
+.rich-popover button:hover{border-color:#36a5e8;background:#f2f9ff;}
+.rich-popover .rich-preset{display:flex;align-items:center;gap:8px;text-align:left;width:100%;}
+.rich-popover .rich-preset span{display:inline-block;padding:5px 9px;border-radius:5px;min-width:85px;text-align:center;font-size:13px;}
+.rich-popover .rich-custom{margin-top:11px;border-top:1px solid #e7ebf0;padding-top:10px;}
+.rich-popover .rich-custom label{font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0;}
+.rich-popover .rich-custom input[type=text]{width:75%;border:1px solid #cdd5e0;border-radius:6px;padding:7px;font-size:13px;}
+.rich-popover .rich-custom input[type=color]{width:62px;height:35px;background:transparent;border:1px solid #cdd5e0;border-radius:6px;padding:2px;cursor:pointer;}
+.rich-popover .rich-custom .rich-save{display:block;background:#238bcd;color:white;width:100%;font-weight:700;margin-top:9px;}
+@media(max-width:640px){.rich-toolbar{padding:4px;}.rich-popover{max-height:55vh;}}
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -258,7 +328,7 @@
 <meta name="apple-mobile-web-app-title" content="图谱笔记">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="2026.11.15.1">
+<meta name="app-build" content="2026.11.16.4">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -374,11 +444,28 @@
   <button type="button" id="appUpdateLater" class="later">稍后</button>
 </div>
 
+<!-- 按选中文字出现的悬浮标注工具及可复用颜色组合 -->
+<div id="richToolbar" class="rich-toolbar" hidden aria-label="选中文字颜色标注">
+  <button type="button" id="richApply" class="rich-preview" title="直接使用最近一次颜色组合">Aa</button>
+  <button type="button" id="richExpand" class="rich-arrow" title="选择文字颜色和背景色组合" aria-expanded="false">▾</button>
+</div>
+<div id="richPopover" class="rich-popover" hidden>
+  <div class="rich-head"><span>已保存的颜色组合</span><button type="button" id="richAddPreset" title="创建新颜色组合">＋ 新建</button></div>
+  <div id="richPresetList" class="rich-list"></div>
+  <div id="richCustom" class="rich-custom" hidden>
+    <label>组合名称 <input id="richPresetName" type="text" maxlength="24" value="我的标注" /></label>
+    <label>字体颜色 <input id="richForeground" type="color" value="#e33434" /></label>
+    <label>字体背景色 <input id="richBackground" type="color" value="#fff1aa" /></label>
+    <div id="richLivePreview" style="padding:8px;border-radius:6px;text-align:center;font-weight:600">颜色预览：示例文字</div>
+    <button type="button" id="richSavePreset" class="rich-save">保存组合并应用到选中文字</button>
+  </div>
+</div>
+
 <script>
 'use strict';
 (() => {
   // XMind 风格主题、历史记录、本机保存、my-notes 云同步。
-  // v2026-11-15c: 单击选择 / 双击编辑；右键删除与退格删除，节点/表格行列兼容。
+  // v2026-11-16c: 竖线左右调整列宽、横线上下调整行高，分别保存并自动避让长文本。
   // 保留上一个版本的节点编辑及登录逻辑；本次增加独立矩阵主题。
   const $ = id => document.getElementById(id);
   // 此存储键与上一版保持一致：更新 HTML 文件时不改变保存位置。
@@ -401,7 +488,7 @@
   const topicLayer = $('topicLayer');
   const svg = $('connections');
   const state = { selected: null, editing: null, editDraft: null, matrixEditing: null, matrixSelection: null, panX: 250, panY: 260, zoom: 1, positions: new Map(), toastTimer: null, activeBoardId: null };
-  let topicDrag=null, axisDrag=null, ignoreTopicClickId=null;
+  let topicDrag=null, axisDrag=null, columnResize=null, rowResize=null, ignoreTopicClickId=null;
   let data = readSaved() || freshData();
   try{state.activeBoardId=localStorage.getItem(ACTIVE_BOARD_KEY)||'main';}catch{state.activeBoardId='main';}
   let historyLimit = 40;
@@ -436,6 +523,101 @@
 
 
   function freshData() { return { version:1, topics:[{ id:ROOT_ID, parentId:null, text:'自由主题' }] }; }
+  // 标注按字符偏移保存为 JSON，与主题文本分离；无 HTML 存库，避免注入。
+  function validColor(x){return typeof x==='string'&&/^#[0-9a-fA-F]{6}$/.test(x)?x.toLowerCase():null;}
+  function validMarks(value,text){
+    if(!Array.isArray(value))return [];
+    return value.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=text.length&&(validColor(v.fg)||validColor(v.bg)))
+      .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg)}));
+  }
+  function readRichMap(raw){
+    const result={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return result;
+    for(const [key,val] of Object.entries(raw).slice(0,720)){
+      if(!/^(0|[1-9]\d?),(0|[1-9]\d?)$/.test(key))continue;
+      if(Array.isArray(val))result[key]=val.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=200000&&(validColor(v.fg)||validColor(v.bg)))
+        .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg)}));
+    }
+    return result;
+  }
+  function validPresets(value){return value.slice(0,24).filter(v=>v&&validColor(v.fg)&&validColor(v.bg))
+    .map(v=>({name:String(v.name||'自定义').slice(0,24),fg:validColor(v.fg),bg:validColor(v.bg)}));}
+  const DEFAULT_MARK_PRESETS=[
+    {name:'红字浅红底',fg:'#b62f3a',bg:'#ffe0e1'},
+    {name:'深字浅黄底',fg:'#303638',bg:'#fff1a3'},
+    {name:'绿字浅绿底',fg:'#006f56',bg:'#d7f4dc'},
+    {name:'蓝字浅蓝底',fg:'#1459ae',bg:'#ddecff'}
+  ];
+  function currentPresets(){return topicById(ROOT_ID)?.formatPresets||DEFAULT_MARK_PRESETS;}
+  function matrixStyleKey(t,r,c){return t.matrix.orientation==='transpose'?`${c},${r}`:`${r},${c}`;}
+  function activeMarks(t,r=null,c=null){
+    if(r===null)return t.marks||[];
+    return t.matrix.richMap?.[matrixStyleKey(t,r,c)]||[];
+  }
+  function putMarks(t,r,c,arr){
+    if(r===null){t.marks=arr;return;}
+    if(!t.matrix.richMap)t.matrix.richMap={};
+    const k=matrixStyleKey(t,r,c);
+    if(arr.length)t.matrix.richMap[k]=arr;else delete t.matrix.richMap[k];
+  }
+  function renderMarkedText(host,text,marks,placeholder=''){
+    host.replaceChildren();host.classList.toggle('is-placeholder',!text);
+    if(!text){host.textContent=placeholder;return;}
+    const events=[];for(const mark of validMarks(marks,text)){
+      events.push(mark.start,mark.end);
+    }
+    const points=[...new Set([0,text.length,...events])].sort((a,b)=>a-b);
+    for(let i=0;i<points.length-1;i++){
+      const a=points[i],b=points[i+1];if(a===b)continue;
+      const mark=marks.find(m=>m.start<=a&&m.end>=b);
+      const span=document.createElement('span');span.textContent=text.slice(a,b);
+      if(mark){span.className='rich-fragment';if(validColor(mark.fg))span.style.color=mark.fg;if(validColor(mark.bg))span.style.backgroundColor=mark.bg;}
+      host.append(span);
+    }
+  }
+  function updateMarksForEdit(marks,oldText,newText){
+    if(!marks?.length||oldText===newText)return marks||[];
+    let start=0;while(start<oldText.length&&start<newText.length&&oldText[start]===newText[start])start++;
+    let suffix=0;while(suffix<oldText.length-start&&suffix<newText.length-start&&oldText[oldText.length-suffix-1]===newText[newText.length-suffix-1])suffix++;
+    const delEnd=oldText.length-suffix,delta=newText.length-oldText.length;
+    return marks.flatMap(m=>{
+      if(m.end<=start)return [m];
+      if(m.start>=delEnd)return [{...m,start:m.start+delta,end:m.end+delta}];
+      const out=[];
+      if(m.start<start)out.push({...m,end:start});
+      if(m.end>delEnd)out.push({...m,start:start+Math.max(0,newText.length-start-suffix),end:m.end+delta});
+      return out.filter(v=>v.end>v.start);
+    });
+  }
+  function assignMarks(marks,text,start,end,fg,bg){
+    const cuts=[0,start,end,text.length];
+    for(const m of validMarks(marks,text))cuts.push(m.start,m.end);
+    const pts=[...new Set(cuts)].sort((a,b)=>a-b),out=[];
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i],b=pts[i+1];if(a===b)continue;
+      const mark=a>=start&&b<=end?{fg,bg}:marks.find(m=>m.start<=a&&m.end>=b);
+      if(!mark||(!validColor(mark.fg)&&!validColor(mark.bg)))continue;
+      const entry={start:a,end:b,fg:validColor(mark.fg),bg:validColor(mark.bg)};
+      const prev=out.at(-1);if(prev&&prev.end===a&&prev.fg===entry.fg&&prev.bg===entry.bg)prev.end=b;
+      else out.push(entry);
+    }
+    return out;
+  }
+  // 行列拖动、删除时文字标注一起跟随原内容，不会只换文字而遗漏颜色。
+  function shiftMatrixStyleAxis(t,canonicalAxis,from,target,remove=false){
+    const map=t.matrix.richMap||{},newMap={};
+    const f=from+1,d=target+1;
+    for(const [key,marks] of Object.entries(map)){
+      const parts=key.split(',').map(Number),idx=canonicalAxis==='row'?0:1,k=parts[idx];
+      if(k===0){newMap[key]=marks;continue;}
+      if(remove){if(k===f)continue; if(k>f)parts[idx]=k-1;}
+      else if(k===f)parts[idx]=d;
+      else if(f<d&&k>f&&k<=d)parts[idx]=k-1;
+      else if(f>d&&k>=d&&k<f)parts[idx]=k+1;
+      newMap[parts.join(',')]=marks;
+    }
+    t.matrix.richMap=newMap;
+  }
+
   function makeId() { return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9); }
   function readSaved() {
     try { const raw = localStorage.getItem(STORE); if (!raw) return null; return normalize(JSON.parse(raw)); }
@@ -448,7 +630,9 @@
     for (const n of raw.topics) {
       if (!n || typeof n.id!=='string' || !n.id || ids.has(n.id) || typeof n.text!=='string') return null;
       ids.add(n.id);
-      const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.text.slice(0,1000) };
+      const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,1000) };
+      if(Array.isArray(n.marks))node.marks=validMarks(n.marks,node.text);
+      if(n.id===ROOT_ID && Array.isArray(n.formatPresets))node.formatPresets=validPresets(n.formatPresets);
       if(n.boardRoot===true&&n.id!==ROOT_ID)node.boardRoot=true;
       if(n.id===ROOT_ID&&Array.isArray(n.boards)){
         const b=n.boards.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.rootId==='string')
@@ -462,8 +646,23 @@
         if(m.cells.length!==m.rowHeaders.length||m.cells.some(row=>!Array.isArray(row)||row.length!==m.colHeaders.length))return null;
         if([...m.rowHeaders,...m.colHeaders,...m.cells.flat()].some(v=>typeof v!=='string'))return null;
         node.kind='matrix';node.matrix={orientation:m.orientation==='transpose'?'transpose':'normal',
-          rowHeaders:m.rowHeaders.map(v=>v.slice(0,1000)),colHeaders:m.colHeaders.map(v=>v.slice(0,1000)),
-          cells:m.cells.map(row=>row.map(v=>v.slice(0,1000)))};
+          richMap:readRichMap(m.richMap),
+          rowHeaders:m.rowHeaders.slice(),colHeaders:m.colHeaders.slice(),
+          cells:m.cells.map(row=>row.slice()),
+          // 分别保存正向 / 转置后的列宽；旧数据不存在该字段时使用旧版默认宽度。
+          colWidthsNormal:Array.from({length:m.colHeaders.length+1},(_,i)=>{
+            const w=Number(m.colWidthsNormal?.[i]);return Number.isFinite(w)&&w>=85&&w<=1800?Math.round(w):i===0?190:260;
+          }),
+          colWidthsTranspose:Array.from({length:m.rowHeaders.length+1},(_,i)=>{
+            const w=Number(m.colWidthsTranspose?.[i]);return Number.isFinite(w)&&w>=85&&w<=1800?Math.round(w):i===0?190:260;
+          }),
+          // 行高与列宽分开保存；0 表示随文字自动撑开。正向 / 转置互不覆盖。
+          rowHeightsNormal:Array.from({length:m.rowHeaders.length+1},(_,i)=>{
+            const h=Number(m.rowHeightsNormal?.[i]);return Number.isFinite(h)&&h>=0&&h<=4000?Math.round(h):0;
+          }),
+          rowHeightsTranspose:Array.from({length:m.colHeaders.length+1},(_,i)=>{
+            const h=Number(m.rowHeightsTranspose?.[i]);return Number.isFinite(h)&&h>=0&&h<=4000?Math.round(h):0;
+          })};
       }
       nodes.push(node);
     }
@@ -647,7 +846,7 @@
   function switchBoard(id){
     if(!boards().some(b=>b.id===id))return;
     if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
-    if(topicDrag||axisDrag)return;
+    if(topicDrag||axisDrag||columnResize||rowResize)return;
     hideBoardPopup();state.activeBoardId=id;
     try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
     state.selected=null;state.editing=null;render();centerInitial();fitToView();
@@ -688,11 +887,72 @@
     try{localStorage.setItem(ACTIVE_BOARD_KEY,state.activeBoardId);}catch{}
     state.selected=null;scheduleSave('删除画布 · '+b.name);render();fitToView();notify('已删除 '+b.name);
   }
+  // 每个单元格根据真实的换行文字测量高度；不可继续使用固定 66px 行高。
+  const MATRIX_LABEL_WIDTH=190, MATRIX_CONTENT_WIDTH=260;
+  const MATRIX_MIN_ROW_HEIGHT=66, MATRIX_MIN_HEAD_HEIGHT=68;
+  const matrixMeasureCache=new Map();
+  let matrixProbe=null;
+  function measureCellHeight(value,width,header=false){
+    if(!matrixProbe){
+      matrixProbe=document.createElement('div');
+      matrixProbe.setAttribute('aria-hidden','true');
+      Object.assign(matrixProbe.style,{
+        position:'absolute',left:'-100000px',top:'0',visibility:'hidden',pointerEvents:'none',
+        whiteSpace:'pre-wrap',overflowWrap:'anywhere',wordBreak:'break-word',
+        fontFamily:'system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontSize:'15px',lineHeight:'1.5',padding:'10px 12px',boxSizing:'border-box'
+      });
+      document.body.append(matrixProbe);
+    }
+    matrixProbe.style.width=width+'px';
+    matrixProbe.style.fontWeight=header?'650':'500';
+    // 零宽空格让末尾换行同样能计入实际高度。
+    matrixProbe.textContent=(String(value||'')||'输入内容')+'\u200b';
+    return Math.ceil(matrixProbe.getBoundingClientRect().height)+6;
+  }
+  function ensuredMatrixWidths(t){
+    // 每种显示方向维护独立的列宽，兼容旧版本保存的横纵表格。
+    const m=t.matrix;
+    const fix=(arr,count)=>Array.from({length:count},(_,i)=>{
+      const val=Number(arr?.[i]);return Number.isFinite(val)&&val>=85&&val<=1800?Math.round(val):i===0?MATRIX_LABEL_WIDTH:MATRIX_CONTENT_WIDTH;
+    });
+    if(!Array.isArray(m.colWidthsNormal)||m.colWidthsNormal.length!==m.colHeaders.length+1)
+      m.colWidthsNormal=fix(m.colWidthsNormal,m.colHeaders.length+1);
+    if(!Array.isArray(m.colWidthsTranspose)||m.colWidthsTranspose.length!==m.rowHeaders.length+1)
+      m.colWidthsTranspose=fix(m.colWidthsTranspose,m.rowHeaders.length+1);
+    return m.orientation==='transpose'?m.colWidthsTranspose:m.colWidthsNormal;
+  }
+  function ensuredMatrixHeights(t){
+    const m=t.matrix;
+    const fix=(arr,count)=>Array.from({length:count},(_,i)=>{
+      const val=Number(arr?.[i]);return Number.isFinite(val)&&val>=0&&val<=4000?Math.round(val):0;
+    });
+    if(!Array.isArray(m.rowHeightsNormal)||m.rowHeightsNormal.length!==m.rowHeaders.length+1)
+      m.rowHeightsNormal=fix(m.rowHeightsNormal,m.rowHeaders.length+1);
+    if(!Array.isArray(m.rowHeightsTranspose)||m.rowHeightsTranspose.length!==m.colHeaders.length+1)
+      m.rowHeightsTranspose=fix(m.rowHeightsTranspose,m.colHeaders.length+1);
+    return m.orientation==='transpose'?m.rowHeightsTranspose:m.rowHeightsNormal;
+  }
+  // 动态文字高度始终是下限，手动缩小不会裁剪已记录的长文本。
+  function matrixAutoRowHeight(t,r,widths){
+    let height=r===0?MATRIX_MIN_HEAD_HEIGHT:MATRIX_MIN_ROW_HEIGHT;
+    for(let c=0;c<widths.length;c++)height=Math.max(height,measureCellHeight(tableValue(t,r,c),widths[c],r===0||c===0));
+    return height;
+  }
+  function getMatrixMetrics(t){
+    const axes=tableAxes(t), rows=axes.rowNames.length+1, cols=axes.colNames.length+1;
+    const widths=ensuredMatrixWidths(t).slice();
+    const minimums=ensuredMatrixHeights(t);
+    const heights=[];
+    for(let r=0;r<rows;r++)heights.push(Math.max(matrixAutoRowHeight(t,r,widths),minimums[r]||0));
+    const metrics={width:widths.reduce((a,b)=>a+b,0),height:heights.reduce((a,b)=>a+b,0)+2,widths,heights};
+    matrixMeasureCache.set(t.id,metrics);
+    return metrics;
+  }
   function getSize(t) {
     if(t.kind==='matrix'&&t.matrix){
-      const m=t.matrix, colCount=(m.orientation==='transpose'?m.rowHeaders.length:m.colHeaders.length);
-      const rowCount=(m.orientation==='transpose'?m.colHeaders.length:m.rowHeaders.length);
-      return {width:170+colCount*146,height:(rowCount+1)*66+2};
+      const size=getMatrixMetrics(t);
+      return {width:size.width,height:size.height};
     }
     const canvas = getSize.canvas || (getSize.canvas=document.createElement('canvas'));
     const ctx=canvas.getContext('2d'); ctx.font='640 15px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
@@ -702,6 +962,7 @@
     return { width,height };
   }
   function computeLayout() {
+    matrixMeasureCache.clear();
     const sizes=new Map(); const subtree=new Map(); const depthWidths=[];
     function measure(id,depth) {
       const t=topicById(id); const s=getSize(t); sizes.set(id,s);
@@ -807,7 +1068,7 @@
     return a.trans?m.cells[c-1][r-1]:m.cells[r-1][c-1];
   }
   function setTableValue(t,r,c,v){
-    const m=t.matrix, a=tableAxes(t);v=String(v).slice(0,1000);
+    const m=t.matrix, a=tableAxes(t);v=String(v);
     if(r===0&&c===0)t.text=v;
     else if(r===0)a.colNames[c-1]=v;
     else if(c===0)a.rowNames[r-1]=v;
@@ -825,7 +1086,7 @@
     if(commit&&updated!==ed.original){
       scheduleSave('编辑横纵表格 · '+(updated||'空白单元格').slice(0,18));
     }else persist();
-    if(cloud.externalRow&&!cloud.sending&&!topicDrag?.moved&&!axisDrag?.moved){
+    if(cloud.externalRow&&!cloud.sending&&!topicDrag?.moved&&!axisDrag?.moved&&!columnResize&&!rowResize){
       const row=cloud.externalRow;cloud.externalRow=null;
       if(Number(row.revision)>Number(cloud.revision)){
         if(cloud.dirty)showCloudConflict(row,'另一台设备在你编辑表格时修改了导图。');
@@ -833,6 +1094,39 @@
       }
     }
     if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
+  let matrixReflowRequested=false;
+  function reflowMatrixGeometry(){
+    if(!topicLayer.isConnected)return;
+    computeLayout();drawConnections();
+    for(const el of topicLayer.children){
+      const p=state.positions.get(el.dataset.id);if(!p)continue;
+      el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
+      if(el.classList.contains('matrix-node')){
+        const m=matrixMeasureCache.get(el.dataset.id);if(!m)continue;
+        el.querySelectorAll('colgroup col').forEach((col,i)=>{col.style.width=m.widths[i]+'px';});
+        let boundary=0;
+        el.querySelectorAll('.matrix-col-resizer').forEach((handle)=>{
+          const idx=Number(handle.dataset.boundary);
+          boundary=m.widths.slice(0,idx).reduce((a,b)=>a+b,0);
+          handle.style.left=boundary+'px';
+        });
+        el.querySelectorAll('.matrix-row-resizer').forEach(handle=>{
+          const idx=Number(handle.dataset.boundary);
+          const y=m.heights.slice(0,idx).reduce((a,b)=>a+b,0);
+          handle.style.top=y+'px';
+        });
+        el.querySelectorAll('tbody tr').forEach((tr,i)=>{
+          tr.style.height=m.heights[i]+'px';
+          tr.querySelectorAll('textarea.matrix-cell-input').forEach(field=>field.style.height=(m.heights[i]-1)+'px');
+        });
+      }
+    }
+  }
+  function scheduleMatrixReflow(){
+    if(matrixReflowRequested)return;
+    matrixReflowRequested=true;
+    requestAnimationFrame(()=>{matrixReflowRequested=false;reflowMatrixGeometry();});
   }
   function renderMatrixNode(t,p){
     const wrap=document.createElement('div');wrap.className='matrix-node';wrap.dataset.id=t.id;
@@ -846,20 +1140,25 @@
     });
     const table=document.createElement('table');table.className='matrix-table';table.setAttribute('aria-label','横纵表格');
     const axes=tableAxes(t),rowCount=axes.rowNames.length,colCount=axes.colNames.length;
+    const metrics=matrixMeasureCache.get(t.id)||getMatrixMetrics(t);
     const cols=document.createElement('colgroup');
-    for(let c=0;c<=colCount;c++){const col=document.createElement('col');col.style.width=(c===0?170:146)+'px';cols.append(col);}
+    for(let c=0;c<=colCount;c++){const col=document.createElement('col');col.style.width=metrics.widths[c]+'px';cols.append(col);}
     table.append(cols);const tbody=document.createElement('tbody');
     for(let r=0;r<=rowCount;r++){
-      const tr=document.createElement('tr');
+      const tr=document.createElement('tr');tr.style.height=metrics.heights[r]+'px';
       for(let c=0;c<=colCount;c++){
         const td=document.createElement('td');
         if(r===0&&c===0)td.classList.add('matrix-corner');
-        const field=document.createElement('input');field.type='text';field.className='matrix-cell-input';field.readOnly=true;
+        const field=document.createElement('textarea');field.className='matrix-cell-input';field.rows=1;field.wrap='soft';field.readOnly=true;
+        field.style.height=(metrics.heights[r]-1)+'px';
         if(r===0||c===0)field.classList.add('matrix-header');
         if((r===0&&c>0)||(c===0&&r>0))field.classList.add('axis-handle');
-        field.value=tableValue(t,r,c);field.maxLength=1000;
+        field.value=tableValue(t,r,c);
         field.setAttribute('aria-label',r===0&&c===0?'左上角主题':r===0?'列标签 '+c:c===0?'行标签 '+r:'单元格 '+r+'-'+c);
-        field.placeholder=r===0&&c===0?'主题':r===0?'标签 '+c:c===0?'分支主题 '+r:'输入内容';
+        field.placeholder='';
+        const visual=document.createElement('div');visual.className='matrix-cell-visual';
+        const hint=r===0&&c===0?'主题':r===0?'标签 '+c:c===0?'分支主题 '+r:'输入内容';
+        renderMarkedText(visual,field.value,activeMarks(t,r,c),hint);
         field.addEventListener('pointerdown',e=>{
           e.stopPropagation();
           if(r>0&&c===0)prepareAxisDrag(e,t.id,'row',r-1,wrap,field);
@@ -879,25 +1178,59 @@
         });
         field.addEventListener('input',()=>{
           if(!state.matrixEditing||state.matrixEditing.id!==t.id||state.matrixEditing.row!==r||state.matrixEditing.col!==c)return;
-          setTableValue(t,r,c,field.value);persist();
+          const old=tableValue(t,r,c);putMarks(t,r,c,updateMarksForEdit(activeMarks(t,r,c),old,field.value));
+          setTableValue(t,r,c,field.value);renderMarkedText(visual,field.value,activeMarks(t,r,c),hint);persist();scheduleMatrixReflow();
         });
         field.addEventListener('keydown',e=>{
           if(e.isComposing||e.keyCode===229)return;
           if(!field.readOnly){
-            if(e.key==='Enter'){e.preventDefault();e.stopPropagation();field.blur();}
+            if(e.key==='Enter'&&(e.ctrlKey||e.metaKey||(r===0||c===0)&&!e.shiftKey)){e.preventDefault();e.stopPropagation();field.blur();}
+            else if(e.key==='Enter')e.stopPropagation();
             if(e.key==='Escape'){e.preventDefault();e.stopPropagation();settleMatrixEditor(false);field.value=tableValue(t,r,c);field.blur();}
           }
         });
         field.addEventListener('blur',()=>{
           if(state.matrixEditing?.id===t.id&&state.matrixEditing.row===r&&state.matrixEditing.col===c){
-            settleMatrixEditor(true);field.readOnly=true;td.classList.remove('editing-cell');
+            settleMatrixEditor(true);field.readOnly=true;td.classList.remove('editing-cell');scheduleMatrixReflow();
           }
         });
-        td.append(field);tr.append(td);
+        td.append(visual,field);tr.append(td);
       }
       tbody.append(tr);
     }
     table.append(tbody);wrap.append(table);
+    // 每条竖向分隔线都可以拖动：移动该线会调整其左侧列的宽度。
+    let boundaryX=0;
+    for(let c=1;c<=metrics.widths.length;c++){
+      boundaryX+=metrics.widths[c-1];
+      const handle=document.createElement('div');
+      handle.className='matrix-col-resizer';handle.dataset.boundary=String(c);
+      handle.style.left=boundaryX+'px';
+      handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');
+      handle.setAttribute('aria-label','拖动调整第 '+c+' 列宽度');
+      handle.title='左右拖动调整左侧一列的宽度';
+      handle.addEventListener('pointerdown',e=>beginColumnResize(e,t.id,c,handle));
+      handle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+      handle.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();});
+      handle.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
+      wrap.append(handle);
+    }
+    // 行高拖动与列宽拖动完全独立：每条水平边界对应上方一行。
+    let boundaryY=0;
+    for(let r=1;r<=metrics.heights.length;r++){
+      boundaryY+=metrics.heights[r-1];
+      const handle=document.createElement('div');
+      handle.className='matrix-row-resizer';handle.dataset.boundary=String(r);
+      handle.style.top=boundaryY+'px';
+      handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','horizontal');
+      handle.setAttribute('aria-label','拖动调整第 '+r+' 行高度');
+      handle.title='上下拖动调整上方这一行的高度';
+      handle.addEventListener('pointerdown',e=>beginRowResize(e,t.id,r,handle));
+      handle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+      handle.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();});
+      handle.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
+      wrap.append(handle);
+    }
     if(state.selected===t.id)showMatrixControls(wrap,t);
     applyMatrixSelection(wrap);
     return wrap;
@@ -908,7 +1241,7 @@
     const t=topicById(id);if(!t||t.kind!=='matrix')return;
     const wrap=[...topicLayer.children].find(el=>el.dataset.id===id);
     if(!wrap)return;
-    const field=wrap.querySelectorAll('tbody tr')[row]?.children[col]?.querySelector('input');
+    const field=wrap.querySelectorAll('tbody tr')[row]?.children[col]?.querySelector('textarea');
     if(!field)return;
     selectInteractive(id,matrixTarget(id,row,col));
     state.matrixEditing={id,row,col,original:tableValue(t,row,col)};
@@ -934,6 +1267,8 @@
   }
   function addMatrixAxis(t,axis){
     const m=t.matrix, a=tableAxes(t);
+    ensuredMatrixWidths(t);
+    ensuredMatrixHeights(t);
     if(axis==='row'){
       if(a.rowNames.length>=24){notify('最多 24 行');return;}
       if(!a.trans){m.rowHeaders.push('分支主题 '+(m.rowHeaders.length+1));m.cells.push(m.colHeaders.map(() => ''));}
@@ -942,6 +1277,14 @@
       if(a.colNames.length>=24){notify('最多 24 列');return;}
       if(!a.trans){m.colHeaders.push('标签 '+(m.colHeaders.length+1));m.cells.forEach(row=>row.push(''));}
       else{m.rowHeaders.push('分支主题 '+(m.rowHeaders.length+1));m.cells.push(m.colHeaders.map(() => ''));}
+    }
+    // 新增的逻辑行在转置视图中是新列；同理反向添加保持旧列宽不变。
+    if(axis==='col'){
+      (a.trans?m.colWidthsTranspose:m.colWidthsNormal).push(MATRIX_CONTENT_WIDTH);
+      (a.trans?m.rowHeightsNormal:m.rowHeightsTranspose).push(0);
+    }else{
+      (a.trans?m.colWidthsNormal:m.colWidthsTranspose).push(MATRIX_CONTENT_WIDTH);
+      (a.trans?m.rowHeightsTranspose:m.rowHeightsNormal).push(0);
     }
     scheduleSave('横纵表格 · 添加'+(axis==='row'?'行':'列'));
     render();ensureVisible(t.id);
@@ -1084,7 +1427,7 @@
     data.topics=remaining;return true;
   }
   function settleRemoteAfterDrag(){
-    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||topicDrag||axisDrag)return;
+    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||topicDrag||axisDrag||columnResize||rowResize)return;
     const row=cloud.externalRow;cloud.externalRow=null;
     if(Number(row.revision)>Number(cloud.revision)){
       if(cloud.dirty)showCloudConflict(row,'拖动期间另一台设备更新了导图，请选择要保留的版本。');
@@ -1104,10 +1447,101 @@
     }
     settleRemoteAfterDrag();
   }
+  // 列宽拖动只改变当前显示方向的一列；完成拖动后保存一次修改历史并上传云端。
+  function beginColumnResize(e,id,boundary,handle){
+    if(e.button!==0&&e.pointerType==='mouse')return;
+    if(columnResize||rowResize||axisDrag||topicDrag)return;
+    e.preventDefault();e.stopPropagation();
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    const t=topicById(id);if(!t||t.kind!=='matrix')return;
+    const widths=ensuredMatrixWidths(t);
+    if(boundary<1||boundary>widths.length)return;
+    state.selected=id;
+    const wrap=handle.closest('.matrix-node');wrap.classList.add('selected');
+    handle.classList.add('resizing');document.body.classList.add('matrix-resizing');
+    columnResize={id,pointerId:e.pointerId,boundary,handle,startX:e.clientX,
+      original:widths[boundary-1],moved:false};
+    try{handle.setPointerCapture(e.pointerId);}catch{}
+  }
+  function updateColumnResize(d,e){
+    e.preventDefault();
+    const t=topicById(d.id);if(!t||t.kind!=='matrix')return;
+    const widths=ensuredMatrixWidths(t);
+    const next=Math.max(85,Math.min(1800,Math.round(d.original+(e.clientX-d.startX)/state.zoom)));
+    if(widths[d.boundary-1]===next)return;
+    widths[d.boundary-1]=next;
+    d.moved=d.moved||next!==d.original;
+    scheduleMatrixReflow();
+  }
+  function finishColumnResize(d,commit){
+    document.body.classList.remove('matrix-resizing');
+    d.handle?.classList.remove('resizing');
+    const t=topicById(d.id);
+    if(t&&t.kind==='matrix'){
+      const widths=ensuredMatrixWidths(t);
+      const changed=widths[d.boundary-1]!==d.original;
+      if(!commit&&changed)widths[d.boundary-1]=d.original;
+      // 让表格、高度和连线一次更新到最终位置。
+      render();
+      if(commit&&changed){
+        scheduleSave('横纵表格 · 调整列宽');
+        notify('列宽已保存（同一账号可同步）');
+      }
+    }
+    settleRemoteAfterDrag();
+    if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
+  // 上下拖动表格横向分隔线：独立调节当前方向的行高。
+  function beginRowResize(e,id,boundary,handle){
+    if(e.button!==0&&e.pointerType==='mouse')return;
+    if(rowResize||columnResize||axisDrag||topicDrag)return;
+    e.preventDefault();e.stopPropagation();
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    const t=topicById(id);if(!t||t.kind!=='matrix')return;
+    const rows=ensuredMatrixHeights(t), metrics=getMatrixMetrics(t);
+    if(boundary<1||boundary>metrics.heights.length)return;
+    state.selected=id;
+    const wrap=handle.closest('.matrix-node');wrap.classList.add('selected');
+    handle.classList.add('resizing');document.body.classList.add('matrix-row-resizing');
+    rowResize={id,pointerId:e.pointerId,boundary,handle,startY:e.clientY,
+      originalHeight:metrics.heights[boundary-1], originalOverride:rows[boundary-1]||0};
+    try{handle.setPointerCapture(e.pointerId);}catch{}
+  }
+  function updateRowResize(d,e){
+    e.preventDefault();
+    const t=topicById(d.id);if(!t||t.kind!=='matrix')return;
+    const rows=ensuredMatrixHeights(t), widths=ensuredMatrixWidths(t);
+    const minHeight=matrixAutoRowHeight(t,d.boundary-1,widths);
+    const next=Math.max(minHeight,Math.min(4000,Math.round(d.originalHeight+(e.clientY-d.startY)/state.zoom)));
+    if(rows[d.boundary-1]===next)return;
+    // 记录用户的行高要求：文字自动所需高度仍优先，避免长文丢失或被裁剪。
+    rows[d.boundary-1]=next;
+    scheduleMatrixReflow();
+  }
+  function finishRowResize(d,commit){
+    document.body.classList.remove('matrix-row-resizing');
+    d.handle?.classList.remove('resizing');
+    const t=topicById(d.id);
+    if(t&&t.kind==='matrix'){
+      const rows=ensuredMatrixHeights(t);
+      if(!commit)rows[d.boundary-1]=d.originalOverride;
+      const newOverride=rows[d.boundary-1];
+      const changed=commit&&newOverride!==d.originalOverride;
+      render();
+      if(changed){
+        scheduleSave('横纵表格 · 调整行高');
+        notify('行高已保存（列宽不变，同一账号可同步）');
+      }
+    }
+    settleRemoteAfterDrag();
+    if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
   // 纵横表格的行列移动：一整行/列连同内容一起移动，不只是换标签。
   function prepareAxisDrag(e,id,axis,from,wrap,field){
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    if(axisDrag||topicDrag)return;
+    if(axisDrag||topicDrag||columnResize||rowResize)return;
     try{field.setPointerCapture(e.pointerId);}catch{}
     axisDrag={pointerId:e.pointerId,id,axis,from,wrap,field,startX:e.clientX,startY:e.clientY,
       moved:false,dropBoundary:null,ghost:null,line:null};
@@ -1164,6 +1598,14 @@
     const target=boundary>from?boundary-1:boundary;
     if(target===from)return false;
     const m=t.matrix;
+    ensuredMatrixWidths(t);ensuredMatrixHeights(t);
+    const relevantHeights=(axis==='row'?(a.trans?m.rowHeightsTranspose:m.rowHeightsNormal):
+      (a.trans?m.rowHeightsNormal:m.rowHeightsTranspose));
+    const [h]=relevantHeights.splice(from+1,1);relevantHeights.splice(target+1,0,h);
+    const relevantWidths=(axis==='col'?(a.trans?m.colWidthsTranspose:m.colWidthsNormal):
+      (a.trans?m.colWidthsNormal:m.colWidthsTranspose));
+    const [w]=relevantWidths.splice(from+1,1);relevantWidths.splice(target+1,0,w);
+    shiftMatrixStyleAxis(t,(axis==='row'?!a.trans:a.trans)?'row':'col',from,target);
     const spliceMove=(arr)=>{const [item]=arr.splice(from,1);arr.splice(target,0,item);};
     if(axis==='row'){
       if(!a.trans){spliceMove(m.rowHeaders);spliceMove(m.cells);}
@@ -1188,6 +1630,8 @@
     render();settleRemoteAfterDrag();
   }
   window.addEventListener('pointermove',e=>{
+    if(columnResize&&columnResize.pointerId===e.pointerId)updateColumnResize(columnResize,e);
+    if(rowResize&&rowResize.pointerId===e.pointerId)updateRowResize(rowResize,e);
     if(topicDrag&&topicDrag.pointerId===e.pointerId){
       const d=topicDrag;
       if(!d.moved&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)>=8)beginTopicMove(d);
@@ -1200,15 +1644,137 @@
     }
   },{passive:false});
   window.addEventListener('pointerup',e=>{
+    if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,true);}
+    if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,true);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,true);}
     if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,true);}
   });
   window.addEventListener('pointercancel',e=>{
+    if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
+    if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,false);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,false);}
     if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,false);}
   });
 
+
+  // 在普通输入框内选中部分文字后才显示悬浮工具条；不抢占文字输入焦点。
+  let richSelection=null,richLastPreset=0;
+  const richBar=$('richToolbar'),richPopover=$('richPopover');
+  function hideRichBar(clear=true){richBar.hidden=true;richPopover.hidden=true;$('richCustom').hidden=true;
+    $('richExpand').setAttribute('aria-expanded','false');if(clear)richSelection=null;}
+  function selectedTextCoordinates(field,index){
+    const rect=field.getBoundingClientRect(),style=getComputedStyle(field);
+    const mirror=document.createElement('div');
+    mirror.setAttribute('aria-hidden','true');
+    Object.assign(mirror.style,{position:'absolute',left:'-200000px',top:'0',visibility:'hidden',pointerEvents:'none',
+      width:field.offsetWidth+'px',height:'auto',whiteSpace:'pre-wrap',boxSizing:'border-box',overflowWrap:'anywhere',wordBreak:'break-word',
+      fontFamily:style.fontFamily,fontSize:style.fontSize,fontWeight:style.fontWeight,lineHeight:style.lineHeight,
+      letterSpacing:style.letterSpacing,padding:style.padding,border:'0',textAlign:style.textAlign});
+    mirror.append(document.createTextNode(field.value.slice(0,index)));
+    const mark=document.createElement('span');mark.textContent='\u200b';mirror.append(mark);
+    document.body.append(mirror);
+    const scale=field.offsetWidth?rect.width/field.offsetWidth:1;
+    const x=rect.left+(mark.offsetLeft-field.scrollLeft)*scale;
+    const y=rect.top+(mark.offsetTop-field.scrollTop)*scale;
+    mirror.remove();
+    return {x:Math.max(rect.left,Math.min(rect.right,x)),y:Math.max(rect.top,Math.min(rect.bottom,y))};
+  }
+  function richSelectionFromDOM(){
+    const field=document.activeElement;
+    if(!(field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement))return;
+    if(!field.matches('.matrix-cell-input,.topic-editor')||!field.isConnected)return;
+    const start=field.selectionStart,end=field.selectionEnd;
+    if(start===null||end===null||start===end){if(!richPopover.hidden)return;hideRichBar();return;}
+    let id,r=null,c=null;
+    if(field.classList.contains('matrix-cell-input')){
+      const wrapper=field.closest('.matrix-node'),tr=field.closest('tr'),td=field.closest('td');
+      if(!wrapper||!tr||!td)return;
+      id=wrapper.dataset.id;r=tr.rowIndex;c=td.cellIndex;
+      if(state.matrixEditing?.id!==id||state.matrixEditing?.row!==r||state.matrixEditing?.col!==c)return;
+    }else {id=field.closest('.topic')?.dataset.id;if(state.editing!==id)return;}
+    richSelection={id,row:r,col:c,start,end,field};
+    const caret=selectedTextCoordinates(field,end),w=richBar.offsetWidth||90;
+    const left=Math.max(8,Math.min(innerWidth-w-8,caret.x-w/2));
+    let top=caret.y-58;
+    if(top<8)top=Math.min(innerHeight-55,caret.y+25);
+    top=Math.max(8,Math.min(innerHeight-55,top));
+    richBar.style.left=left+'px';richBar.style.top=top+'px';richBar.hidden=false;
+    const preset=currentPresets()[richLastPreset]||DEFAULT_MARK_PRESETS[0];
+    $('richApply').style.borderBottomColor=preset.bg;
+    $('richApply').style.color=preset.fg;
+  }
+  function applyColorPreset(preset){
+    const s=richSelection;if(!s){notify('请先双击进入文字编辑，再选中要标注的文字');return;}
+    const t=topicById(s.id);if(!t)return;
+    const text=s.row===null?t.text:tableValue(t,s.row,s.col);
+    const start=Math.min(s.start,text.length),end=Math.min(s.end,text.length);
+    if(end<=start){notify('请重新选中要标注的文字');return;}
+    putMarks(t,s.row,s.col,assignMarks(activeMarks(t,s.row,s.col),text,start,end,preset.fg,preset.bg));
+    const marked=s.field.closest('td')?.querySelector('.matrix-cell-visual');
+    if(marked)renderMarkedText(marked,text,activeMarks(t,s.row,s.col));
+    if(s.row===null){ // 普通节点的富文本标注在结束编辑后显示。
+      const node=s.field.closest('.topic'); if(node)node.title='已保存局部颜色标注';
+    }
+    scheduleSave('标注文字颜色 · '+text.slice(start,Math.min(end,start+14)));
+    if(s.row===null&&state.editing===s.id)endEditing(true);
+    hideRichBar(false);
+    notify('文字与背景颜色已保存，可在另一台设备同步');
+  }
+  function showRichPresets(){
+    const list=$('richPresetList');list.replaceChildren();
+    currentPresets().forEach((preset,index)=>{
+      const btn=document.createElement('button');btn.type='button';btn.className='rich-preset';btn.title='应用颜色组合：'+preset.name;
+      const preview=document.createElement('span');preview.textContent='Aa 示例';preview.style.color=preset.fg;preview.style.backgroundColor=preset.bg;
+      const name=document.createElement('small');name.textContent=preset.name;
+      btn.append(preview,name);
+      btn.addEventListener('pointerdown',e=>e.preventDefault());
+      btn.addEventListener('click',()=>{richLastPreset=index;applyColorPreset(preset);});list.append(btn);
+    });
+  }
+  function placeRichPopover(){const bar=richBar.getBoundingClientRect(),popover=richPopover;
+    const width=Math.min(314,innerWidth-20);
+    popover.style.left=Math.max(8,Math.min(innerWidth-width-8,bar.left))+'px';
+    const height=Math.min(popover.scrollHeight||300,innerHeight*.65),below=bar.bottom+8,above=bar.top-height-8;
+    const top=below+height<=innerHeight-8?below:above>=8?above:Math.max(8,innerHeight-height-8);
+    popover.style.top=top+'px';
+  }
+  $('richApply').addEventListener('pointerdown',e=>e.preventDefault());
+  $('richApply').addEventListener('click',()=>applyColorPreset(currentPresets()[richLastPreset]||DEFAULT_MARK_PRESETS[0]));
+  $('richExpand').addEventListener('pointerdown',e=>e.preventDefault());
+  $('richExpand').addEventListener('click',()=>{
+    const open=richPopover.hidden;
+    if(!open){richPopover.hidden=true;$('richExpand').setAttribute('aria-expanded','false');return;}
+    showRichPresets();richPopover.hidden=false;$('richExpand').setAttribute('aria-expanded','true');placeRichPopover();
+  });
+  $('richAddPreset').addEventListener('pointerdown',e=>e.preventDefault());
+  $('richAddPreset').addEventListener('click',()=>{$('richCustom').hidden=!$('richCustom').hidden;placeRichPopover();});
+  function updateRichPreview(){const p=$('richLivePreview');p.style.color=$('richForeground').value;p.style.backgroundColor=$('richBackground').value;}
+  ['richForeground','richBackground'].forEach(id=>$(id).addEventListener('input',updateRichPreview));updateRichPreview();
+  $('richSavePreset').addEventListener('click',()=>{
+    const p={name:$('richPresetName').value.trim()||'我的标注',fg:$('richForeground').value,bg:$('richBackground').value};
+    const root=topicById(ROOT_ID);if(!root)return;
+    const old=currentPresets();root.formatPresets=[...old.slice(-23),p];
+    richLastPreset=root.formatPresets.length-1;
+    scheduleSave('保存颜色组合 · '+p.name);
+    if(richSelection)applyColorPreset(p);
+    else{notify('颜色组合已保存');showRichPresets();}
+    $('richCustom').hidden=true;
+  });
+  function deferRichSelection(){setTimeout(()=>{
+    // 颜色选择面板打开时保留原来选中的范围，方便自定义后应用。
+    if(!richPopover.hidden)return;
+    richSelectionFromDOM();
+  },0);}
+  document.addEventListener('mouseup',deferRichSelection);
+  document.addEventListener('touchend',()=>setTimeout(richSelectionFromDOM,100),{passive:true});
+  document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input'))deferRichSelection();});
+  document.addEventListener('pointerdown',e=>{
+    if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input')){
+      if(!richBar.hidden)hideRichBar();
+    }
+  },true);
   function render() {
+    hideRichBar();
     computeLayout(); drawConnections(); topicLayer.replaceChildren();
     for(const t of data.topics) {
       const p=state.positions.get(t.id);
@@ -1223,7 +1789,7 @@
       el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
       if(t.id===state.selected) el.classList.add('selected');
       if(t.id===state.editing) el.classList.add('editing');
-      const title=document.createElement('span');title.className='topic-text';title.textContent=t.text||'新主题';
+      const title=document.createElement('span');title.className='topic-text';renderMarkedText(title,t.text||'新主题',t.marks||[]);
       el.append(title);
       el.addEventListener('pointerdown',e=>prepareTopicDrag(e,t.id,el));
       el.addEventListener('click',e=>{
@@ -1258,7 +1824,7 @@
     const t=topicById(id);if(!t)return;
     const original=t.text;
     state.editing=id;state.selected=id;
-    state.editDraft={id,original,raw:newNode?'':original};
+    state.editDraft={id,original,raw:newNode?'':original,originalMarks:JSON.parse(JSON.stringify(t.marks||[]))};
     render();
     const el=[...topicLayer.children].find(n=>n.dataset.id===id);if(!el)return;
     el.replaceChildren();
@@ -1270,9 +1836,9 @@
     // 避免中文输入法组合文字期间频繁上传，也保证历史记录只生成一次。
     input.addEventListener('input',()=>{
       if(state.editing!==id||!state.editDraft)return;
-      state.editDraft.raw=input.value;
+      const before=state.editDraft.raw;state.editDraft.raw=input.value;
       const node=topicById(id);
-      if(node){node.text=input.value.trim()||'新主题';persist();}
+      if(node){node.marks=updateMarksForEdit(node.marks||[],before,input.value);node.text=input.value.trim()||'新主题';persist();}
     });
     input.addEventListener('click',e=>e.stopPropagation());
     input.addEventListener('pointerdown',e=>e.stopPropagation());
@@ -1282,7 +1848,7 @@
       if(e.key==='Enter'){e.preventDefault();e.stopPropagation();endEditing(true);}
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();endEditing(false);}
     });
-    input.addEventListener('blur',()=>endEditing(true));
+    input.addEventListener('blur',()=>{if(!richPopover.hidden)return;endEditing(true);});
     el.append(input);input.focus();
     if(selectAll)input.select();else input.setSelectionRange(input.value.length,input.value.length);
   }
@@ -1298,6 +1864,8 @@
     state.editing=null;state.editDraft=null;
     if(t){
       t.text=save?finalText:draft.original;
+      if(!save)t.marks=draft.originalMarks;
+      else t.marks=validMarks(t.marks||[],finalText);
       if(save&&finalText!==draft.original){
         scheduleSave('修改主题文字 · '+finalText.slice(0,28));
       }else{
@@ -1342,20 +1910,27 @@
   function deleteMatrixSelection(s){
     const t=topicById(s?.id);if(!t||t.kind!=='matrix')return;
     const a=tableAxes(t),m=t.matrix;
+    ensuredMatrixWidths(t);ensuredMatrixHeights(t);
     if(s.kind==='cell'){
       const old=tableValue(t,s.row,s.col);
       if(old===''){notify('这个单元格已经是空的');return;}
-      setTableValue(t,s.row,s.col,'');
+      setTableValue(t,s.row,s.col,'');putMarks(t,s.row,s.col,[]);
       scheduleSave('删除表格单元格内容');render();return;
     }
     if(s.kind==='row'){
       if(a.rowNames.length<=1){notify('表格至少需要保留一行');return;}
       const i=s.row-1;
+      shiftMatrixStyleAxis(t,a.trans?'col':'row',i,0,true);
+      (a.trans?m.colWidthsNormal:m.colWidthsTranspose).splice(i+1,1);
+      (a.trans?m.rowHeightsTranspose:m.rowHeightsNormal).splice(i+1,1);
       if(!a.trans){m.rowHeaders.splice(i,1);m.cells.splice(i,1);}
       else{m.colHeaders.splice(i,1);m.cells.forEach(row=>row.splice(i,1));}
     }else if(s.kind==='col'){
       if(a.colNames.length<=1){notify('表格至少需要保留一列');return;}
       const i=s.col-1;
+      shiftMatrixStyleAxis(t,a.trans?'row':'col',i,0,true);
+      (a.trans?m.colWidthsTranspose:m.colWidthsNormal).splice(i+1,1);
+      (a.trans?m.rowHeightsNormal:m.rowHeightsTranspose).splice(i+1,1);
       if(!a.trans){m.colHeaders.splice(i,1);m.cells.forEach(row=>row.splice(i,1));}
       else{m.rowHeaders.splice(i,1);m.cells.splice(i,1);}
     }else return;
@@ -1667,7 +2242,7 @@
           const sh=getShadow(id);
           if(sh&&sameTopics(sh.topics,row.topics))return;
         }
-        if(state.editing||state.matrixEditing||topicDrag?.moved||axisDrag?.moved){
+        if(state.editing||state.matrixEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize){
           // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
           if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
           return;
@@ -1683,7 +2258,7 @@
       });
   }
   function requestCloudPush(){
-    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||topicDrag?.moved||axisDrag?.moved)return;
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     clearTimeout(cloud.timer);
     cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
   }
@@ -1711,7 +2286,7 @@
     }
   }
   async function flushCloud(){
-    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||topicDrag?.moved||axisDrag?.moved)return;
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     cloud.sending=true;clearTimeout(cloud.timer);
     const snapshot=cloneTopics();
     const entries=cloud.pendingEntries.splice(0);
@@ -1773,7 +2348,7 @@
   $('cloudUseLocal').addEventListener('click',()=>void useLocal());
   window.addEventListener('online',()=>{if(cloud.user){if(cloud.ready&&(cloud.dirty||cloud.pendingEntries.length))requestCloudPush();else if(!cloud.ready)void openCloudDocument();}});
   window.addEventListener('focus',()=>{if(cloud.ready&&cloud.user&&!cloud.conflict){
-    if(cloud.sending||topicDrag?.moved||axisDrag?.moved)return;
+    if(cloud.sending||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     void readCloudDocument().then(row=>{
       if(!row)return;
       if(Number(row.revision)>Number(cloud.revision)){
@@ -1936,7 +2511,7 @@
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.15.1";
+  const BUILD = "2026.11.16.4";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');
@@ -2014,5 +2589,6 @@
   }
 })();
 </script>
+
 </body>
 </html>
