@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#333436">
-<title>图谱笔记</title>
+<title>DIY记录</title>
 <style>
   :root {
     color-scheme: dark;
@@ -325,10 +325,10 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
 <link rel="apple-touch-icon" href="./icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="图谱笔记">
+<meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="2026.11.16.4">
+<meta name="app-build" content="2026.11.16.5">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -345,20 +345,110 @@
 #appUpdateBanner .later { color:#ebeff3; background:transparent; border-color:#627d94; }
 @media(max-width:640px) { #appUpdateBanner {top:64px; right:8px; width:calc(100vw - 16px);} #pwaInstallBtn {padding:6px!important;} }
 </style>
+<style id="diy-ui-theme">
+/* DIY记录：紧凑导航与画布栏，最大化工作区域 */
+.topbar{min-height:42px;height:42px;padding:4px 10px;gap:7px;z-index:19;}
+.top-actions{gap:6px;min-width:0;}
+.top-actions button{min-height:31px;padding:5px 10px;font-size:12px;}
+.top-actions [hidden],.top-actions button[hidden]{display:none!important;}
+.menu-toggle{width:32px;height:32px;padding:3px;}
+.menu-toggle svg{width:22px;height:22px;}
+.top-actions .saved{font-size:10px;max-width:180px;overflow:hidden;text-overflow:ellipsis;}
+.more-toggle{background:transparent!important;border:0!important;font-size:27px!important;line-height:16px;padding:2px 9px!important;letter-spacing:1px;color:var(--app-ink,#f8f8fa);}
+.more-toggle:hover{background:var(--nav-hover,#515256)!important;}
+.board-bar{min-height:34px;height:34px;padding:3px 8px;gap:4px;background:var(--nav);border-color:var(--nav-border);}
+.board-tabs{max-width:calc(100% - 42px);gap:4px;}
+.board-tab-wrap{border-radius:5px;}
+.board-tab{font-size:12px;min-width:55px;max-width:140px;padding:0 6px 0 9px;}
+.board-arrow{width:22px;min-width:22px;font-size:13px;}
+.board-add{font-size:23px;width:34px;}
+@media(max-width:640px){
+ .topbar{min-height:40px;height:40px;padding:3px 7px;gap:5px;}
+ .top-actions{gap:3px;}
+ .top-actions button{min-height:29px;padding:4px 7px;font-size:11px;}
+ .menu-toggle{width:30px;height:30px;}
+ .saved{display:none!important;}
+ .board-bar{min-height:32px;height:32px;padding:2px 5px;}
+ .board-tab{font-size:11px;min-width:45px;max-width:110px;}
+ .board-arrow{width:21px;min-width:21px;}
+ .board-add{font-size:23px;width:30px;}
+ .more-toggle{font-size:25px!important;padding:2px 6px!important;}
+ #appUpdateBanner{top:45px;}
+ .history-panel{top:46px;}
+}
+/* 侧拉栏：只保留美化 / 配色 */
+.beauty-backdrop{position:fixed;inset:0;background:#0008;z-index:105;}
+.beauty-backdrop[hidden],.beauty-panel[hidden]{display:none!important;}
+.beauty-panel{position:fixed;inset:0 0 0 auto;width:min(345px,94vw);z-index:106;
+  background:#f5f6f7;color:#272a30;box-shadow:-15px 0 44px #0007;display:flex;flex-direction:column;}
+.beauty-panel-head{height:54px;min-height:54px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid #dddfe2;padding:0 19px;font-weight:700;font-size:19px;}
+.beauty-panel-head button{border:0;background:#e9ebee;color:#353b43;font-size:25px;width:34px;height:34px;border-radius:9px;}
+.beauty-panel-content{padding:18px 16px;overflow-y:auto;}
+.beauty-section-title{font-size:15px;font-weight:700;margin-bottom:12px;}
+.beauty-card{background:white;border:1px solid #e2e4e7;border-radius:13px;padding:15px 13px;}
+.beauty-card-name{font-size:14px;font-weight:750;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.beauty-card-name span{font-size:11px;font-weight:400;color:#69717a;}
+.beauty-gradient{display:flex;height:36px;border:2px solid #c9cdd2;border-radius:19px;padding:2px;overflow:hidden;gap:0;margin:16px 0;}
+.beauty-swatch{appearance:none;position:relative;flex:1;min-width:0;height:28px;background:var(--swatch);border:0;border-radius:0;outline:0;}
+.beauty-swatch:first-child{border-radius:15px 0 0 15px;}.beauty-swatch:last-child{border-radius:0 15px 15px 0;}
+.beauty-swatch[aria-pressed=true]::after{content:"";position:absolute;inset:0;border:2px solid #209ced;box-shadow:inset 0 0 0 1px #f5f5f5;}
+.beauty-thumbnails{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;}
+.beauty-tile{min-width:0;aspect-ratio:1.38;background:var(--tile-bg);border:2px solid transparent;border-radius:9px;padding:5px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;}
+.beauty-tile[aria-pressed=true]{border-color:#29a2ed;box-shadow:0 0 0 2px #29a2ed36;}
+.beauty-mini-map{display:flex;align-items:center;justify-content:center;gap:2px;width:100%;}
+.beauty-mini-map i{display:block;border-radius:3px;background:var(--tile-node);width:22%;height:9px;}
+.beauty-mini-map b{width:17%;height:1px;background:var(--tile-wire);}
+.beauty-tile span{font-size:10px;color:var(--tile-ink);}
+.beauty-explain{font-size:12px;color:#68707b;line-height:1.65;margin:13px 0 0;}
+/* 与已有布局/节点/矩阵统一联动颜色；蓝色仅用于选中状态 */
+body{color:var(--app-ink,#f5f5f6);}
+.stage{background:var(--bg);}
+.topbar,.board-bar{background:var(--nav);border-color:var(--nav-border);}
+.menu-toggle,.board-add{color:var(--app-ink);}
+.top-actions button:not(#pwaInstallBtn):not(.cloud-button):not(.more-toggle),.zoom-tools button{
+ background:var(--control-bg)!important;color:var(--app-ink);border-color:var(--nav-border);}
+.topic{background:var(--topic);color:var(--topic-ink);}
+.topic:hover{background:var(--topic-hover);}
+.topic.selected{background:var(--topic-hover);}
+.topic.editing{background:var(--topic-hover);}
+.topic-editor{color:var(--topic-ink);}
+.topic.drag-origin{background:var(--topic)!important;}
+.matrix-node{color:var(--matrix-ink)!important;}
+.matrix-node .matrix-table{background:var(--matrix-bg)!important;border-color:var(--matrix-grid)!important;}
+.matrix-node .matrix-table td{background:var(--matrix-bg);border-color:var(--matrix-grid)!important;}
+.matrix-node .matrix-table tr:first-child td{background:var(--matrix-top)!important;}
+.matrix-node .matrix-table .matrix-corner{background:var(--matrix-corner)!important;}
+.matrix-node .matrix-table tr:not(:first-child) td:first-child{background:var(--matrix-rowhead)!important;}
+.matrix-node .matrix-table .matrix-cell-visual{color:var(--matrix-ink)!important;}
+.matrix-node .matrix-table tr:first-child td:not(:first-child) .matrix-cell-visual{color:var(--matrix-ink)!important;}
+.matrix-node .matrix-table .matrix-cell-visual.is-placeholder{color:var(--matrix-muted)!important;}
+.matrix-node .matrix-table .matrix-cell-input{caret-color:var(--matrix-ink)!important;}
+.matrix-node .matrix-table .matrix-cell-input:focus{background:transparent!important;}
+.matrix-node .matrix-table .matrix-cell-visual .rich-fragment{color:inherit;}
+.board-tab-wrap{background:var(--tab-bg)!important;}
+.board-tab-wrap.active{background:var(--tab-active)!important;border-color:var(--nav-border);}
+.board-tab,.board-arrow{color:var(--tab-ink)!important;}
+.board-tab-wrap.active .board-tab{color:var(--app-ink)!important;}
+.board-arrow:hover,.board-add:hover{background:var(--nav-hover)!important;}
+.zoom-tools{background:var(--nav);border-color:var(--nav-border);}
+#zoomValue{color:var(--app-ink);}
+</style>
 </head>
 <body>
 <div class="app">
   <header class="topbar">
     <button class="menu-toggle" id="menuToggle" title="打开菜单" aria-label="打开菜单" aria-expanded="false" aria-controls="menuPopup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
-    <div class="brand"><strong>图谱笔记</strong><small>XMind 风格 · 独立云项目</small></div>
+    
     <div class="top-actions">
       <span class="saved" id="saveStatus">已保存到本机</span>
-      <button id="pwaInstallBtn" type="button" hidden title="把图谱笔记安装到设备上">安装应用</button>
+      <button id="pwaInstallBtn" type="button" hidden title="把 DIY记录 安装到设备上">安装应用</button>
       <button id="cloudBtn" class="cloud-button" title="设置账号与云同步">☁ 云同步</button>
-      <button id="newBtn" title="创建一张新导图">新建</button>
-      <button id="exportBtn" title="备份当前导图为 JSON 文件">导出</button>
-      <button id="importBtn" title="恢复此前导出的 JSON 文件">导入</button>
+      <button id="newBtn" title="创建一张新导图" hidden>新建</button>
+      <button id="exportBtn" title="备份当前导图为 JSON 文件" hidden>导出</button>
+      <button id="importBtn" title="恢复此前导出的 JSON 文件" hidden>导入</button>
       <input id="importFile" type="file" accept=".json,application/json" hidden>
+      <button type="button" class="more-toggle" id="beautyOpen" title="美化与配色" aria-label="打开美化设置" aria-controls="beautyPanel" aria-expanded="false">···</button>
     </div>
     <div class="menu-popup" id="menuPopup" hidden>
       <button type="button" class="menu-entry" id="historyMenuItem">历史修改</button>
@@ -390,6 +480,26 @@
     <button type="button" class="board-add" id="boardAdd" title="添加新画布" aria-label="添加新画布">+</button>
   </footer>
 </div>
+<div class="beauty-backdrop" id="beautyBackdrop" hidden></div>
+<aside class="beauty-panel" id="beautyPanel" aria-label="美化设置" hidden>
+  <div class="beauty-panel-head"><strong>美化</strong><button id="beautyClose" type="button" aria-label="关闭美化设置">×</button></div>
+  <div class="beauty-panel-content">
+    <div class="beauty-section-title">配色</div>
+    <div class="beauty-card">
+      <div class="beauty-card-name">黑白渐变 <span>禅心 · 灰阶</span></div>
+      <div class="beauty-gradient" id="beautyGradient" aria-label="黑白灰配色">
+        <button type="button" class="beauty-swatch" data-scheme="0" aria-label="雪白" style="--swatch:#f6f6f7"></button>
+        <button type="button" class="beauty-swatch" data-scheme="1" aria-label="浅灰" style="--swatch:#dedee0"></button>
+        <button type="button" class="beauty-swatch" data-scheme="2" aria-label="银灰" style="--swatch:#b7b8ba"></button>
+        <button type="button" class="beauty-swatch" data-scheme="3" aria-label="深灰" style="--swatch:#89898c"></button>
+        <button type="button" class="beauty-swatch" data-scheme="4" aria-label="禅心" style="--swatch:#363638"></button>
+        <button type="button" class="beauty-swatch" data-scheme="5" aria-label="纯黑" style="--swatch:#151516"></button>
+      </div>
+      <div class="beauty-thumbnails" id="beautyThumbnails" role="group" aria-label="选择全局灰阶主题"></div>
+      <p class="beauty-explain">点击配色即可应用到整个画布。字体标注颜色不变；配色随导图保存并同步。</p>
+    </div>
+  </div>
+</aside>
 <div class="board-popup" id="boardPopup" hidden role="menu" aria-label="画布操作">
   <button type="button" id="boardRename" role="menuitem">重命名</button>
   <button type="button" id="boardDelete" role="menuitem">删除</button>
@@ -431,7 +541,7 @@
         <strong>检测到两个不同版本</strong>
         <p id="cloudConflictText">本机和云端内容不同。请选择保留哪一份，避免直接覆盖。</p>
         <div class="cloud-actions"><button type="button" id="cloudUseRemote">使用云端数据</button><button type="button" id="cloudUseLocal" class="warn">使用本机数据并上传</button></div>
-        <p class="cloud-tips">覆盖之前建议先点击顶部“导出”备份当前本机数据。历史记录不会因此清空。</p>
+        <p class="cloud-tips">覆盖之前请先确认本机内容已保留。历史记录不会因此清空。</p>
       </div>
     </div>
   </section>
@@ -439,7 +549,7 @@
 
 <!-- PWA 版本更新提醒：仅用户主动点击时刷新，避免打断编辑。 -->
 <div id="appUpdateBanner" role="status" aria-live="polite" hidden>
-  <div class="app-update-copy"><strong>发现图谱笔记新版本</strong>刷新后使用新功能，当前笔记仍由原有保存与云同步逻辑管理。</div>
+  <div class="app-update-copy"><strong>发现 DIY记录 新版本</strong>刷新后使用新功能，当前笔记仍由原有保存与云同步逻辑管理。</div>
   <button type="button" id="appUpdateNow">更新</button>
   <button type="button" id="appUpdateLater" class="later">稍后</button>
 </div>
@@ -633,6 +743,7 @@
       const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,1000) };
       if(Array.isArray(n.marks))node.marks=validMarks(n.marks,node.text);
       if(n.id===ROOT_ID && Array.isArray(n.formatPresets))node.formatPresets=validPresets(n.formatPresets);
+      if(n.id===ROOT_ID && Number.isInteger(n.appearancePreset) && n.appearancePreset>=0 && n.appearancePreset<=5)node.appearancePreset=n.appearancePreset;
       if(n.boardRoot===true&&n.id!==ROOT_ID)node.boardRoot=true;
       if(n.id===ROOT_ID&&Array.isArray(n.boards)){
         const b=n.boards.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.rootId==='string')
@@ -1773,7 +1884,74 @@
       if(!richBar.hidden)hideRichBar();
     }
   },true);
+  // 黑白灰整体主题，与笔记数据一起写入 root.appearancePreset；旧版默认禅心。
+  const DIY_SCHEMES=[
+    {name:'雪白',bg:'#f7f7f8',nav:'#f9f9fa',edge:'#d5d7db',topic:'#e2e2e4',hover:'#d2d3d5',ink:'#25272a',wire:'#87898d',matrix:'#ffffff',top:'#ececed',corner:'#ceced1',row:'#e0e0e2',grid:'#b4b5ba',muted:'#8a8e94',ctrl:'#efeff1',tab:'#ededf0',active:'#dedee1'},
+    {name:'浅灰',bg:'#e2e2e4',nav:'#eeeef0',edge:'#c1c2c6',topic:'#b7b8bb',hover:'#a8a9ad',ink:'#27282b',wire:'#83858a',matrix:'#ececef',top:'#d2d2d5',corner:'#afb0b4',row:'#cacacd',grid:'#a1a2a6',muted:'#777a80',ctrl:'#dedee1',tab:'#dedee1',active:'#cbcbce'},
+    {name:'银灰',bg:'#babbbf',nav:'#c6c7ca',edge:'#a3a5aa',topic:'#88898d',hover:'#77797d',ink:'#191a1c',wire:'#4d5055',matrix:'#c5c6ca',top:'#acadb1',corner:'#999b9f',row:'#acaeb2',grid:'#71747a',muted:'#54565c',ctrl:'#b5b6b9',tab:'#adafb2',active:'#9b9da1'},
+    {name:'石灰',bg:'#7a7a7d',nav:'#616165',edge:'#515257',topic:'#afb0b2',hover:'#bfc0c2',ink:'#f9f9fa',wire:'#e7e7e9',matrix:'#757579',top:'#535458',corner:'#9c9da1',row:'#8d8e91',grid:'#c7c7ca',muted:'#dedee0',ctrl:'#737479',tab:'#77787c',active:'#8b8c91'},
+    {name:'禅心',bg:'#363638',nav:'#2c2d2f',edge:'#454548',topic:'#707072',hover:'#7b7b7d',ink:'#f5f5f6',wire:'#bfc1c4',matrix:'#363638',top:'#38383a',corner:'#727274',row:'#69696b',grid:'#bfc0c2',muted:'#aeb1b7',ctrl:'#414247',tab:'#3b3c43',active:'#505158'},
+    {name:'深黑',bg:'#18181a',nav:'#111113',edge:'#343439',topic:'#464649',hover:'#535357',ink:'#fcfcfd',wire:'#98999d',matrix:'#242427',top:'#2d2d30',corner:'#424245',row:'#39393d',grid:'#77787c',muted:'#a4a5aa',ctrl:'#303035',tab:'#29292e',active:'#3b3b40'}
+  ];
+  function currentAppearance(){
+    const preset=topicById(ROOT_ID)?.appearancePreset;
+    return Number.isInteger(preset)&&preset>=0&&preset<DIY_SCHEMES.length?preset:4;
+  }
+  function applyAppearance(){
+    const preset=currentAppearance(),c=DIY_SCHEMES[preset],root=document.documentElement;
+    const props={
+      '--bg':c.bg,'--nav':c.nav,'--nav-border':c.edge,'--topic':c.topic,'--topic-hover':c.hover,
+      '--topic-ink':(preset===2||preset===3)?'#ffffff':c.ink,'--wire':c.wire,
+      '--app-ink':c.ink,'--control-bg':c.ctrl,'--nav-hover':c.hover,
+      '--matrix-bg':c.matrix,'--matrix-top':c.top,'--matrix-rowhead':c.row,'--matrix-corner':c.corner,
+      '--matrix-ink':c.ink,'--matrix-muted':c.muted,'--matrix-grid':c.grid,
+      '--tab-bg':c.tab,'--tab-active':c.active,'--tab-ink':c.ink
+    };
+    for(const [key,val] of Object.entries(props))root.style.setProperty(key,val);
+    root.dataset.diyScheme=String(preset);
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content',c.nav);
+    document.querySelectorAll('.beauty-swatch,.beauty-tile').forEach(btn=>btn.setAttribute('aria-pressed',String(Number(btn.dataset.scheme)===preset)));
+  }
+  function buildAppearancePicker(){
+    const gallery=$('beautyThumbnails');if(!gallery)return;
+    gallery.replaceChildren();
+    DIY_SCHEMES.forEach((c,i)=>{
+      const tile=document.createElement('button');tile.type='button';tile.className='beauty-tile';tile.dataset.scheme=String(i);
+      tile.setAttribute('aria-label','选择'+c.name+'主题');tile.style.setProperty('--tile-bg',c.bg);
+      tile.style.setProperty('--tile-node',c.topic);tile.style.setProperty('--tile-wire',c.wire);
+      tile.style.setProperty('--tile-ink',i<=2?'#242629':'#f5f5f6');
+      const diagram=document.createElement('div');diagram.className='beauty-mini-map';
+      diagram.innerHTML='<i></i><b></b><i></i><b></b><i></i>';
+      const label=document.createElement('span');label.textContent=c.name;
+      tile.append(diagram,label);gallery.append(tile);
+    });
+    const choose=e=>{
+      const button=e.target.closest('[data-scheme]');if(!button)return;
+      const number=Number(button.dataset.scheme);if(!Number.isInteger(number)||number<0||number>=DIY_SCHEMES.length)return;
+      const root=topicById(ROOT_ID);if(!root||currentAppearance()===number)return;
+      if(state.editing)endEditing(true);
+      if(state.matrixEditing)settleMatrixEditor(true);
+      root.appearancePreset=number;applyAppearance();
+      scheduleSave('修改整体配色 · '+DIY_SCHEMES[number].name);
+      render();notify('已应用 '+DIY_SCHEMES[number].name+' 配色');
+    };
+    $('beautyGradient').addEventListener('click',choose);
+    gallery.addEventListener('click',choose);
+    applyAppearance();
+  }
+  function toggleBeauty(open){
+    $('beautyPanel').hidden=!open;$('beautyBackdrop').hidden=!open;
+    $('beautyOpen').setAttribute('aria-expanded',String(open));
+    if(open){setMenu(false);$('historyPanel').hidden=true;applyAppearance();}
+  }
+  $('beautyOpen').addEventListener('click',()=>toggleBeauty($('beautyPanel').hidden));
+  $('beautyClose').addEventListener('click',()=>toggleBeauty(false));
+  $('beautyBackdrop').addEventListener('click',()=>toggleBeauty(false));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('beautyPanel').hidden)toggleBeauty(false);});
+  buildAppearancePicker();
+
   function render() {
+    applyAppearance();
     hideRichBar();
     computeLayout(); drawConnections(); topicLayer.replaceChildren();
     for(const t of data.topics) {
@@ -2460,7 +2638,7 @@
     persist();
     const blob=new Blob([JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2)],{type:'application/json;charset=utf-8'});
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;
-    a.download='图谱笔记_节点备份_'+new Date().toISOString().slice(0,10)+'.json';
+    a.download='DIY记录_节点备份_'+new Date().toISOString().slice(0,10)+'.json';
     document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
     notify('已导出节点备份');
   });
@@ -2511,7 +2689,7 @@
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.16.4";
+  const BUILD = "2026.11.16.5";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');

@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "图谱笔记",
-  "short_name": "图谱笔记",
-  "description": "个人思维导图、横纵表格、多画布及云同步",
+  "name": "DIY记录",
+  "short_name": "DIY记录",
+  "description": "DIY记录：个人思维导图、横纵表格、多画布及云同步",
   "lang": "zh-CN",
   "start_url": "./",
   "scope": "./",
