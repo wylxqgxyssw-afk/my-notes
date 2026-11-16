@@ -1,0 +1,2018 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="theme-color" content="#333436">
+<title>图谱笔记</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg:#363638; --nav:#2c2d2f; --nav-border:#454548;
+    --topic:#707072; --topic-hover:#7b7b7d; --topic-ink:#fff;
+    --wire:#bfc1c4; --blue:#20b9ff; --blue-fill:#3b9ef0;
+    --muted:#aaaeb5;
+  }
+  * { box-sizing:border-box; }
+  html, body { width:100%; height:100%; margin:0; overflow:hidden; }
+  body { font-family:system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; color:#f5f5f6; background:var(--bg); }
+  button, input { font:inherit; }
+  button { cursor:pointer; color:inherit; }
+  button:focus-visible, input:focus-visible { outline:2px solid var(--blue); outline-offset:3px; }
+  .app { display:flex; flex-direction:column; height:100%; height:100dvh; }
+  .topbar { background:var(--nav); border-bottom:1px solid var(--nav-border); display:flex; align-items:center; gap:14px; flex:none; min-height:68px; padding:10px 20px; position:relative; z-index:3; }
+  .menu-toggle { width:36px; height:36px; flex:none; display:grid; place-items:center; padding:5px; background:transparent; border:0; border-radius:7px; color:#f5f5f5; }
+  .menu-toggle:hover, .menu-toggle.active { background:#dfe0e2; color:#262728; }
+  .menu-toggle svg { width:24px; height:24px; display:block; }
+  .menu-popup { position:absolute; top:calc(100% - 7px); left:14px; width:286px; background:#fff; color:#1c2534; border-radius:16px; padding:12px 0; box-shadow:0 18px 38px #0005; border:1px solid #ededf0; z-index:15; }
+  .menu-popup[hidden], .history-panel[hidden] { display:none!important; }
+  .menu-entry { display:block; width:100%; text-align:left; background:transparent; border:0; color:#182234; font-size:15px; padding:15px 26px; min-height:51px; }
+  .menu-entry:hover, .menu-entry:focus-visible { background:#f0f2f6; outline:none; }
+  .menu-entry.has-arrow { display:flex; justify-content:space-between; align-items:center; }
+  .menu-arrow { color:#636b75; font-size:19px; }
+  /* “插入”悬浮二级菜单：相对主菜单向右弹出，不再向下占位置。 */
+  .insert-submenu { position:absolute; left:calc(100% + 4px); top:0; width:215px; padding:7px 0;
+    border:1px solid #e5e8ed; border-radius:13px; box-shadow:0 15px 34px #0005; background:#fff; z-index:18; }
+  .insert-submenu[hidden] { display:none!important; }
+  .insert-submenu .menu-entry { font-size:14px; padding:11px 22px; min-height:43px; }
+  .history-panel { position:fixed; z-index:16; top:74px; left:16px; width:min(406px,calc(100vw - 32px)); max-height:min(75vh,680px); overflow:hidden; display:flex; flex-direction:column; background:#fff; color:#232935; border-radius:16px; box-shadow:0 18px 48px #0008; border:1px solid #ebeef2; }
+  .history-head { flex:none; display:flex; align-items:center; justify-content:space-between; padding:17px 18px 11px; gap:10px; border-bottom:1px solid #eceef1; }
+  .history-head strong { font-size:17px; }
+  .history-subtitle { color:#767b87; font-size:12px; margin-top:5px; }
+  .history-close { width:32px; height:32px; border:0; background:#f1f2f4; border-radius:9px; font-size:22px; color:#60636b; }
+  .history-list { overflow-y:auto; overscroll-behavior:contain; padding:9px 12px 13px; }
+  .history-row { border:1px solid #e7e8ed; background:#f9fafb; border-radius:11px; margin:7px 0; padding:11px 12px; display:flex; gap:9px; align-items:center; }
+  .history-info { flex:1; min-width:0; }
+  .history-label { font-size:13px; font-weight:650; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  .history-time { font-size:11px; color:#79808e; font-variant-numeric:tabular-nums; margin-top:5px; }
+  .history-detail { font-size:11px; color:#6b7280; margin-top:3px; }
+  .history-restore { border:1px solid #c8d9ed; color:#2364a3; background:white; padding:7px 9px; border-radius:7px; font-size:12px; flex:none; }
+  .history-restore:hover { background:#eaf4ff; }
+  .history-empty { text-align:center; color:#747b86; padding:28px 12px; font-size:13px; }
+  .history-more { display:block; width:100%; padding:10px; border:1px solid #d8dfe9; border-radius:8px; background:#fff; color:#365e8a; margin:8px 0; }
+
+  .brand { min-width:0; display:flex; flex-direction:column; gap:3px; }
+  .brand strong { font-size:15px; font-weight:700; white-space:nowrap; }
+  .brand small { font-size:11px; color:#a0a3ab; white-space:nowrap; }
+  .top-actions { margin-left:auto; display:flex; align-items:center; gap:8px; }
+  .top-actions button, .zoom-tools button { border:1px solid #55565b; background:#414247; border-radius:8px; padding:8px 13px; font-size:12px; min-height:35px; white-space:nowrap; }
+  .top-actions button:hover, .zoom-tools button:hover { background:#525359; }
+  .top-actions .accent { background:#3b4350; border-color:#76879d; }
+  .saved { color:#96c9ac; font-size:11px; white-space:nowrap; padding-right:3px; }
+  .stage { position:relative; flex:1; min-height:0; background:var(--bg); touch-action:none; overflow:hidden; cursor:grab; }
+  .stage.panning { cursor:grabbing; }
+  .world { position:absolute; top:0; left:0; width:0; height:0; transform-origin:0 0; will-change:transform; }
+  .connections { position:absolute; left:0; top:0; width:1px; height:1px; overflow:visible; pointer-events:none; }
+  .connection { fill:none; stroke:var(--wire); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.88; }
+  .topic { position:absolute; display:flex; align-items:center; justify-content:center; padding:10px 15px; background:var(--topic); border-radius:11px; border:2px solid transparent; font-size:15px; font-weight:640; line-height:1.35; color:var(--topic-ink); text-align:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; outline:none; overflow:visible; }
+  .topic:hover { background:var(--topic-hover); }
+  .topic.selected { border-color:var(--blue); box-shadow:0 0 0 2px rgba(32,185,255,.17); background:#757579; }
+  .topic.editing { border-color:var(--blue); background:#66696c; }
+  /* 主题拖拽：原处虚线占位、拖动副本蓝框、落点蓝色提示。 */
+  .topic.drag-origin { background:#494a4c!important; border:2px dashed #b4b6b9!important; opacity:.42; box-shadow:none!important; }
+  .topic.drag-origin .plus{display:none!important;}
+  .topic.drag-origin .topic-text { opacity:.32; }
+  .topic.drop-child, .matrix-node.drop-child { outline:3px solid var(--blue); outline-offset:5px; }
+  .topic.drop-before, .matrix-node.drop-before { box-shadow:0 -6px 0 -3px #35baff!important; }
+  .topic.drop-after, .matrix-node.drop-after { box-shadow:0 6px 0 -3px #35baff!important; }
+  .topic-drag-ghost { position:fixed; z-index:80; pointer-events:none; transform:translate(-50%,-50%);
+    background:#77797b; color:#fff; border:3px solid var(--blue); border-radius:11px;
+    box-shadow:0 9px 22px #0008; padding:11px 20px; max-width:250px; overflow:hidden;
+    text-align:center; font-weight:700; line-height:1.35; opacity:.94; }
+  .drag-wire { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; overflow:visible; }
+  .connection.selected-line { stroke:var(--blue); stroke-width:3.4; opacity:1; }
+  .connection.dragged-line { stroke:#a9abb0; stroke-width:2; stroke-dasharray:5 6; opacity:.5; }
+  /* 整条分支拖动：框与所有下级框、线形成同一预览组 */
+  .topic-drag-preview {position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;transform-origin:0 0;will-change:transform;}
+  .topic-drag-preview svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;}
+  .drag-preview-node {position:absolute;display:flex;justify-content:center;align-items:center;text-align:center;padding:8px;
+    border:2.6px solid #21baff;border-radius:11px;background:#686b70;color:#fff;font-weight:680;line-height:1.32;
+    box-shadow:0 8px 21px #0008,0 0 0 2px #23baff22;overflow:hidden;overflow-wrap:anywhere;}
+  .drag-preview-node.matrix-preview{border-radius:4px;background:#55585e;}
+  .drag-preview-link {position:absolute;inset:0;z-index:11;width:100%;height:100%;pointer-events:none;overflow:visible;}
+  .drag-preview-link path{stroke:#26b9ff;stroke-width:3;fill:none;stroke-linecap:round;opacity:.98;}
+  .drag-hint { position:fixed; z-index:81; pointer-events:none; color:#e6f7ff; background:#147bba; border-radius:7px; font-size:12px;
+    padding:6px 9px; white-space:nowrap; box-shadow:0 4px 12px #0005; }
+  .topic-text { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; line-clamp:2; overflow:hidden; width:100%; overflow-wrap:anywhere; pointer-events:none; }
+  .topic-editor { display:block; width:100%; min-width:0; color:#fff; background:transparent; border:0; outline:none; text-align:center; padding:0; margin:0; line-height:1.35; font-size:inherit; font-weight:inherit; }
+  /* 编辑时只保留主题外层的蓝色选中框，不显示输入框的第二层焦点描边。 */
+  .topic .topic-editor:focus, .topic .topic-editor:focus-visible { outline:none; outline-offset:0; box-shadow:none; border:0; }
+  .topic-editor::selection { background:rgba(255,255,255,.20); color:inherit; }
+  .plus { position:absolute; border:0; width:31px; height:31px; padding:0; border-radius:50%; background:var(--blue-fill); color:#fff; font-family:Arial,sans-serif; font-size:27px; font-weight:300; line-height:31px; box-shadow:0 3px 10px #0002; display:grid; place-items:center; cursor:pointer; z-index:4; }
+  .plus:hover { background:#52b2fd; transform:translateY(-50%) scale(1.08); }
+  .plus:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  .plus.child { left:calc(100% + 12px); top:50%; transform:translateY(-50%); }
+  .plus.sibling { left:50%; top:calc(100% + 11px); transform:translateX(-50%); }
+  .plus.sibling:hover { transform:translateX(-50%) scale(1.08); }
+  /* XMind 风格的内嵌横纵矩阵：没有表格上方的额外中心主题标题。 */
+  .matrix-node { position:absolute; color:#f5f5f5; user-select:none; overflow:visible; cursor:default; touch-action:none; }
+  .matrix-node .matrix-table { border-collapse:collapse; border-spacing:0; table-layout:fixed; background:#363638; border:1px solid #bfc0c2; width:100%; }
+  .matrix-node .matrix-table td { height:66px; padding:0; border:1px solid #bfc0c2; vertical-align:middle; position:relative; }
+  .matrix-node .matrix-table tr:first-child td { height:68px; background:#38383a; }
+  .matrix-node .matrix-table .matrix-corner { background:#727274!important; }
+  .matrix-node .matrix-table tr:not(:first-child) td:first-child { background:#69696b; }
+  .matrix-node .matrix-table .matrix-cell-input { box-sizing:border-box; display:block; width:100%; height:100%; padding:8px 8px; background:transparent; color:#fff; border:0; border-radius:0; outline:none; resize:none; text-align:center; font-size:15px; font-weight:500; line-height:1.4; font-family:inherit; overflow-wrap:anywhere; }
+  .matrix-node .matrix-table .matrix-header { font-weight:650; }
+  .matrix-node .matrix-table tr:first-child td:not(:first-child) .matrix-cell-input { color:#c4c5c7; }
+  .matrix-node .matrix-table .matrix-cell-input::placeholder { color:#b8babd; opacity:.75; }
+  .matrix-node .matrix-table .matrix-cell-input:focus { box-shadow:inset 0 0 0 3px #23baff; background:#72747733; }
+  .matrix-node.selected > .matrix-table { box-shadow:0 0 0 2px #23baff33; }
+  .matrix-node .matrix-tools { position:absolute; top:-43px; right:0; height:34px; display:flex; gap:7px; align-items:center; }
+  .matrix-node .matrix-tools button { border:1px solid #5d94bc; border-radius:7px; background:#3b4855; padding:6px 10px; font-size:12px; white-space:nowrap; color:white; }
+  .matrix-node .matrix-tools button:hover { background:#497399; }
+  .matrix-node .matrix-plus { position:absolute; width:31px; height:31px; border:0; border-radius:50%; background:var(--blue-fill); color:white; display:grid; place-items:center; font-size:26px; line-height:1; padding:0; box-shadow:0 3px 10px #0004; }
+  .matrix-node .matrix-plus.col { right:-46px; top:19px; }
+  .matrix-node .matrix-plus.row { left:calc(50% - 16px); bottom:-46px; }
+  .matrix-node .matrix-plus:hover { background:#57b9ff; }
+  .matrix-node .matrix-table td:focus-within { outline:2px solid var(--blue); outline-offset:-2px; }
+  .matrix-node .matrix-table input:focus-visible { outline:none; }
+  .matrix-node .matrix-table input { touch-action:manipulation; user-select:text; -webkit-user-select:text; }
+  .matrix-node .matrix-table input::selection { background:#49a9f088; }
+  /* 单击仅选中：单元格、行、列高亮。双击才可输入。 */
+  .matrix-node .matrix-cell-input[readonly] { cursor:pointer; caret-color:transparent; user-select:none; -webkit-user-select:none; }
+  .matrix-node .matrix-table td:focus-within:not(.editing-cell) { outline:none; }
+  .matrix-node .matrix-table td.cell-picked { outline:3px solid #20b9ff; outline-offset:-3px; z-index:2; }
+  .matrix-node .matrix-table tr.row-picked td { border-top:2px solid #26baff!important; border-bottom:2px solid #26baff!important; }
+  .matrix-node .matrix-table tr.row-picked td:first-child { border-left:3px solid #26baff!important; }
+  .matrix-node .matrix-table tr.row-picked td:last-child { border-right:3px solid #26baff!important; }
+  .matrix-node .matrix-table td.col-picked { border-left:2px solid #26baff!important; border-right:2px solid #26baff!important; }
+  .matrix-node .matrix-table tr:first-child td.col-picked { border-top:3px solid #26baff!important; }
+  .matrix-node .matrix-table tr:last-child td.col-picked { border-bottom:3px solid #26baff!important; }
+  .matrix-node .matrix-table td.editing-cell { outline:3px solid #20b9ff; outline-offset:-3px; }
+  .delete-context {position:fixed;z-index:100;width:156px;padding:7px 0;background:#fff;color:#1d2631;
+    border:1px solid #e5e7ec;border-radius:12px;box-shadow:0 15px 36px #0007;}
+  .delete-context[hidden] {display:none!important;}
+  .delete-context button {background:none;color:#232b38;border:0;width:100%;text-align:left;padding:12px 23px;font-size:14px;}
+  .delete-context button:hover,.delete-context button:focus-visible {background:#f0f3f8;outline:none;}
+  /* 左侧行标题、顶部列标题可以长按/拖动整行整列；仍支持单击编辑。 */
+  .matrix-node .matrix-header.axis-handle { cursor:grab; touch-action:none; }
+  .matrix-node .matrix-header.axis-handle:active { cursor:grabbing; }
+  .matrix-node .axis-source td, .matrix-node .axis-source-cell { opacity:.45; background:#4b4b4d!important; }
+  .matrix-node .axis-source td { border-top:2px dashed #aaa!important; border-bottom:2px dashed #aaa!important; }
+  .matrix-node .axis-source td:first-child { border-left:2px dashed #aaa!important; }
+  .matrix-node .axis-source td:last-child { border-right:2px dashed #aaa!important; }
+  .matrix-node .axis-source-cell { outline:2px dashed #aaa; outline-offset:-3px; }
+  .matrix-drop-indicator { position:absolute; pointer-events:none; z-index:8; background:#1fb8ff;
+    box-shadow:0 0 0 2px #1fb8ff33,0 0 10px #1fb8ffcc; }
+  .matrix-drag-ghost { position:fixed; pointer-events:none; z-index:85; background:#666b72;
+    border:3px solid #23baff; border-radius:7px; padding:12px 16px; max-width:250px; min-width:110px;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; box-shadow:0 9px 22px #0008; text-align:center; }
+
+  .hud { position:absolute; z-index:2; pointer-events:none; }
+  .board-bar {display:flex;flex:none;align-items:stretch;gap:5px;background:#303136;border-top:1px solid #494b52;
+    min-height:48px;height:48px;padding:5px 12px 4px;position:relative;z-index:4;overflow:visible;}
+  .board-tabs {display:flex;align-items:stretch;gap:5px;overflow-x:auto;overflow-y:hidden;flex:0 1 auto;max-width:calc(100% - 56px);scrollbar-width:thin;}
+  .board-tab-wrap {display:flex;align-items:center;flex:none;border:1px solid transparent;border-radius:7px;position:relative;background:#3b3c43;}
+  .board-tab-wrap.active {background:#505158;border-color:#666871;}
+  .board-tab-wrap:hover{background:#474950;}
+  .board-tab {border:0;outline:0;border-radius:7px;background:transparent;color:#b9bac0;padding:0 9px 0 15px;
+    font-weight:600;font-size:13px;min-width:65px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .board-tab-wrap.active .board-tab {color:#fff;}
+  .board-arrow {border:0;background:transparent;color:#e4e4e9;font-size:15px;width:25px;min-width:25px;
+    opacity:0;transition:opacity .1s;border-radius:6px;}
+  .board-tab-wrap:hover .board-arrow,.board-tab-wrap.active .board-arrow,.board-arrow:focus-visible{opacity:1;}
+  .board-arrow:hover{background:#64666e;}
+  .board-add {flex:none;border:0;background:transparent;color:#d9dbe0;font-size:28px;line-height:1;width:41px;border-radius:7px;}
+  .board-add:hover {background:#4b4d54;color:#fff;}
+  .board-popup {position:fixed;z-index:35;min-width:154px;padding:8px 0;background:#fff;color:#20252c;border:1px solid #e4e7ed;
+    box-shadow:0 15px 35px #0008;border-radius:12px;}
+  .board-popup[hidden]{display:none!important;}
+  .board-popup button {display:block;width:100%;border:0;text-align:left;background:transparent;padding:13px 22px;color:#20252c;font-size:14px;}
+  .board-popup button:hover{background:#eef2f8;}
+  .board-popup #boardDelete{border-top:1px solid #e8eaf0;color:#c84848;}
+
+  .hint { left:18px; bottom:18px; font-size:12px; color:#c7c8cd; background:#2c2d30db; border:1px solid #55565b; border-radius:9px; padding:9px 12px; line-height:1.55; max-width:calc(100% - 230px); }
+  .zoom-tools { right:18px; bottom:17px; display:flex; align-items:center; gap:7px; background:#2c2d30dc; border:1px solid #56575b; border-radius:10px; padding:5px; pointer-events:auto; }
+  .zoom-tools button { min-width:34px; padding:5px 9px; font-size:17px; min-height:32px; }
+  .zoom-tools .fit { font-size:12px; padding:5px 8px; }
+  #zoomValue { min-width:43px; font-size:12px; text-align:center; color:#bfc1c7; font-variant-numeric:tabular-nums; }
+  .toast { position:fixed; left:50%; bottom:90px; transform:translateX(-50%); max-width:90vw; border-radius:9px; border:1px solid #626971; background:#26282d; color:#fff; padding:10px 14px; font-size:12px; line-height:1.5; z-index:9; box-shadow:0 9px 26px #0005; pointer-events:none; }
+  .toast[hidden] { display:none; }
+  .top-actions .cloud-button { background:#43546b; border-color:#71839b; }
+  .cloud-overlay { position:fixed; inset:0; z-index:40; display:grid; place-items:center; padding:15px; background:#0009; }
+  .cloud-overlay[hidden],.cloud-conflict[hidden] { display:none!important; }
+  .cloud-card { color:#1d2430; width:min(520px,100%); max-height:92dvh; overflow:auto; border-radius:17px; background:#fdfdfd; box-shadow:0 22px 70px #0008; }
+  .cloud-head { position:sticky; z-index:2; top:0; display:flex; justify-content:space-between; align-items:center; gap:10px; padding:17px 20px; border-bottom:1px solid #e9ebee; background:#fff; }
+  .cloud-head strong { display:block; font-size:18px; }
+  .cloud-head small { display:block; margin-top:5px; font-size:11px; color:#637083; }
+  .cloud-head button { color:#2f3944; background:#e9eef3; border:0; border-radius:8px; width:34px; height:34px; font-size:24px; }
+  .cloud-body { padding:16px 20px 21px; }
+  .cloud-label { display:block; font-weight:650; margin:12px 0 7px; color:#394151; font-size:12px; }
+  .cloud-input { display:block; width:100%; padding:10px 11px; border:1px solid #d5dae2; border-radius:8px; background:#fff; color:#17202b; font-size:13px; outline:none; }
+  .cloud-input:focus { border-color:#4aa4ff; box-shadow:0 0 0 2px #4aa4ff20; }
+  .cloud-body button { border-radius:8px; border:1px solid #cbd5df; padding:10px 11px; background:#f3f6fa; color:#263548; font-size:13px; }
+  .cloud-body button:disabled { opacity:.6; cursor:wait; }
+  .cloud-body .cloud-primary { background:#2776ca; color:#fff; border-color:#2776ca; width:100%; margin-top:11px; font-weight:650; }
+  .cloud-actions { display:flex; gap:9px; margin-top:9px; }
+  .cloud-actions button { flex:1; }
+  .cloud-info { padding:12px 13px; border-radius:9px; background:#ecf3fb; border:1px solid #d7e6f6; color:#355478; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+  .cloud-info.error { background:#fff2ed; border-color:#f1cbbb; color:#994d31; }
+  .cloud-separator { border-top:1px solid #e9edf1; margin-top:18px; }
+  .cloud-method-label { display:block; margin:17px 0 3px; font-size:13px; font-weight:700; color:#243851; }
+  .cloud-help { color:#5b6575; font-size:12px; line-height:1.65; margin:5px 0 9px; }
+  .cloud-tips { color:#77808d; font-size:11px; line-height:1.65; overflow-wrap:anywhere; }
+  .cloud-tips code { background:#f2f3f4; padding:1px 4px; border-radius:3px; }
+  .cloud-project-details { margin:10px 0 15px; border:1px solid #e4e9f0; border-radius:10px; padding:11px 13px; color:#58647a; background:#fafbfc; font-size:12px; }
+  .cloud-project-details summary { cursor:pointer; font-weight:600; }
+  .cloud-project-details .cloud-primary { margin-bottom:6px; }
+  .auth-tabs { display:flex; gap:8px; margin:14px 0 13px; }
+  .cloud-body .auth-tab { flex:1; border-radius:9px; background:#f5f6f8; padding:11px 8px; }
+  .cloud-body .auth-tab.active { color:#fff; background:#2776ca; border-color:#2776ca; }
+  .cloud-body input[type=password] { font-size:16px; }
+  .cloud-body [hidden] { display:none !important; }
+  .cloud-conflict { padding:14px; border-radius:12px; border:1px solid #e4bb80; background:#fff8ec; margin-top:16px; }
+  .cloud-conflict strong { font-size:14px; }
+  .cloud-conflict p { font-size:12px; line-height:1.6; color:#6a573e; }
+  .cloud-conflict .warn { background:#fff4f0; border-color:#e4b09d; color:#a44232; }
+  @media(max-width:640px) {
+    .topbar { padding:9px 10px; gap:8px; min-height:59px; }
+    .menu-toggle { width:33px; height:33px; }
+    /* 手机仍采用向右的二级菜单，缩窄主菜单让两级同时出现在屏幕中。 */
+    .menu-popup { left:6px; width:min(205px,calc(50vw - 12px)); }
+    .insert-submenu { width:min(180px,calc(50vw - 12px)); left:calc(100% + 3px); }
+    .menu-entry { font-size:13px; padding:13px 13px; }
+    .insert-submenu .menu-entry { padding:10px 12px; }
+    .history-panel { top:67px; left:8px; width:calc(100vw - 16px); max-height:calc(100dvh - 83px); }
+    .brand strong { font-size:13px; }
+    .brand small { font-size:10px; }
+    .top-actions { gap:4px; }
+    .top-actions .cloud-button { padding:6px 7px; font-size:11px; }
+    .cloud-body { padding:14px 15px 18px; }
+    .top-actions button { padding:6px 8px; min-height:31px; font-size:11px; }
+    .saved { display:none; }
+    .board-bar {height:47px;min-height:47px;padding:4px 7px;}
+    .board-tab {font-size:12px;max-width:125px;min-width:47px;padding-left:10px;padding-right:5px;}
+    .board-arrow{opacity:1;width:24px;min-width:24px;}
+    .zoom-tools { right:8px; bottom:9px; gap:3px; padding:4px; }
+    .zoom-tools button { min-width:29px; min-height:29px; padding:4px 5px; font-size:14px; }
+    .zoom-tools .fit { font-size:10px; }
+    #zoomValue { font-size:10px; min-width:31px; }
+  }
+  @media(max-width:365px) { .brand small { display:none; } .top-actions button { padding:6px; } .brand-icon { display:none; } }
+</style>
+<!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="图谱笔记">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
+<meta name="app-build" content="2026.11.15.1">
+
+<style>
+/* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
+#pwaInstallBtn { color:#fff; border-color:#3688bc; background:#246b99; }
+#appUpdateBanner[hidden] { display:none!important; }
+#appUpdateBanner { position:fixed; z-index:250; top:76px; right:14px;
+  width:min(380px,calc(100vw - 28px)); padding:12px 14px; display:flex;
+  align-items:center; gap:10px; color:#f5fbff; background:#23405b;
+  border:1px solid #51b5ee; box-shadow:0 12px 34px #0008; border-radius:12px; }
+#appUpdateBanner .app-update-copy {flex:1; min-width:0; font-size:13px; line-height:1.5;}
+#appUpdateBanner .app-update-copy strong {display:block; font-size:14px; margin-bottom:2px;}
+#appUpdateBanner button { border:1px solid #9bc7e7; border-radius:8px; padding:7px 9px; white-space:nowrap;
+  font-size:12px; background:#eef7ff; color:#194b71; font-weight:650; cursor:pointer; }
+#appUpdateBanner .later { color:#ebeff3; background:transparent; border-color:#627d94; }
+@media(max-width:640px) { #appUpdateBanner {top:64px; right:8px; width:calc(100vw - 16px);} #pwaInstallBtn {padding:6px!important;} }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <button class="menu-toggle" id="menuToggle" title="打开菜单" aria-label="打开菜单" aria-expanded="false" aria-controls="menuPopup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    <div class="brand"><strong>图谱笔记</strong><small>XMind 风格 · 独立云项目</small></div>
+    <div class="top-actions">
+      <span class="saved" id="saveStatus">已保存到本机</span>
+      <button id="pwaInstallBtn" type="button" hidden title="把图谱笔记安装到设备上">安装应用</button>
+      <button id="cloudBtn" class="cloud-button" title="设置账号与云同步">☁ 云同步</button>
+      <button id="newBtn" title="创建一张新导图">新建</button>
+      <button id="exportBtn" title="备份当前导图为 JSON 文件">导出</button>
+      <button id="importBtn" title="恢复此前导出的 JSON 文件">导入</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div class="menu-popup" id="menuPopup" hidden>
+      <button type="button" class="menu-entry" id="historyMenuItem">历史修改</button>
+      <button type="button" class="menu-entry has-arrow" id="insertMenuItem" aria-expanded="false" aria-controls="insertSubmenu">插入 <span class="menu-arrow">›</span></button>
+      <div class="insert-submenu" id="insertSubmenu" hidden>
+        <button type="button" class="menu-entry" id="insertMatrixItem">横纵表格</button>
+      </div>
+    </div>
+  </header>
+  <aside class="history-panel" id="historyPanel" aria-label="历史修改" hidden>
+    <div class="history-head">
+      <div><strong>历史修改</strong><div class="history-subtitle" id="historyCount">正在读取历史…</div></div>
+      <button type="button" class="history-close" id="historyClose" aria-label="关闭历史修改">×</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </aside>
+  <main class="stage" id="stage" aria-label="思维导图画布">
+    <div class="world" id="world"><svg class="connections" id="connections" aria-hidden="true"></svg><div id="topicLayer"></div></div>
+
+    <div class="hud zoom-tools">
+      <button id="zoomOut" aria-label="缩小">−</button>
+      <span id="zoomValue">100%</span>
+      <button id="zoomIn" aria-label="放大">+</button>
+      <button id="fitBtn" class="fit" aria-label="适应窗口">居中</button>
+    </div>
+  </main>
+  <footer class="board-bar" id="boardBar" aria-label="画布列表">
+    <div class="board-tabs" id="boardTabs"></div>
+    <button type="button" class="board-add" id="boardAdd" title="添加新画布" aria-label="添加新画布">+</button>
+  </footer>
+</div>
+<div class="board-popup" id="boardPopup" hidden role="menu" aria-label="画布操作">
+  <button type="button" id="boardRename" role="menuitem">重命名</button>
+  <button type="button" id="boardDelete" role="menuitem">删除</button>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="delete-context" id="deleteContext" role="menu" aria-label="选中项目操作" hidden>
+  <button type="button" id="contextDelete" role="menuitem">删除</button>
+</div>
+<!-- 云端账号弹窗：独立于左上角只有“历史修改”的菜单 -->
+<div class="cloud-overlay" id="cloudOverlay" hidden>
+  <section class="cloud-card" role="dialog" aria-modal="true" aria-label="云同步设置">
+    <div class="cloud-head"><div><strong>云同步</strong><small>同一个邮箱账号，在电脑和手机同步同一张导图</small></div><button type="button" id="cloudClose" aria-label="关闭">×</button></div>
+    <div class="cloud-body">
+      <div class="cloud-info" id="cloudInfo">my-notes 项目已预设，正在连接。未登录时仍可在本机编辑和保存。</div>
+      <div class="auth-tabs" role="group" aria-label="账号操作">
+        <button type="button" class="auth-tab active" id="cloudModeLogin" aria-pressed="true">登录</button>
+        <button type="button" class="auth-tab" id="cloudModeRegister" aria-pressed="false">注册新账号</button>
+      </div>
+      <label class="cloud-label" for="cloudEmail">邮箱（电脑和手机使用同一个账号）</label>
+      <input id="cloudEmail" class="cloud-input" type="email" autocomplete="email" placeholder="输入邮箱地址">
+      <label class="cloud-label" for="cloudPassword">密码</label>
+      <input id="cloudPassword" class="cloud-input" type="password" autocomplete="current-password" placeholder="输入密码（至少 8 位）">
+      <div id="cloudConfirmArea" hidden>
+        <label class="cloud-label" for="cloudConfirmPassword">确认密码</label>
+        <input id="cloudConfirmPassword" class="cloud-input" type="password" autocomplete="new-password" placeholder="再次输入相同密码">
+      </div>
+      <button type="button" id="cloudSubmitAuth" class="cloud-primary">登录并同步</button>
+      <div class="cloud-actions"><button type="button" id="cloudSignOut">退出登录</button></div>
+      <p class="cloud-help" id="cloudAuthHelp">首次使用请切换到「注册新账号」。账号创建后，两台设备用相同邮箱和密码登录即可同步。密码不会保存进 HTML。</p>
+      <details class="cloud-project-details">
+        <summary>项目连接设置（已配置，无须更改）</summary>
+        <label class="cloud-label" for="cloudUrl">my-notes · Project URL</label>
+        <input id="cloudUrl" class="cloud-input" type="url" spellcheck="false" autocomplete="off">
+        <label class="cloud-label" for="cloudKey">my-notes · Publishable key（公开密钥）</label>
+        <input id="cloudKey" class="cloud-input" type="text" spellcheck="false" autocomplete="off">
+        <button type="button" id="cloudConnect" class="cloud-primary">重新连接</button>
+      </details>
+      <div class="cloud-conflict" id="cloudConflict" hidden>
+        <strong>检测到两个不同版本</strong>
+        <p id="cloudConflictText">本机和云端内容不同。请选择保留哪一份，避免直接覆盖。</p>
+        <div class="cloud-actions"><button type="button" id="cloudUseRemote">使用云端数据</button><button type="button" id="cloudUseLocal" class="warn">使用本机数据并上传</button></div>
+        <p class="cloud-tips">覆盖之前建议先点击顶部“导出”备份当前本机数据。历史记录不会因此清空。</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- PWA 版本更新提醒：仅用户主动点击时刷新，避免打断编辑。 -->
+<div id="appUpdateBanner" role="status" aria-live="polite" hidden>
+  <div class="app-update-copy"><strong>发现图谱笔记新版本</strong>刷新后使用新功能，当前笔记仍由原有保存与云同步逻辑管理。</div>
+  <button type="button" id="appUpdateNow">更新</button>
+  <button type="button" id="appUpdateLater" class="later">稍后</button>
+</div>
+
+<script>
+'use strict';
+(() => {
+  // XMind 风格主题、历史记录、本机保存、my-notes 云同步。
+  // v2026-11-15c: 单击选择 / 双击编辑；右键删除与退格删除，节点/表格行列兼容。
+  // 保留上一个版本的节点编辑及登录逻辑；本次增加独立矩阵主题。
+  const $ = id => document.getElementById(id);
+  // 此存储键与上一版保持一致：更新 HTML 文件时不改变保存位置。
+  const STORE = 'graph_note_xmind_topics_v1';
+  const ACTIVE_BOARD_KEY = 'graph_note_xmind_active_board_v1';
+  const HISTORY_DB = 'graph_note_xmind_change_history_v1';
+  const HISTORY_FALLBACK = 'graph_note_xmind_history_fallback_v1';
+  const ROOT_ID = 'root';
+  const CLOUD_CONFIG_KEY = 'graph_note_supabase_graph_notes_v2'; // 与旧的 roleplay-app 配置彻底隔离。
+  const CLOUD_SHADOW_PREFIX = 'graph_note_cloud_graph_notes_v2_shadow_';
+  const CLOUD_PROJECT_URL = 'https://tphinvwrzhlvxdpzkfjm.supabase.co'; // my-notes 独立项目。
+  const CLOUD_PROJECT_KEY = 'sb_publishable_9bNELiezH_qGSh6zE2KyqQ_zDOeZzOE'; // Supabase Publishable Key（公开密钥，不是数据库密码）。
+  const OLD_CHAT_PROJECT_URL = 'https://bpkipmnvvrjsfckzhfrl.supabase.co'; // 防止误连用户现有的聊天项目。
+  const NODE_GAP_X = 82;
+  const NODE_GAP_Y = 24;
+  const MIN_ZOOM = 0.3;
+  const MAX_ZOOM = 2.4;
+  const stage = $('stage');
+  const world = $('world');
+  const topicLayer = $('topicLayer');
+  const svg = $('connections');
+  const state = { selected: null, editing: null, editDraft: null, matrixEditing: null, matrixSelection: null, panX: 250, panY: 260, zoom: 1, positions: new Map(), toastTimer: null, activeBoardId: null };
+  let topicDrag=null, axisDrag=null, ignoreTopicClickId=null;
+  let data = readSaved() || freshData();
+  try{state.activeBoardId=localStorage.getItem(ACTIVE_BOARD_KEY)||'main';}catch{state.activeBoardId='main';}
+  let historyLimit = 40;
+  let historyRenderId = 0;
+  let historyDBPromise = null;
+  const cloud = {
+    client:null, user:null, channel:null, ready:false, revision:null, dirty:false,
+    sending:false, timer:null, pendingEntries:[], conflict:null, externalRow:null, reloading:false
+  };
+  function cloneTopics() {return JSON.parse(JSON.stringify(data.topics));}
+  function sameTopics(a,b) {return JSON.stringify(a)===JSON.stringify(b);}
+  function isFreshDefault(d) {return d?.topics?.length===1 && d.topics[0].id===ROOT_ID && d.topics[0].text==='自由主题';}
+  function uniqueUUID(){
+    if(globalThis.crypto?.randomUUID)return crypto.randomUUID();
+    if(globalThis.crypto?.getRandomValues){
+      const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);bytes[6]=(bytes[6]&15)|64;bytes[8]=(bytes[8]&63)|128;
+      return Array.from(bytes,(v,i)=>(i===4||i===6||i===8||i===10?'-':'')+v.toString(16).padStart(2,'0')).join('');
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==='x'?v:(v&3|8)).toString(16);});
+  }
+  function setCloudStatus(message,ok=false){
+    $('saveStatus').textContent=message;
+    $('cloudBtn').title=message;
+    $('cloudBtn').textContent=ok?'☁ 已同步':'☁ 云同步';
+  }
+  function cloudMessage(message,error=false){$('cloudInfo').textContent=message;$('cloudInfo').classList.toggle('error',error);}
+  function currentConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'{}')||{};}catch{return {};}}
+  function shadowKey(uid){return CLOUD_SHADOW_PREFIX+uid;}
+  function getShadow(uid){try{return JSON.parse(localStorage.getItem(shadowKey(uid))||'null');}catch{return null;}}
+  function setShadow(doc){try{localStorage.setItem(shadowKey(cloud.user.id),JSON.stringify({topics:doc.topics,revision:doc.revision}));}catch(e){console.warn('无法保存同步状态',e);}}
+  function clearPending(){cloud.dirty=false;cloud.pendingEntries=[];clearTimeout(cloud.timer);}
+
+
+  function freshData() { return { version:1, topics:[{ id:ROOT_ID, parentId:null, text:'自由主题' }] }; }
+  function makeId() { return 'n_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,9); }
+  function readSaved() {
+    try { const raw = localStorage.getItem(STORE); if (!raw) return null; return normalize(JSON.parse(raw)); }
+    catch (e) { console.warn('无法读取本地数据',e); return null; }
+  }
+  function normalize(raw) {
+    if (!raw || !Array.isArray(raw.topics) || raw.topics.length===0 || raw.topics.length>4000) return null;
+    const ids = new Set();
+    const nodes = [];
+    for (const n of raw.topics) {
+      if (!n || typeof n.id!=='string' || !n.id || ids.has(n.id) || typeof n.text!=='string') return null;
+      ids.add(n.id);
+      const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.text.slice(0,1000) };
+      if(n.boardRoot===true&&n.id!==ROOT_ID)node.boardRoot=true;
+      if(n.id===ROOT_ID&&Array.isArray(n.boards)){
+        const b=n.boards.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.rootId==='string')
+          .slice(0,60).map(x=>({id:x.id.slice(0,80),name:x.name.slice(0,80),rootId:x.rootId.slice(0,80)}));
+        if(b.length)node.boards=b;
+      }
+      if(n.kind==='matrix') {
+        const m=n.matrix;
+        if(!m||!Array.isArray(m.rowHeaders)||!Array.isArray(m.colHeaders)||!Array.isArray(m.cells))return null;
+        if(m.rowHeaders.length<1||m.rowHeaders.length>24||m.colHeaders.length<1||m.colHeaders.length>24)return null;
+        if(m.cells.length!==m.rowHeaders.length||m.cells.some(row=>!Array.isArray(row)||row.length!==m.colHeaders.length))return null;
+        if([...m.rowHeaders,...m.colHeaders,...m.cells.flat()].some(v=>typeof v!=='string'))return null;
+        node.kind='matrix';node.matrix={orientation:m.orientation==='transpose'?'transpose':'normal',
+          rowHeaders:m.rowHeaders.map(v=>v.slice(0,1000)),colHeaders:m.colHeaders.map(v=>v.slice(0,1000)),
+          cells:m.cells.map(row=>row.map(v=>v.slice(0,1000)))};
+      }
+      nodes.push(node);
+    }
+    const roots = nodes.filter(n => n.parentId===null);
+    if (roots.length!==1 || roots[0].id!==ROOT_ID) return null;
+    for (const n of nodes) { if (n.parentId!==null && !ids.has(n.parentId)) return null; }
+    const childMap = new Map(nodes.map(n => [n.id,[]]));
+    nodes.forEach(n => { if(n.parentId!==null) childMap.get(n.parentId).push(n); });
+    const reached = new Set();
+    function visit(id) { if(reached.has(id)) return; reached.add(id); childMap.get(id).forEach(c=>visit(c.id)); }
+    visit(ROOT_ID);
+    if(reached.size!==nodes.length) return null;
+    const root=nodes.find(n=>n.id===ROOT_ID);
+    if(root.boards){
+      const bid=new Set();
+      for(const b of root.boards){
+        if(bid.has(b.id)||!ids.has(b.rootId)|| (b.rootId!==ROOT_ID&&!nodes.some(n=>n.id===b.rootId&&n.boardRoot)))return null;
+        bid.add(b.id);
+      }
+    }
+    return {version:1, topics:nodes};
+  }
+  function persist() {
+    try { localStorage.setItem(STORE,JSON.stringify(data)); if(!cloud.ready || !cloud.user)setCloudStatus('已保存到本机'); else setCloudStatus('本机已保存 · 等待云同步'); }
+    catch(e) { setCloudStatus('本地保存失败'); notify('无法保存到浏览器，请使用“导出”备份'); }
+  }
+  // 一次操作写入一条不可覆盖的历史快照。改文字时在确认/失焦后记录，
+  // 而不是每按一个字母记录一次，以免输入过程中产生大量无意义版本。
+  function scheduleSave(label='修改主题') {
+    persist();
+    const snapshot = cloneTopics();
+    const entry={cloudId:uniqueUUID(),at:new Date().toISOString(),label,topics:snapshot};
+    cloud.dirty=true;
+    cloud.pendingEntries.push(entry);
+    requestCloudPush();
+    void appendHistory(entry).then(ok=>{
+      if(!ok)notify('历史记录保存失败，请及时导出备份');
+      if(!$('historyPanel').hidden)void renderHistory();
+    });
+  }
+  function openHistoryDB() {
+    if(historyDBPromise)return historyDBPromise;
+    historyDBPromise=new Promise(resolve=>{
+      if(!window.indexedDB){resolve(null);return;}
+      try {
+        const req=indexedDB.open(HISTORY_DB,1);
+        req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('changes'))req.result.createObjectStore('changes',{keyPath:'id',autoIncrement:true});};
+        req.onsuccess=()=>resolve(req.result);
+        req.onerror=()=>resolve(null);
+        req.onblocked=()=>resolve(null);
+      }catch(e){resolve(null);}
+    });
+    return historyDBPromise;
+  }
+  function fallbackRecords() {
+    try{return JSON.parse(localStorage.getItem(HISTORY_FALLBACK)||'[]')||[];}
+    catch(e){return [];}
+  }
+  async function appendHistory(entry) {
+    const db=await openHistoryDB();
+    if(db){
+      return new Promise(resolve=>{
+        try {
+          const tx=db.transaction('changes','readwrite');
+          tx.objectStore('changes').add(entry);
+          tx.oncomplete=()=>resolve(true);tx.onerror=()=>resolve(false);tx.onabort=()=>resolve(false);
+        } catch(e) {resolve(false);}
+      });
+    }
+    // 极少数浏览器禁用 IndexedDB 时才使用本地存储作为后备。
+    try {
+      const records=fallbackRecords();records.push({...entry,id:Date.now()+Math.random()});
+      localStorage.setItem(HISTORY_FALLBACK,JSON.stringify(records));return true;
+    }catch(e){return false;}
+  }
+  async function getHistory(limit) {
+    // 登录后读云端历史，使两台设备共享修改时间线；离线时仍可看本机历史。
+    if(cloud.ready && cloud.user && cloud.client){
+      try{
+        const {data:rows,count,error}=await cloud.client.from('graph_note_history')
+          .select('id,created_at,action,topics',{count:'exact'})
+          .eq('user_id',cloud.user.id).order('created_at',{ascending:false}).limit(limit);
+        if(error)throw error;
+        return {total:count||0,items:(rows||[]).map(r=>({id:r.id,at:r.created_at,label:r.action,topics:r.topics}))};
+      }catch(err){console.warn('云端历史读取失败，改用本地历史',err);}
+    }
+    const db=await openHistoryDB();
+    if(db){return new Promise(resolve=>{
+      try{
+        const tx=db.transaction('changes','readonly'),store=tx.objectStore('changes');
+        const items=[];let total=0;
+        store.count().onsuccess=e=>{total=e.target.result;};
+        const req=store.openCursor(null,'prev');
+        req.onsuccess=e=>{
+          const cursor=e.target.result;
+          if(cursor&&items.length<limit){items.push(cursor.value);cursor.continue();}
+        };
+        tx.oncomplete=()=>resolve({items,total});
+        tx.onerror=()=>resolve({items:[],total:0});
+      }catch(e){resolve({items:[],total:0});}
+    });}
+    const list=fallbackRecords();return {total:list.length,items:list.slice(-limit).reverse()};
+  }
+  function formatTime(at) {
+    const d=new Date(at);if(Number.isNaN(d.getTime()))return at;
+    return new Intl.DateTimeFormat('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(d);
+  }
+  async function renderHistory() {
+    const token=++historyRenderId;
+    const box=$('historyList');box.replaceChildren();
+    const loading=document.createElement('div');loading.className='history-empty';loading.textContent='正在读取修改记录…';box.append(loading);
+    const result=await getHistory(historyLimit);
+    if(token!==historyRenderId||$('historyPanel').hidden)return;
+    $('historyCount').textContent=`共 ${result.total} 次记录 · 按时间从新到旧`;
+    box.replaceChildren();
+    if(result.items.length===0){const blank=document.createElement('div');blank.className='history-empty';blank.textContent='暂无修改记录';box.append(blank);return;}
+    for(const item of result.items){
+      const row=document.createElement('div');row.className='history-row';
+      const info=document.createElement('div');info.className='history-info';
+      const title=document.createElement('div');title.className='history-label';title.textContent=item.label||'修改导图';title.title=title.textContent;
+      const time=document.createElement('div');time.className='history-time';time.textContent=formatTime(item.at);
+      const detail=document.createElement('div');detail.className='history-detail';detail.textContent=`${item.topics?.length||0} 个主题 · ${item.topics?.find(t=>t.id==='root')?.text||'自由主题'}`;
+      info.append(title,time,detail);
+      const restore=document.createElement('button');restore.type='button';restore.className='history-restore';restore.textContent='恢复';
+      restore.title='将当前导图恢复到此时的内容，不删除其他历史';
+      restore.addEventListener('click',()=>restoreHistory(item));
+      row.append(info,restore);box.append(row);
+    }
+    if(result.total>result.items.length){
+      const more=document.createElement('button');more.type='button';more.className='history-more';more.textContent=`加载更早的记录（剩余 ${result.total-result.items.length} 条）`;
+      more.addEventListener('click',()=>{historyLimit+=40;void renderHistory();});box.append(more);
+    }
+  }
+  function restoreHistory(item) {
+    const normalized=normalize({topics:item.topics});
+    if(!normalized){notify('该历史版本的数据无法恢复');return;}
+    if(!confirm(`恢复到 ${formatTime(item.at)} 的导图吗？\n当前版本会自动保存到历史中，可以再恢复。`))return;
+    if(state.editing)endEditing(true);
+    data=normalized;state.selected=null;state.matrixSelection=null;state.editing=null;ensureBoardValid();
+    scheduleSave('恢复历史 · '+formatTime(item.at));
+    render();fitToView();notify('已恢复历史内容');
+    $('historyPanel').hidden=true;
+  }
+  function setMenu(open) {
+    if(!open){$('insertSubmenu').hidden=true;$('insertMenuItem').setAttribute('aria-expanded','false');}
+    $('menuPopup').hidden=!open;
+    $('menuToggle').classList.toggle('active',open);
+    $('menuToggle').setAttribute('aria-expanded',String(open));
+  }
+  function notify(message) {
+    const el=$('toast'); el.textContent=message; el.hidden=false;
+    clearTimeout(state.toastTimer); state.toastTimer=setTimeout(()=>el.hidden=true,2600);
+  }
+  function topicById(id) { return data.topics.find(t=>t.id===id); }
+  function boards(){const r=topicById(ROOT_ID);return r?.boards?.length?r.boards:[{id:'main',name:'画布 1',rootId:ROOT_ID}];}
+  function activeBoard(){const list=boards();return list.find(b=>b.id===state.activeBoardId)||list[0];}
+  function activeRootId(){return activeBoard()?.rootId||ROOT_ID;}
+  function ensureBoardValid(){const b=activeBoard();if(b&&state.activeBoardId!==b.id){state.activeBoardId=b.id;try{localStorage.setItem(ACTIVE_BOARD_KEY,b.id);}catch{}}}
+  function boardMeta(){const root=topicById(ROOT_ID);if(!root.boards)root.boards=boards().map(b=>({...b}));return root.boards;}
+  function children(id) { return data.topics.filter(t=>t.parentId===id && !(id===ROOT_ID && t.boardRoot)); }
+  let boardMenuId=null;
+  function hideBoardPopup(){boardMenuId=null;$('boardPopup').hidden=true;}
+  function renderBoards(){
+    ensureBoardValid();const list=boards(),active=activeBoard();const host=$('boardTabs');host.replaceChildren();
+    for(const b of list){
+      const wrap=document.createElement('div');wrap.className='board-tab-wrap'+(b.id===active.id?' active':'');
+      const tab=document.createElement('button');tab.className='board-tab';tab.type='button';tab.textContent=b.name;tab.title=b.name;
+      tab.addEventListener('click',()=>switchBoard(b.id));
+      const arrow=document.createElement('button');arrow.className='board-arrow';arrow.type='button';arrow.textContent='⌄';
+      arrow.title='画布操作';arrow.setAttribute('aria-label',b.name+' 的更多操作');
+      arrow.addEventListener('click',e=>{
+        e.stopPropagation();if(boardMenuId===b.id){hideBoardPopup();return;}
+        boardMenuId=b.id;const p=$('boardPopup');p.hidden=false;
+        const r=arrow.getBoundingClientRect();const w=p.offsetWidth||155,h=p.offsetHeight||110;
+        p.style.left=Math.max(8,Math.min(innerWidth-w-8,r.left))+'px';
+        p.style.top=Math.max(8,r.top-h-9)+'px';
+      });
+      wrap.append(tab,arrow);host.append(wrap);
+    }
+  }
+  function switchBoard(id){
+    if(!boards().some(b=>b.id===id))return;
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+    if(topicDrag||axisDrag)return;
+    hideBoardPopup();state.activeBoardId=id;
+    try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
+    state.selected=null;state.editing=null;render();centerInitial();fitToView();
+  }
+  function createBoard(){
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+    if(boards().length>=50){notify('最多支持 50 张画布');return;}
+    const list=boardMeta();const id='board_'+makeId(),rootId='board_root_'+makeId();
+    const name='画布 '+(Math.max(0,...list.map(b=>Number((b.name.match(/^画布 (\d+)$/)||[])[1])||0))+1);
+    data.topics.push({id:rootId,parentId:ROOT_ID,text:'自由主题',boardRoot:true});
+    list.push({id,name,rootId});state.activeBoardId=id;state.selected=rootId;
+    try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
+    hideBoardPopup();scheduleSave('新建画布 · '+name);render();centerInitial();notify('已添加 '+name);
+  }
+  function renameBoard(){
+    const b=boards().find(b=>b.id===boardMenuId);if(!b)return;
+    hideBoardPopup();const name=prompt('重命名画布',b.name)?.trim();
+    if(!name||name===b.name)return;
+    const list=boardMeta();const target=list.find(x=>x.id===b.id);target.name=name.slice(0,80);
+    scheduleSave('重命名画布 · '+target.name);renderBoards();
+  }
+  function deleteBoard(){
+    const b=boards().find(b=>b.id===boardMenuId);if(!b)return;
+    const list=boards();hideBoardPopup();
+    if(list.length===1){notify('至少保留一张画布');return;}
+    if(!confirm('确定删除「'+b.name+'」及其全部主题吗？此操作会写入历史记录。'))return;
+    const remaining=list.filter(x=>x.id!==b.id);
+    if(b.rootId===ROOT_ID){
+      const protectedIds=new Set([ROOT_ID]);
+      for(const other of remaining)for(const id of descendantsOf(other.rootId))protectedIds.add(id);
+      data.topics=data.topics.filter(n=>protectedIds.has(n.id));
+      topicById(ROOT_ID).text='自由主题';
+    }else{
+      const remove=descendantsOf(b.rootId);data.topics=data.topics.filter(n=>!remove.has(n.id));
+    }
+    topicById(ROOT_ID).boards=remaining;
+    if(state.activeBoardId===b.id)state.activeBoardId=remaining[0].id;
+    try{localStorage.setItem(ACTIVE_BOARD_KEY,state.activeBoardId);}catch{}
+    state.selected=null;scheduleSave('删除画布 · '+b.name);render();fitToView();notify('已删除 '+b.name);
+  }
+  function getSize(t) {
+    if(t.kind==='matrix'&&t.matrix){
+      const m=t.matrix, colCount=(m.orientation==='transpose'?m.rowHeaders.length:m.colHeaders.length);
+      const rowCount=(m.orientation==='transpose'?m.colHeaders.length:m.rowHeaders.length);
+      return {width:170+colCount*146,height:(rowCount+1)*66+2};
+    }
+    const canvas = getSize.canvas || (getSize.canvas=document.createElement('canvas'));
+    const ctx=canvas.getContext('2d'); ctx.font='640 15px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    const length=ctx.measureText(t.text || '新主题').width;
+    const width=Math.ceil(Math.max(92,Math.min(244,length+34)));
+    const height=length > width-34 ? 64 : 46;
+    return { width,height };
+  }
+  function computeLayout() {
+    const sizes=new Map(); const subtree=new Map(); const depthWidths=[];
+    function measure(id,depth) {
+      const t=topicById(id); const s=getSize(t); sizes.set(id,s);
+      depthWidths[depth]=Math.max(depthWidths[depth]||0,s.width);
+      const list=children(id);
+      const total=list.reduce((acc,t,i)=>acc+measure(t.id,depth+1)+(i?NODE_GAP_Y:0),0);
+      const height=Math.max(s.height,total);
+      subtree.set(id,height);
+      return height;
+    }
+    measure(activeRootId(),0);
+    const columnX=[0];
+    for(let d=1;d<depthWidths.length;d++) columnX[d]=columnX[d-1]+depthWidths[d-1]+NODE_GAP_X;
+    const pos=new Map();
+    function place(id,depth,top) {
+      const s=sizes.get(id), h=subtree.get(id);
+      pos.set(id,{ x:columnX[depth], y:top+(h-s.height)/2, w:s.width, h:s.height, depth });
+      const list=children(id);
+      const total=list.reduce((acc,t,i)=>acc+subtree.get(t.id)+(i?NODE_GAP_Y:0),0);
+      let y=top+(h-total)/2;
+      for(const t of list) { place(t.id,depth+1,y); y+=subtree.get(t.id)+NODE_GAP_Y; }
+    }
+    place(activeRootId(),0,-subtree.get(activeRootId())/2);
+    state.positions=pos;
+  }
+  function drawConnections() {
+    svg.replaceChildren();
+    for(const t of data.topics) {
+      if(!t.parentId) continue;
+      const p=state.positions.get(t.parentId),c=state.positions.get(t.id);
+      if(!p||!c) continue;
+      const fromX=p.x+p.w,fromY=p.y+p.h/2,toX=c.x,toY=c.y+c.h/2;
+      const middle=(fromX+toX)/2;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('class','connection'+(state.selected===t.id?' selected-line':''));
+      path.dataset.childId=t.id;
+      // XMind 风格的连续分支连接线，而不是工作流式带框卡片连线。
+      path.setAttribute('d',`M ${fromX} ${fromY} C ${middle} ${fromY}, ${middle} ${toY}, ${toX} ${toY}`);
+      svg.append(path);
+    }
+  }
+  // 选择时不销毁 DOM：保证两次连续点击能够触发原生 dblclick。
+  function selectInteractive(id, matrixSelection=null){
+    if(state.editing&&state.editing!==id)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    state.selected=id;
+    state.matrixSelection=matrixSelection;
+    topicLayer.querySelectorAll('.topic,.matrix-node').forEach(el=>{
+      el.classList.toggle('selected',el.dataset.id===id);
+      el.querySelectorAll(':scope > .plus,:scope > .matrix-tools,:scope > .matrix-plus').forEach(b=>b.remove());
+    });
+    const el=[...topicLayer.children].find(n=>n.dataset.id===id);
+    const t=topicById(id);
+    if(el&&t?.kind==='matrix'){
+      applyMatrixSelection(el);
+      showMatrixControls(el,t);
+    }else if(el&&t){
+      topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
+      if(state.editing!==id){
+        el.append(createButton('child','添加子主题（Tab）',()=>addChild(id)));
+        if(t.parentId!==null&&id!==activeRootId())el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(id)));
+      }
+    }else topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
+    drawConnections();
+  }
+  function clearMatrixSelectionVisual(wrap){
+    wrap.querySelectorAll('.cell-picked,.col-picked,.editing-cell').forEach(el=>el.classList.remove('cell-picked','col-picked','editing-cell'));
+    wrap.querySelectorAll('.row-picked').forEach(el=>el.classList.remove('row-picked'));
+  }
+  function applyMatrixSelection(wrap){
+    clearMatrixSelectionVisual(wrap);
+    const s=state.matrixSelection;
+    if(!s||s.id!==wrap.dataset.id)return;
+    const trs=[...wrap.querySelectorAll('tbody tr')];
+    if(s.kind==='row')trs[s.row]?.classList.add('row-picked');
+    else if(s.kind==='col')trs.forEach(tr=>tr.children[s.col]?.classList.add('col-picked'));
+    else trs[s.row]?.children[s.col]?.classList.add('cell-picked');
+  }
+  function matrixTarget(id,row,col){return {id,row,col,kind:row>0&&col===0?'row':row===0&&col>0?'col':'cell'};}
+  function showDeleteContext(x,y){
+    const menu=$('deleteContext'); menu.hidden=false;
+    const width=156,height=57;
+    menu.style.left=Math.max(6,Math.min(x+10,innerWidth-width-7))+'px';
+    menu.style.top=Math.max(6,Math.min(y+2,innerHeight-height-7))+'px';
+  }
+  function hideDeleteContext(){$('deleteContext').hidden=true;}
+  function createButton(css,label,callback) {
+    const b=document.createElement('button'); b.type='button'; b.className='plus '+css;
+    b.textContent='+'; b.title=label; b.setAttribute('aria-label',label);
+    b.addEventListener('pointerdown',e=>e.stopPropagation());
+    b.addEventListener('click',e=>{e.stopPropagation();callback();}); return b;
+  }
+  // 表格与思维导图共用 topics JSON：数据可保存在同一份导图、历史和 Supabase 文档中。
+  function tableAxes(t){
+    const m=t.matrix, trans=m.orientation==='transpose';
+    return {trans, rowNames:trans?m.colHeaders:m.rowHeaders, colNames:trans?m.rowHeaders:m.colHeaders};
+  }
+  function tableValue(t, r, c){
+    const m=t.matrix, a=tableAxes(t);
+    if(r===0&&c===0)return t.text;
+    if(r===0)return a.colNames[c-1];
+    if(c===0)return a.rowNames[r-1];
+    return a.trans?m.cells[c-1][r-1]:m.cells[r-1][c-1];
+  }
+  function setTableValue(t,r,c,v){
+    const m=t.matrix, a=tableAxes(t);v=String(v).slice(0,1000);
+    if(r===0&&c===0)t.text=v;
+    else if(r===0)a.colNames[c-1]=v;
+    else if(c===0)a.rowNames[r-1]=v;
+    else if(a.trans)m.cells[c-1][r-1]=v;
+    else m.cells[r-1][c-1]=v;
+  }
+  function settleMatrixEditor(commit=true){
+    const ed=state.matrixEditing;
+    if(!ed)return;
+    state.matrixEditing=null;
+    const node=topicById(ed.id);
+    if(!node||node.kind!=='matrix')return;
+    if(!commit)setTableValue(node,ed.row,ed.col,ed.original);
+    const updated=tableValue(node,ed.row,ed.col);
+    if(commit&&updated!==ed.original){
+      scheduleSave('编辑横纵表格 · '+(updated||'空白单元格').slice(0,18));
+    }else persist();
+    if(cloud.externalRow&&!cloud.sending&&!topicDrag?.moved&&!axisDrag?.moved){
+      const row=cloud.externalRow;cloud.externalRow=null;
+      if(Number(row.revision)>Number(cloud.revision)){
+        if(cloud.dirty)showCloudConflict(row,'另一台设备在你编辑表格时修改了导图。');
+        else {adoptCloudRow(row);notify('已接收另一台设备的修改');}
+      }
+    }
+    if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
+  function renderMatrixNode(t,p){
+    const wrap=document.createElement('div');wrap.className='matrix-node';wrap.dataset.id=t.id;
+    if(state.selected===t.id)wrap.classList.add('selected');
+    wrap.style.left=p.x+'px';wrap.style.top=p.y+'px';wrap.style.width=p.w+'px';wrap.style.height=p.h+'px';
+    wrap.addEventListener('pointerdown',e=>e.stopPropagation());
+    wrap.addEventListener('click',e=>{e.stopPropagation();if(state.selected!==t.id)selectInteractive(t.id);});
+    wrap.addEventListener('contextmenu',e=>{
+      e.preventDefault();e.stopPropagation();
+      selectInteractive(t.id,null);showDeleteContext(e.clientX,e.clientY);
+    });
+    const table=document.createElement('table');table.className='matrix-table';table.setAttribute('aria-label','横纵表格');
+    const axes=tableAxes(t),rowCount=axes.rowNames.length,colCount=axes.colNames.length;
+    const cols=document.createElement('colgroup');
+    for(let c=0;c<=colCount;c++){const col=document.createElement('col');col.style.width=(c===0?170:146)+'px';cols.append(col);}
+    table.append(cols);const tbody=document.createElement('tbody');
+    for(let r=0;r<=rowCount;r++){
+      const tr=document.createElement('tr');
+      for(let c=0;c<=colCount;c++){
+        const td=document.createElement('td');
+        if(r===0&&c===0)td.classList.add('matrix-corner');
+        const field=document.createElement('input');field.type='text';field.className='matrix-cell-input';field.readOnly=true;
+        if(r===0||c===0)field.classList.add('matrix-header');
+        if((r===0&&c>0)||(c===0&&r>0))field.classList.add('axis-handle');
+        field.value=tableValue(t,r,c);field.maxLength=1000;
+        field.setAttribute('aria-label',r===0&&c===0?'左上角主题':r===0?'列标签 '+c:c===0?'行标签 '+r:'单元格 '+r+'-'+c);
+        field.placeholder=r===0&&c===0?'主题':r===0?'标签 '+c:c===0?'分支主题 '+r:'输入内容';
+        field.addEventListener('pointerdown',e=>{
+          e.stopPropagation();
+          if(r>0&&c===0)prepareAxisDrag(e,t.id,'row',r-1,wrap,field);
+          else if(r===0&&c>0)prepareAxisDrag(e,t.id,'col',c-1,wrap,field);
+        });
+        field.addEventListener('click',e=>{
+          e.stopPropagation();if(axisDrag?.moved){e.preventDefault();return;}
+          if(state.matrixEditing?.id===t.id&&state.matrixEditing.row===r&&state.matrixEditing.col===c)return;
+          selectInteractive(t.id,matrixTarget(t.id,r,c));
+        });
+        field.addEventListener('dblclick',e=>{
+          e.preventDefault();e.stopPropagation();startMatrixEditing(t.id,r,c);
+        });
+        field.addEventListener('contextmenu',e=>{
+          e.preventDefault();e.stopPropagation();
+          selectInteractive(t.id,matrixTarget(t.id,r,c));showDeleteContext(e.clientX,e.clientY);
+        });
+        field.addEventListener('input',()=>{
+          if(!state.matrixEditing||state.matrixEditing.id!==t.id||state.matrixEditing.row!==r||state.matrixEditing.col!==c)return;
+          setTableValue(t,r,c,field.value);persist();
+        });
+        field.addEventListener('keydown',e=>{
+          if(e.isComposing||e.keyCode===229)return;
+          if(!field.readOnly){
+            if(e.key==='Enter'){e.preventDefault();e.stopPropagation();field.blur();}
+            if(e.key==='Escape'){e.preventDefault();e.stopPropagation();settleMatrixEditor(false);field.value=tableValue(t,r,c);field.blur();}
+          }
+        });
+        field.addEventListener('blur',()=>{
+          if(state.matrixEditing?.id===t.id&&state.matrixEditing.row===r&&state.matrixEditing.col===c){
+            settleMatrixEditor(true);field.readOnly=true;td.classList.remove('editing-cell');
+          }
+        });
+        td.append(field);tr.append(td);
+      }
+      tbody.append(tr);
+    }
+    table.append(tbody);wrap.append(table);
+    if(state.selected===t.id)showMatrixControls(wrap,t);
+    applyMatrixSelection(wrap);
+    return wrap;
+  }
+  function startMatrixEditing(id,row,col){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    const t=topicById(id);if(!t||t.kind!=='matrix')return;
+    const wrap=[...topicLayer.children].find(el=>el.dataset.id===id);
+    if(!wrap)return;
+    const field=wrap.querySelectorAll('tbody tr')[row]?.children[col]?.querySelector('input');
+    if(!field)return;
+    selectInteractive(id,matrixTarget(id,row,col));
+    state.matrixEditing={id,row,col,original:tableValue(t,row,col)};
+    field.readOnly=false;field.closest('td')?.classList.add('editing-cell');
+    field.focus();field.setSelectionRange(field.value.length,field.value.length);
+  }
+  function showMatrixControls(wrap,t){
+    if(wrap.querySelector('.matrix-tools'))return;
+    {
+      const tools=document.createElement('div');tools.className='matrix-tools';
+      const flip=document.createElement('button');flip.type='button';flip.textContent='⇄ 横纵切换';flip.title='一键交换行与列，保留全部单元格内容';
+      flip.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+      flip.addEventListener('click',e=>{e.stopPropagation();settleMatrixEditor(true);t.matrix.orientation=t.matrix.orientation==='normal'?'transpose':'normal';scheduleSave('横纵表格 · 切换行列');render();ensureVisible(t.id);});
+      tools.append(flip);wrap.append(tools);
+      const addCol=document.createElement('button');addCol.className='matrix-plus col';addCol.type='button';addCol.textContent='+';addCol.title='添加一列';addCol.setAttribute('aria-label','添加表格列');
+      addCol.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+      addCol.addEventListener('click',e=>{e.stopPropagation();settleMatrixEditor(true);addMatrixAxis(t,'col');});
+      const addRow=document.createElement('button');addRow.className='matrix-plus row';addRow.type='button';addRow.textContent='+';addRow.title='添加一行';addRow.setAttribute('aria-label','添加表格行');
+      addRow.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+      addRow.addEventListener('click',e=>{e.stopPropagation();settleMatrixEditor(true);addMatrixAxis(t,'row');});
+      wrap.append(addCol,addRow);
+    }
+  }
+  function addMatrixAxis(t,axis){
+    const m=t.matrix, a=tableAxes(t);
+    if(axis==='row'){
+      if(a.rowNames.length>=24){notify('最多 24 行');return;}
+      if(!a.trans){m.rowHeaders.push('分支主题 '+(m.rowHeaders.length+1));m.cells.push(m.colHeaders.map(() => ''));}
+      else{m.colHeaders.push('标签 '+(m.colHeaders.length+1));m.cells.forEach(row=>row.push(''));}
+    }else{
+      if(a.colNames.length>=24){notify('最多 24 列');return;}
+      if(!a.trans){m.colHeaders.push('标签 '+(m.colHeaders.length+1));m.cells.forEach(row=>row.push(''));}
+      else{m.rowHeaders.push('分支主题 '+(m.rowHeaders.length+1));m.cells.push(m.colHeaders.map(() => ''));}
+    }
+    scheduleSave('横纵表格 · 添加'+(axis==='row'?'行':'列'));
+    render();ensureVisible(t.id);
+  }
+  function insertMatrix(){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    const parent=topicById(state.selected)?.id||ROOT_ID;
+    const t={id:makeId(),parentId:parent,text:'主题',kind:'matrix',matrix:{orientation:'normal',
+      rowHeaders:['分支主题 1','分支主题 2','分支主题 3','分支主题 4'],
+      colHeaders:['标签 1','标签 2'],cells:Array.from({length:4},()=>['',''])}};
+    data.topics.splice(subtreeLastIndex(parent)+1,0,t);
+    state.selected=t.id;
+    scheduleSave('插入横纵表格');render();fitToView();notify('横纵表格已插入，可点击单元格编辑，右上角一键切换行列');
+  }
+  // 拖动编辑是“先预览再落下”：仅 pointerup 真正修改 topics，一次保存一次历史。
+  // 旧位置的虚线只是 CSS 临时占位，不会写入云端。
+  function descendantsOf(id){
+    const result=new Set([id]); let changed=true;
+    while(changed){ changed=false;for(const n of data.topics){if(n.parentId!==null&&result.has(n.parentId)&&!result.has(n.id)){result.add(n.id);changed=true;}} }
+    return result;
+  }
+  function pointerToWorld(clientX,clientY){
+    const rect=stage.getBoundingClientRect();
+    return {x:(clientX-rect.left-state.panX)/state.zoom,y:(clientY-rect.top-state.panY)/state.zoom};
+  }
+  function prepareTopicDrag(e,id,el){
+    if((e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button,input,.topic-editor'))return;
+    e.stopPropagation();
+    if(id===activeRootId())return; // 当前画布中心主题固定；其余主题可重组。
+    if(state.editing||state.matrixEditing)return;
+    try{el.setPointerCapture(e.pointerId);}catch{}
+    topicDrag={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,
+      element:el,moved:false,drop:null,ghost:null,hint:null,wire:null,ignore:new Set(),parentId:topicById(id)?.parentId};
+  }
+  function beginTopicMove(d){
+    d.moved=true;d.ignore=descendantsOf(d.id);
+    state.selected=d.id;
+    // 原位置仅保留淡灰虚线占位；整条子树另做一层跟随鼠标的预览。
+    topicLayer.querySelectorAll('.topic.selected,.matrix-node.selected').forEach(el=>el.classList.remove('selected'));
+    for(const id of d.ignore){
+      const el=[...topicLayer.children].find(n=>n.dataset.id===id);
+      el?.classList.add('drag-origin');
+    }
+    for(const p of svg.querySelectorAll('.connection')){
+      if(d.ignore.has(p.dataset.childId))p.classList.add('dragged-line');
+    }
+    const hostRect=stage.getBoundingClientRect();
+    const overlay=document.createElement('div');overlay.className='topic-drag-preview';d.preview=overlay;
+    const lines=document.createElementNS('http://www.w3.org/2000/svg','svg');overlay.append(lines);
+    const anchor=new Map();
+    for(const id of d.ignore){
+      const el=[...topicLayer.children].find(n=>n.dataset.id===id);if(!el)continue;
+      const rect=el.getBoundingClientRect(),p={left:rect.left-hostRect.left,top:rect.top-hostRect.top,w:rect.width,h:rect.height};
+      anchor.set(id,p);
+      const ghost=document.createElement('div');ghost.className='drag-preview-node'+(topicById(id)?.kind==='matrix'?' matrix-preview':'');
+      ghost.textContent=topicById(id)?.text||'主题';
+      Object.assign(ghost.style,{left:p.left+'px',top:p.top+'px',width:p.w+'px',height:p.h+'px',fontSize:(15*state.zoom)+'px'});
+      overlay.append(ghost);
+    }
+    for(const id of d.ignore){
+      const t=topicById(id),child=anchor.get(id),parent=anchor.get(t?.parentId);
+      if(!parent||!child)continue;
+      const x1=parent.left+parent.w,y1=parent.top+parent.h/2,x2=child.left,y2=child.top+child.h/2,m=(x1+x2)/2;
+      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M ${x1} ${y1} C ${m} ${y1}, ${m} ${y2}, ${x2} ${y2}`);
+      path.setAttribute('fill','none');path.setAttribute('stroke','#21baff');path.setAttribute('stroke-width','3');path.setAttribute('stroke-linecap','round');lines.append(path);
+    }
+    stage.append(overlay);d.anchors=anchor;
+    const tether=document.createElementNS('http://www.w3.org/2000/svg','svg');tether.setAttribute('class','drag-preview-link');
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');tether.append(path);stage.append(tether);d.tether=tether;
+    const hint=document.createElement('div');hint.className='drag-hint';document.body.append(hint);d.hint=hint;
+  }
+  function findTopicDropTarget(d,x,y){
+    // 磁吸式落点：指针在主题附近或分支线附近即可选择，不要求两个框重叠。
+    let found=null,nearest=Infinity;
+    const radius=Math.max(98,Math.min(185,145*state.zoom));
+    for(const el of topicLayer.children){
+      if(!el.classList.contains('topic')&&!el.classList.contains('matrix-node'))continue;
+      const id=el.dataset.id;if(d.ignore.has(id))continue;
+      const r=el.getBoundingClientRect();
+      const dx=Math.max(r.left-x,0,x-r.right),dy=Math.max(r.top-y,0,y-r.bottom);
+      const distance=Math.hypot(dx,dy);
+      if(distance>radius || distance>=nearest)continue;
+      let mode='child';
+      if(id!==activeRootId()){
+        if(y<r.top+r.height*.18 || (y<r.top && dy>8))mode='before';
+        else if(y>r.bottom-r.height*.18 || (y>r.bottom && dy>8))mode='after';
+      }
+      found={id,mode,el};nearest=distance;
+    }
+    return found;
+  }
+  function updateTopicMove(d,e){
+    d.x=e.clientX;d.y=e.clientY;
+    const dx=e.clientX-d.startX,dy=e.clientY-d.startY;
+    d.preview.style.transform=`translate(${dx}px,${dy}px)`;
+    d.hint.style.left=Math.max(8,Math.min(e.clientX+18,innerWidth-165))+'px';
+    d.hint.style.top=Math.max(8,Math.min(e.clientY+21,innerHeight-42))+'px';
+    topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after'));
+    d.drop=findTopicDropTarget(d,e.clientX,e.clientY);
+    if(d.drop){d.drop.el.classList.add('drop-'+d.drop.mode);d.hint.textContent={child:'作为子主题',before:'插入到该主题前',after:'插入到该主题后'}[d.drop.mode];}
+    else d.hint.textContent='移动整条分支 · 靠近目标主题可放置';
+    const origin=d.anchors.get(d.id);if(!origin)return;
+    const toX=origin.left+dx,toY=origin.top+origin.h/2+dy;
+    let anchorId=d.parentId;
+    if(d.drop){const other=topicById(d.drop.id);anchorId=d.drop.mode==='child'?other?.id:other?.parentId;}
+    const parent=state.positions.get(anchorId),r=stage.getBoundingClientRect();
+    if(parent){
+      const x1=state.panX+(parent.x+parent.w)*state.zoom,y1=state.panY+(parent.y+parent.h/2)*state.zoom;
+      const m=(x1+toX)/2;
+      d.tether.firstChild.setAttribute('d',`M ${x1} ${y1} C ${m} ${y1}, ${m} ${toY}, ${toX} ${toY}`);
+    }else d.tether.firstChild.removeAttribute('d');
+  }
+  function reorderTopicSubtree(id,drop){
+    const source=topicById(id),target=topicById(drop.id);
+    if(!source||!target||id===activeRootId()||source.boardRoot)return false;
+    const subtree=descendantsOf(id);
+    if(subtree.has(target.id))return false;
+    const newParent=drop.mode==='child'?target.id:target.parentId;
+    if(newParent===null||subtree.has(newParent))return false;
+    // 按原始次序保留整个子树，移动后不丢失任何后代。
+    const moving=data.topics.filter(n=>subtree.has(n.id));
+    const remaining=data.topics.filter(n=>!subtree.has(n.id));
+    const oldSignature=JSON.stringify(data.topics.map(n=>[n.id,n.parentId]));
+    source.parentId=newParent;
+    const insertAfterSubtree=(nid)=>{
+      const byId=new Map(remaining.map((n,i)=>[n.id,i]));
+      const nested=new Set([nid]);let changed=true;
+      while(changed){changed=false;remaining.forEach(n=>{if(n.parentId&&nested.has(n.parentId)&&!nested.has(n.id)){nested.add(n.id);changed=true;}});}
+      return Math.max(...[...nested].map(k=>byId.get(k)).filter(v=>v!==undefined));
+    };
+    let insert;
+    if(drop.mode==='before') insert=remaining.findIndex(n=>n.id===target.id);
+    else if(drop.mode==='after')insert=insertAfterSubtree(target.id)+1;
+    else insert=insertAfterSubtree(target.id)+1;
+    if(insert<0||!Number.isFinite(insert))return false;
+    remaining.splice(insert,0,...moving);
+    if(JSON.stringify(remaining.map(n=>[n.id,n.parentId]))===oldSignature)return false;
+    data.topics=remaining;return true;
+  }
+  function settleRemoteAfterDrag(){
+    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||topicDrag||axisDrag)return;
+    const row=cloud.externalRow;cloud.externalRow=null;
+    if(Number(row.revision)>Number(cloud.revision)){
+      if(cloud.dirty)showCloudConflict(row,'拖动期间另一台设备更新了导图，请选择要保留的版本。');
+      else {adoptCloudRow(row);notify('已接收另一设备的修改');}
+    }
+  }
+  function finishTopicMove(d,commit){
+    topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after,.drag-origin').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after','drag-origin'));
+    d.preview?.remove();d.tether?.remove();d.hint?.remove();
+    if(d.moved){
+      ignoreTopicClickId=d.id;setTimeout(()=>{if(ignoreTopicClickId===d.id)ignoreTopicClickId=null;},500);
+      let changed=false;
+      if(commit&&d.drop)changed=reorderTopicSubtree(d.id,d.drop);
+      state.selected=d.id;
+      if(changed){scheduleSave('移动主题 · '+(topicById(d.id)?.text||'主题').slice(0,28));render();ensureVisible(d.id);notify('已调整主题位置');}
+      else{render();if(commit&&d.drop)notify('位置未变化');}
+    }
+    settleRemoteAfterDrag();
+  }
+  // 纵横表格的行列移动：一整行/列连同内容一起移动，不只是换标签。
+  function prepareAxisDrag(e,id,axis,from,wrap,field){
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(axisDrag||topicDrag)return;
+    try{field.setPointerCapture(e.pointerId);}catch{}
+    axisDrag={pointerId:e.pointerId,id,axis,from,wrap,field,startX:e.clientX,startY:e.clientY,
+      moved:false,dropBoundary:null,ghost:null,line:null};
+  }
+  function beginAxisMove(d){
+    d.moved=true;state.selected=d.id;
+    const node=topicById(d.id);if(!node)return;
+    // 先收起单元格输入状态，保持现有输入内容；然后拖整行/列。
+    if(document.activeElement===d.field)d.field.blur();
+    if(state.matrixEditing)settleMatrixEditor(true);
+    d.wrap.classList.add('selected');
+    const sourceTd=d.field.closest('td');
+    if(d.axis==='row')sourceTd?.closest('tr')?.classList.add('axis-source');
+    else{
+      const index=d.from+1;
+      d.wrap.querySelectorAll('tr').forEach(tr=>tr.children[index]?.classList.add('axis-source-cell'));
+    }
+    const g=document.createElement('div');g.className='matrix-drag-ghost';g.textContent=d.field.value||((d.axis==='row'?'行':'列')+' '+(d.from+1));
+    document.body.append(g);d.ghost=g;
+    const line=document.createElement('div');line.className='matrix-drop-indicator';d.wrap.append(line);d.line=line;
+  }
+  function updateAxisMove(d,e){
+    d.ghost.style.left=(e.clientX+18)+'px';d.ghost.style.top=(e.clientY-18)+'px';
+    const node=topicById(d.id);if(!node)return;
+    const a=tableAxes(node),limit=(d.axis==='row'?a.rowNames.length:a.colNames.length);
+    const table=d.wrap.querySelector('table');if(!table)return;
+    let boundary=0,coords=[];
+    if(d.axis==='row'){
+      const rows=[...table.querySelectorAll('tbody tr')].slice(1);
+      const start=rows[0]?.getBoundingClientRect().top??0;
+      coords=[start,...rows.map(row=>row.getBoundingClientRect().bottom)];
+      const center=rows.map(row=>{const r=row.getBoundingClientRect();return r.top+r.height/2;});
+      boundary=center.filter(v=>e.clientY>v).length;
+      const dest=coords[Math.min(boundary,limit)]??start;
+      const host=d.wrap.getBoundingClientRect();
+      d.line.style.left='0px';d.line.style.width='100%';d.line.style.height='3px';
+      d.line.style.top=((dest-host.top)/state.zoom)+'px';
+    }else{
+      const headers=[...table.querySelectorAll('tbody tr:first-child td')].slice(1);
+      const start=headers[0]?.getBoundingClientRect().left??0;
+      coords=[start,...headers.map(td=>td.getBoundingClientRect().right)];
+      const center=headers.map(td=>{const r=td.getBoundingClientRect();return r.left+r.width/2;});
+      boundary=center.filter(v=>e.clientX>v).length;
+      const dest=coords[Math.min(boundary,limit)]??start;
+      const host=d.wrap.getBoundingClientRect();
+      d.line.style.top='0px';d.line.style.height='100%';d.line.style.width='3px';
+      d.line.style.left=((dest-host.left)/state.zoom)+'px';
+    }
+    d.dropBoundary=boundary;
+  }
+  function reorderMatrixAxis(t,axis,from,boundary){
+    const a=tableAxes(t),count=(axis==='row'?a.rowNames.length:a.colNames.length);
+    if(from<0||from>=count||boundary===null)return false;
+    const target=boundary>from?boundary-1:boundary;
+    if(target===from)return false;
+    const m=t.matrix;
+    const spliceMove=(arr)=>{const [item]=arr.splice(from,1);arr.splice(target,0,item);};
+    if(axis==='row'){
+      if(!a.trans){spliceMove(m.rowHeaders);spliceMove(m.cells);}
+      else{spliceMove(m.colHeaders);m.cells.forEach(spliceMove);}
+    }else{
+      if(!a.trans){spliceMove(m.colHeaders);m.cells.forEach(spliceMove);}
+      else{spliceMove(m.rowHeaders);spliceMove(m.cells);}
+    }
+    return true;
+  }
+  function finishAxisMove(d,commit){
+    d.ghost?.remove();d.line?.remove();
+    d.wrap.querySelectorAll('.axis-source,.axis-source-cell').forEach(el=>el.classList.remove('axis-source','axis-source-cell'));
+    if(!d.moved)return;
+    if(commit&&d.dropBoundary!==null){
+      const t=topicById(d.id);
+      if(t&&reorderMatrixAxis(t,d.axis,d.from,d.dropBoundary)){
+        scheduleSave('横纵表格 · 移动'+(d.axis==='row'?'行':'列'));
+        render();ensureVisible(d.id);notify('整'+(d.axis==='row'?'行':'列')+'已移动（内容一起调整）');settleRemoteAfterDrag();return;
+      }
+    }
+    render();settleRemoteAfterDrag();
+  }
+  window.addEventListener('pointermove',e=>{
+    if(topicDrag&&topicDrag.pointerId===e.pointerId){
+      const d=topicDrag;
+      if(!d.moved&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)>=8)beginTopicMove(d);
+      if(d.moved){e.preventDefault();updateTopicMove(d,e);}
+    }
+    if(axisDrag&&axisDrag.pointerId===e.pointerId){
+      const d=axisDrag;
+      if(!d.moved&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)>=8)beginAxisMove(d);
+      if(d.moved){e.preventDefault();updateAxisMove(d,e);}
+    }
+  },{passive:false});
+  window.addEventListener('pointerup',e=>{
+    if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,true);}
+    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,true);}
+  });
+  window.addEventListener('pointercancel',e=>{
+    if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,false);}
+    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,false);}
+  });
+
+  function render() {
+    computeLayout(); drawConnections(); topicLayer.replaceChildren();
+    for(const t of data.topics) {
+      const p=state.positions.get(t.id);
+      if(!p)continue;
+      if(t.kind==='matrix' && t.matrix){
+        topicLayer.append(renderMatrixNode(t,p));
+        continue;
+      }
+      const el=document.createElement('div'); el.className='topic'; el.dataset.id=t.id;
+      el.tabIndex=0; el.setAttribute('role','button');
+      el.setAttribute('aria-label',t.text||'新主题');
+      el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
+      if(t.id===state.selected) el.classList.add('selected');
+      if(t.id===state.editing) el.classList.add('editing');
+      const title=document.createElement('span');title.className='topic-text';title.textContent=t.text||'新主题';
+      el.append(title);
+      el.addEventListener('pointerdown',e=>prepareTopicDrag(e,t.id,el));
+      el.addEventListener('click',e=>{
+        if(ignoreTopicClickId===t.id){ignoreTopicClickId=null;e.preventDefault();e.stopPropagation();return;}
+        if(state.editing!==t.id)selectInteractive(t.id);
+        e.stopPropagation();
+      });
+      el.addEventListener('dblclick',e=>{e.stopPropagation();hideDeleteContext();startEditing(t.id);});
+      el.addEventListener('contextmenu',e=>{
+        e.preventDefault();e.stopPropagation();selectInteractive(t.id);showDeleteContext(e.clientX,e.clientY);
+      });
+      if(t.id===state.selected && state.editing!==t.id) {
+        el.append(createButton('child','添加子主题（Tab）',()=>addChild(t.id)));
+        if(t.parentId!==null && t.id!==activeRootId()) el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(t.id)));
+      }
+      topicLayer.append(el);
+    }
+    applyTransform();renderBoards();
+  }
+  // 编辑草稿保存在 state/editDraft 和本机数据中，防止输入框因重绘/失焦丢字。
+  // 每次真正结束编辑才生成一条历史记录，并向云端提交。
+  function startEditing(id, selectAll=false, newNode=false) {
+    if(state.matrixEditing)settleMatrixEditor(true);
+    if(state.editing===id){
+      const existing=topicLayer.querySelector('.topic-editor');
+      if(existing){existing.focus();if(selectAll)existing.select();return;}
+      // 输入框被外部重绘移除时，也不会丢失已经写入 editDraft 的文本。
+      endEditing(true);
+    }else if(state.editing){
+      endEditing(true);
+    }
+    const t=topicById(id);if(!t)return;
+    const original=t.text;
+    state.editing=id;state.selected=id;
+    state.editDraft={id,original,raw:newNode?'':original};
+    render();
+    const el=[...topicLayer.children].find(n=>n.dataset.id===id);if(!el)return;
+    el.replaceChildren();
+    const input=document.createElement('input');
+    input.type='text';input.className='topic-editor';input.value=state.editDraft.raw;input.maxLength=1000;
+    if(newNode)input.placeholder='新主题';
+    input.setAttribute('aria-label','编辑主题文字');
+    // 正在输入的每个字都先写入内存+本地存储；这里不触发云端上传，
+    // 避免中文输入法组合文字期间频繁上传，也保证历史记录只生成一次。
+    input.addEventListener('input',()=>{
+      if(state.editing!==id||!state.editDraft)return;
+      state.editDraft.raw=input.value;
+      const node=topicById(id);
+      if(node){node.text=input.value.trim()||'新主题';persist();}
+    });
+    input.addEventListener('click',e=>e.stopPropagation());
+    input.addEventListener('pointerdown',e=>e.stopPropagation());
+    input.addEventListener('keydown',e=>{
+      // 中文拼音输入的 Enter 可能只是确认候选词，不能提前结束编辑。
+      if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Enter'){e.preventDefault();e.stopPropagation();endEditing(true);}
+      if(e.key==='Escape'){e.preventDefault();e.stopPropagation();endEditing(false);}
+    });
+    input.addEventListener('blur',()=>endEditing(true));
+    el.append(input);input.focus();
+    if(selectAll)input.select();else input.setSelectionRange(input.value.length,input.value.length);
+  }
+  function endEditing(save) {
+    const draft=state.editDraft;
+    const id=state.editing;
+    if(!id||!draft){state.editing=null;state.editDraft=null;return;}
+    // 先关闭编辑态，再重绘：避免移除输入框时触发 blur 重复保存。
+    const input=topicLayer.querySelector('.topic-editor');
+    const raw=input&&input.closest('.topic')?.dataset.id===id?input.value:draft.raw;
+    const finalText=raw.trim()||'新主题';
+    const t=topicById(id);
+    state.editing=null;state.editDraft=null;
+    if(t){
+      t.text=save?finalText:draft.original;
+      if(save&&finalText!==draft.original){
+        scheduleSave('修改主题文字 · '+finalText.slice(0,28));
+      }else{
+        persist();
+      }
+    }
+    render();
+    // 正在编辑时暂存的远程通知，在编辑结束后再判断；不让旧数据抢占输入框。
+    if(cloud.externalRow&&!cloud.sending){
+      const row=cloud.externalRow;cloud.externalRow=null;
+      if(Number(row.revision)>Number(cloud.revision)){
+        if(cloud.dirty)showCloudConflict(row,'另一设备在你编辑时更新了导图，请选择保留哪份。');
+        else{adoptCloudRow(row);notify('已接收另一台设备的修改');}
+      }
+    }
+    if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
+  function addChild(parentId) {
+    if(state.editing)endEditing(true);
+    const parent=topicById(parentId);if(!parent)return;
+    const t={id:makeId(),parentId,text:'新主题'};
+    data.topics.splice(subtreeLastIndex(parentId)+1,0,t); state.selected=t.id; scheduleSave('添加子主题');render();ensureVisible(t.id);startEditing(t.id,false,true);
+  }
+  function addSibling(id) {
+    if(state.editing)endEditing(true);
+    const current=topicById(id);if(!current)return;
+    if(current.id===activeRootId()||current.parentId===null){notify('中心主题没有同级主题，请添加子主题');return;}
+    const t={id:makeId(),parentId:current.parentId,text:'新主题'};
+    // 子树应作为整体插入，保证以后继续添加时同级节点顺序稳定。
+    const end=subtreeLastIndex(id);
+    data.topics.splice(end+1,0,t);
+    state.selected=t.id;scheduleSave('添加同级主题');render();ensureVisible(t.id);startEditing(t.id,false,true);
+  }
+  function subtreeLastIndex(id) {
+    const descendants=new Set([id]); let changed=true;
+    while(changed){changed=false;for(const t of data.topics) if(t.parentId && descendants.has(t.parentId) && !descendants.has(t.id)){descendants.add(t.id);changed=true;}}
+    let last=-1; for(let i=0;i<data.topics.length;i++)if(descendants.has(data.topics[i].id)) last=i;
+    return last;
+  }
+  // 表格行/列删除会连同该行/列的内容一起删除，单元格删除只清空文字。
+  // 最后一行或最后一列不可移除，以保证原数据结构始终有效。
+  function deleteMatrixSelection(s){
+    const t=topicById(s?.id);if(!t||t.kind!=='matrix')return;
+    const a=tableAxes(t),m=t.matrix;
+    if(s.kind==='cell'){
+      const old=tableValue(t,s.row,s.col);
+      if(old===''){notify('这个单元格已经是空的');return;}
+      setTableValue(t,s.row,s.col,'');
+      scheduleSave('删除表格单元格内容');render();return;
+    }
+    if(s.kind==='row'){
+      if(a.rowNames.length<=1){notify('表格至少需要保留一行');return;}
+      const i=s.row-1;
+      if(!a.trans){m.rowHeaders.splice(i,1);m.cells.splice(i,1);}
+      else{m.colHeaders.splice(i,1);m.cells.forEach(row=>row.splice(i,1));}
+    }else if(s.kind==='col'){
+      if(a.colNames.length<=1){notify('表格至少需要保留一列');return;}
+      const i=s.col-1;
+      if(!a.trans){m.colHeaders.splice(i,1);m.cells.forEach(row=>row.splice(i,1));}
+      else{m.rowHeaders.splice(i,1);m.cells.splice(i,1);}
+    }else return;
+    state.matrixSelection=null;state.selected=t.id;
+    scheduleSave('删除横纵表格 · '+(s.kind==='row'?'整行':'整列'));
+    render();notify('已删除选中的'+(s.kind==='row'?'行':'列'));
+  }
+  function deleteCurrentSelection(){
+    hideDeleteContext();
+    if(state.editing||state.matrixEditing)return;
+    if(state.matrixSelection?.id===state.selected){deleteMatrixSelection(state.matrixSelection);return;}
+    deleteSelected();
+  }
+  function deleteSelected() {
+    const id=state.selected;if(!id||id===activeRootId()) {notify('中心主题不能删除');return;}
+    const n=topicById(id);if(!n)return;
+    const descendants=new Set([id]);let changed=true;
+    while(changed){changed=false;for(const t of data.topics)if(t.parentId&&descendants.has(t.parentId)&&!descendants.has(t.id)){descendants.add(t.id);changed=true;}}
+    // 单个主题直接删除；若附带下级主题，则先确认，防止误删整条分支。
+    if(descendants.size>1&&!confirm(`删除“${n.text}”及它的 ${descendants.size-1} 个子主题吗？`))return;
+    data.topics=data.topics.filter(n=>!descendants.has(n.id));state.selected=n.parentId;state.matrixSelection=null;state.editing=null;
+    scheduleSave('删除主题 · '+n.text.slice(0,28));render();
+  }
+  function applyTransform() {
+    world.style.transform=`translate(${state.panX}px,${state.panY}px) scale(${state.zoom})`;
+    $('zoomValue').textContent=Math.round(state.zoom*100)+'%';
+  }
+  function centerInitial() {
+    const r=stage.getBoundingClientRect();
+    state.zoom=r.width<650?0.92:1;
+    state.panX=r.width<650?Math.max(34,r.width*.1):Math.max(100,r.width*.24);
+    state.panY=r.height/2;
+    applyTransform();
+  }
+  function zoomAt(factor,clientX,clientY) {
+    const rect=stage.getBoundingClientRect();
+    const x=clientX-rect.left,y=clientY-rect.top;
+    const newZ=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,state.zoom*factor));
+    state.panX=x-(x-state.panX)*newZ/state.zoom;
+    state.panY=y-(y-state.panY)*newZ/state.zoom;
+    state.zoom=newZ;applyTransform();
+  }
+  function fitToView() {
+    const positions=[...state.positions.values()]; if(!positions.length)return;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    for(const p of positions) {minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x+p.w);maxY=Math.max(maxY,p.y+p.h);}
+    const w=stage.clientWidth,h=stage.clientHeight;
+    const margin=w<650?35:100;
+    state.zoom=Math.max(MIN_ZOOM,Math.min(1.45,(w-2*margin)/(maxX-minX),(h-2*margin)/(maxY-minY)));
+    state.panX=(w-(minX+maxX)*state.zoom)/2;
+    state.panY=(h-(minY+maxY)*state.zoom)/2;
+    applyTransform();
+  }
+  function ensureVisible(id) {
+    const p=state.positions.get(id);if(!p)return;
+    const rect=stage.getBoundingClientRect();
+    let x=state.panX+(p.x+p.w/2)*state.zoom,y=state.panY+(p.y+p.h/2)*state.zoom;
+    const edge=70;
+    if(x>rect.width-edge)state.panX-=x-(rect.width-edge);
+    if(x<edge)state.panX+=edge-x;
+    if(y>rect.height-edge)state.panY-=y-(rect.height-edge);
+    if(y<edge)state.panY+=edge-y;
+    applyTransform();
+  }
+
+  // ==================== 独立 Supabase 新项目云同步（完整导图 + 历史） ====================
+  // 一名登录用户拥有一张导图，更新带 revision 条件，防止设备并发时静默覆盖。
+  let supabaseLoader=null;
+  function loadSupabaseSdk(){
+    if(window.supabase?.createClient)return Promise.resolve();
+    if(supabaseLoader)return supabaseLoader;
+    supabaseLoader=new Promise((resolve,reject)=>{
+      let n=0;
+      const urls=['https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2','https://unpkg.com/@supabase/supabase-js@2'];
+      const next=()=>{
+        if(n>=urls.length){reject(new Error('无法加载 Supabase SDK，请检查网络或代理'));return;}
+        const script=document.createElement('script');script.src=urls[n++];script.async=true;
+        const timeout=setTimeout(()=>{script.remove();next();},14000);
+        script.onload=()=>{clearTimeout(timeout);if(window.supabase?.createClient)resolve();else next();};
+        script.onerror=()=>{clearTimeout(timeout);script.remove();next();};
+        document.head.appendChild(script);
+      };
+      next();
+    }).catch(err=>{supabaseLoader=null;throw err;});
+    return supabaseLoader;
+  }
+  function setCloudModal(show){$('cloudOverlay').hidden=!show;}
+  let authMode='login';
+  function setAuthMode(mode){
+    authMode=(mode==='register'?'register':'login');
+    const register=authMode==='register';
+    $('cloudModeLogin').classList.toggle('active',!register);
+    $('cloudModeRegister').classList.toggle('active',register);
+    $('cloudModeLogin').setAttribute('aria-pressed',String(!register));
+    $('cloudModeRegister').setAttribute('aria-pressed',String(register));
+    $('cloudConfirmArea').hidden=!register;
+    $('cloudPassword').autocomplete=register?'new-password':'current-password';
+    $('cloudSubmitAuth').textContent=register?'注册并同步':'登录并同步';
+    $('cloudPassword').value='';
+    $('cloudConfirmPassword').value='';
+    $('cloudAuthHelp').textContent=register
+      ? '首次注册：邮箱、密码、确认密码。如果项目要求邮箱确认，首次注册仍需要按 Supabase 的验证要求完成确认。'
+      : '已有账号：直接输入邮箱和密码。无需邮件验证码，也无需点击邮件链接。';
+  }
+  function updateCloudAccountInfo(){
+    $('cloudSignOut').disabled=!cloud.user;
+    $('cloudSubmitAuth').disabled=!!cloud.user;
+    if(cloud.user){
+      $('cloudEmail').value=cloud.user.email||$('cloudEmail').value;
+      $('cloudPassword').value='';
+      $('cloudConfirmPassword').value='';
+      $('cloudSubmitAuth').textContent='已登录';
+    } else {
+      $('cloudSubmitAuth').textContent=authMode==='register'?'注册并同步':'登录并同步';
+    }
+  }
+  async function disposeCloud(){
+    cloud.ready=false;
+    if(cloud.channel&&cloud.client){try{await cloud.client.removeChannel(cloud.channel);}catch(e){console.warn(e);}}
+    cloud.channel=null;cloud.user=null;cloud.revision=null;cloud.externalRow=null;cloud.conflict=null;
+    $('cloudConflict').hidden=true;updateCloudAccountInfo();
+  }
+  async function connectSupabase(silent=false){
+    const url=$('cloudUrl').value.trim().replace(/\/$/,'');
+    const key=$('cloudKey').value.trim();
+    if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){
+      if(!silent)cloudMessage('项目 URL 格式错误，应为 https://xxxx.supabase.co',true);
+      return;
+    }
+    if(url.toLowerCase()===OLD_CHAT_PROJECT_URL){
+      cloudMessage('检测到原聊天软件项目 roleplay-app 的地址，已阻止错误连接。',true);
+      return;
+    }
+    if(!key){if(!silent)cloudMessage('先填写新项目的 Publishable key（或旧版 anon public key）',true);return;}
+    if(/^sb_secret_/i.test(key) || /^service_role$/i.test(key) || /service_role/i.test(key)){
+      cloudMessage('检测到可能是 Secret / service_role 密钥。请只使用公开的 Publishable key 或 anon key。',true);
+      return;
+    }
+    $('cloudConnect').disabled=true;
+    cloudMessage('正在连接 Supabase…');
+    try{
+      await loadSupabaseSdk();
+      if(cloud.client){await disposeCloud();}
+      cloud.client=window.supabase.createClient(url,key,{
+        auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'graph-note-auth-'+new URL(url).hostname}
+      });
+      localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify({url,key,email:$('cloudEmail').value.trim()}));
+      const {data:authData,error}=await cloud.client.auth.getSession();
+      if(error)throw error;
+      cloud.user=authData?.session?.user||null;
+      updateCloudAccountInfo();
+      if(cloud.user){await openCloudDocument();}
+      else{cloudMessage('已连接 my-notes。请输入邮箱和密码登录；首次使用点击「注册新账号」。');setCloudStatus('本机保存 · 未登录');}
+    }catch(err){console.error('Supabase 连接失败',err);cloudMessage('连接失败：'+err.message,true);setCloudStatus('本机保存 · 云端连接失败');}
+    finally{$('cloudConnect').disabled=false;}
+  }
+  async function submitPasswordAuth(){
+    if(!cloud.client){cloudMessage('项目尚未连接，请检查网络后点击「重新连接」',true);return;}
+    if(cloud.user){cloudMessage('已登录。若要切换账号，请先退出登录。');return;}
+    const email=$('cloudEmail').value.trim();
+    const password=$('cloudPassword').value;
+    const register=authMode==='register';
+    if(!/^\S+@\S+\.\S+$/.test(email)){cloudMessage('请输入有效的邮箱地址',true);return;}
+    if(password.length<8){cloudMessage('密码至少输入 8 位',true);return;}
+    if(register&&password!==$('cloudConfirmPassword').value){cloudMessage('两次输入的密码不一致',true);return;}
+    $('cloudSubmitAuth').disabled=true;
+    cloudMessage(register?'正在注册账号…':'正在登录…');
+    try{
+      const result=register
+        ? await cloud.client.auth.signUp({email,password})
+        : await cloud.client.auth.signInWithPassword({email,password});
+      if(result.error)throw result.error;
+      if(!result.data?.session?.user){
+        cloudMessage('账号请求已提交，但该项目仍要求邮箱确认。请按 Supabase 的要求完成确认；网页无法跳过服务器验证。',true);
+        return;
+      }
+      await disposeCloud();
+      cloud.user=result.data.session.user;
+      const cfg=currentConfig();cfg.email=email;localStorage.setItem(CLOUD_CONFIG_KEY,JSON.stringify(cfg));
+      $('cloudPassword').value='';$('cloudConfirmPassword').value='';
+      updateCloudAccountInfo();
+      await openCloudDocument();
+    }catch(err){
+      const raw=String(err?.message||err);
+      let message=raw;
+      if(/email not confirmed/i.test(raw))message='邮箱尚未确认，需先按照 Supabase 的邮箱确认流程完成验证。';
+      else if(/invalid login credentials/i.test(raw))message='邮箱或密码不正确，或者此邮箱尚未设置密码；若以前仅用邮件链接登录，请使用新邮箱注册测试账号。';
+      else if(/already registered/i.test(raw))message='此邮箱已经注册，请切换到「登录」；如果从未设置密码，可改用另一个测试邮箱注册。';
+      cloudMessage((register?'注册失败：':'登录失败：')+message,true);
+    }finally{$('cloudSubmitAuth').disabled=!!cloud.user;}
+  }
+  async function signOutCloud(){
+    if(!cloud.client)return;
+    const {error}=await cloud.client.auth.signOut();
+    if(error){cloudMessage('退出失败：'+error.message,true);return;}
+    await disposeCloud();clearPending();
+    cloudMessage('已退出云端账号，当前导图仍保存在本机。');setCloudStatus('本机保存 · 未登录');
+  }
+  async function readCloudDocument(){
+    const {data:row,error}=await cloud.client.from('graph_note_documents')
+      .select('user_id,topics,revision,updated_at').eq('user_id',cloud.user.id).maybeSingle();
+    if(error)throw error;
+    return row;
+  }
+  async function initialUpload(){
+    const {data:row,error}=await cloud.client.from('graph_note_documents')
+      .insert({user_id:cloud.user.id,topics:cloneTopics(),revision:1})
+      .select('user_id,topics,revision,updated_at').single();
+    if(error)throw error;
+    cloud.revision=Number(row.revision);cloud.ready=true;setShadow(row);
+    const initial={cloudId:uniqueUUID(),at:new Date().toISOString(),label:'首次同步到云端',topics:row.topics};
+    cloud.pendingEntries.push(initial);clearTimeout(cloud.timer);
+    const uploadEntries=cloud.pendingEntries.splice(0);
+    try{await uploadCloudHistory(uploadEntries);}
+    catch(err){cloud.pendingEntries.unshift(...uploadEntries);console.warn('首次同步的历史记录待重试',err);}
+    cloud.dirty=!sameTopics(cloneTopics(),row.topics);setCloudStatus(cloud.dirty?'本机保存 · 待同步':'已同步到云端',!cloud.dirty);
+    if(cloud.dirty||cloud.pendingEntries.length)requestCloudPush();
+    cloudMessage('首次同步成功。另一台设备使用同一个邮箱账号登录，即可加载这张导图。');
+  }
+  async function openCloudDocument(){
+    if(!cloud.user||!cloud.client)return;
+    cloud.ready=false;
+    try{
+      let row=await readCloudDocument();
+      if(!row){
+        try{await initialUpload();subscribeCloud();updateCloudAccountInfo();return;}
+        catch(err){
+          // 另一端可能刚刚建好此用户的文档：重新读取后处理。
+          if(err.code!=='23505')throw err;
+          row=await readCloudDocument();
+          if(!row)throw err;
+        }
+      }
+      const remote=normalize({topics:row.topics});
+      if(!remote)throw new Error('云端文档结构无效，请先从 Supabase 备份并检查数据');
+      const localSnapshot=cloneTopics();
+      const shadow=getShadow(cloud.user.id);
+      cloud.revision=Number(row.revision);
+      cloud.ready=true;
+      // 新手机、未更改的本地副本、与云端完全一致的副本：直接拉取云端数据。
+      if(sameTopics(localSnapshot,row.topics)||isFreshDefault(data)||
+         (shadow&&sameTopics(localSnapshot,shadow.topics)&&!cloud.dirty)){
+        adoptCloudRow(row);
+        cloudMessage('已登录 '+(cloud.user.email||'')+'，云端数据已加载。修改将实时同步。');
+      }else{
+        showCloudConflict(row,'登录时发现本机导图和云端导图不同，请决定保留哪份。');
+      }
+      subscribeCloud();updateCloudAccountInfo();
+    }catch(err){
+      console.error('读取云端文档失败',err);
+      cloud.ready=false;
+      cloudMessage('读取云端失败：'+err.message+'。本机数据仍保留。',true);
+      setCloudStatus('本机保存 · 云端读取失败');
+    }
+  }
+  function adoptCloudRow(row){
+    const remote=normalize({topics:row.topics});if(!remote)return;
+    if(state.editing)endEditing(false);
+    if(state.matrixEditing)settleMatrixEditor(false);
+    data=remote;state.selected=null;state.matrixSelection=null;state.editing=null;ensureBoardValid();
+    cloud.revision=Number(row.revision);clearPending();cloud.externalRow=null;cloud.conflict=null;
+    $('cloudConflict').hidden=true;
+    try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){console.warn(e);}
+    setShadow(row);render();fitToView();setCloudStatus('已同步到云端',true);
+    if(!$('historyPanel').hidden)void renderHistory();
+  }
+  function showCloudConflict(row,reason){
+    const remote=normalize({topics:row?.topics});if(!remote){cloudMessage('云端数据格式不正确，未覆盖本机',true);return;}
+    cloud.conflict=row;
+    $('cloudConflictText').textContent=reason+' 云端 '+(row.topics?.length||0)+' 个主题；本机 '+data.topics.length+' 个主题。';
+    $('cloudConflict').hidden=false;
+    cloudMessage('检测到数据版本不同，等待你选择保留哪份。');
+    setCloudStatus('同步冲突 · 请处理');
+    setCloudModal(true);
+  }
+  async function useRemote(){
+    let row=cloud.conflict;if(!row)return;
+    try{
+      // 选择之前重新读取，避免使用过时的云端版本。
+      row=await readCloudDocument();if(!row)throw new Error('云端文档已不存在');
+      adoptCloudRow(row);cloudMessage('已采用最新云端版本。');setCloudModal(false);
+    }catch(err){cloudMessage('获取云端版本失败：'+err.message,true);}
+  }
+  async function useLocal(){
+    if(!cloud.conflict)return;
+    if(!confirm('确定用本机数据覆盖最新云端导图吗？其他设备上的版本将被替换。建议先导出备份。'))return;
+    try{
+      const latest=await readCloudDocument();if(!latest)throw new Error('云端文档不存在');
+      cloud.revision=Number(latest.revision);
+      cloud.conflict=null;cloud.externalRow=null;$('cloudConflict').hidden=true;
+      cloud.dirty=true;
+      if(!cloud.pendingEntries.length)cloud.pendingEntries.push({cloudId:uniqueUUID(),at:new Date().toISOString(),label:'主动使用本机版本',topics:cloneTopics()});
+      setCloudModal(false);void flushCloud();
+    }catch(err){cloudMessage('上传本机版本失败：'+err.message,true);}
+  }
+  function subscribeCloud(){
+    if(!cloud.client||!cloud.user)return;
+    if(cloud.channel)void cloud.client.removeChannel(cloud.channel);
+    const id=cloud.user.id;
+    cloud.channel=cloud.client.channel('graph-note-'+id)
+      .on('postgres_changes',{event:'*',schema:'public',table:'graph_note_documents',filter:'user_id=eq.'+id},payload=>{
+        const row=payload.new;
+        if(!row?.topics||!Number.isFinite(Number(row.revision)))return;
+        const version=Number(row.revision);
+        if(version<Number(cloud.revision))return;
+        // 保存过程中收到自己的 echo，先缓存，等 HTTP 写入完成后再判定。
+        if(cloud.sending){cloud.externalRow=row;return;}
+        if(version===Number(cloud.revision)){
+          const sh=getShadow(id);
+          if(sh&&sameTopics(sh.topics,row.topics))return;
+        }
+        if(state.editing||state.matrixEditing||topicDrag?.moved||axisDrag?.moved){
+          // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
+          if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
+          return;
+        }
+        if(cloud.dirty){showCloudConflict(row,'另一台设备更新了导图，本机存在未同步的修改。');return;}
+        adoptCloudRow(row);notify('已接收另一台设备的修改');
+      })
+      .subscribe(status=>{
+        if(status==='SUBSCRIBED'&&cloud.ready&&!cloud.conflict){
+          if(cloud.dirty)requestCloudPush();else setCloudStatus('已同步到云端',true);
+        }
+        if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')setCloudStatus('实时连接中断 · 将重试');
+      });
+  }
+  function requestCloudPush(){
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||topicDrag?.moved||axisDrag?.moved)return;
+    clearTimeout(cloud.timer);
+    cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
+  }
+  async function uploadCloudHistory(entries){
+    if(!entries.length||!cloud.client||!cloud.user)return true;
+    const values=entries.map(entry=>({
+      id:entry.cloudId||uniqueUUID(),user_id:cloud.user.id,created_at:entry.at,
+      action:entry.label||'修改导图',topics:entry.topics
+    }));
+    // 分批，避免一次提交太多的历史快照。
+    for(let i=0;i<values.length;i+=20){
+      const {error}=await cloud.client.from('graph_note_history').upsert(values.slice(i,i+20),{onConflict:'id',ignoreDuplicates:true});
+      if(error)throw error;
+    }
+    return true;
+  }
+  async function uploadPendingHistory(){
+    if(cloud.sending||cloud.dirty||!cloud.ready||cloud.conflict||!cloud.pendingEntries.length)return;
+    const entries=cloud.pendingEntries.splice(0);
+    try{await uploadCloudHistory(entries);setCloudStatus('已同步到云端',true);}
+    catch(err){
+      cloud.pendingEntries.unshift(...entries);
+      cloudMessage('历史记录待同步：'+err.message,true);
+      setCloudStatus('导图已同步 · 历史待同步');
+    }
+  }
+  async function flushCloud(){
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||topicDrag?.moved||axisDrag?.moved)return;
+    cloud.sending=true;clearTimeout(cloud.timer);
+    const snapshot=cloneTopics();
+    const entries=cloud.pendingEntries.splice(0);
+    const expected=Number(cloud.revision);
+    setCloudStatus('正在同步…');
+    try{
+      const {data:row,error}=await cloud.client.from('graph_note_documents')
+        .update({topics:snapshot,revision:expected+1,updated_at:new Date().toISOString()})
+        .eq('user_id',cloud.user.id).eq('revision',expected)
+        .select('user_id,topics,revision,updated_at').maybeSingle();
+      if(error)throw error;
+      if(!row){
+        cloud.pendingEntries.unshift(...entries);
+        const latest=await readCloudDocument();
+        if(latest)showCloudConflict(latest,'两台设备几乎同时修改，云端版本已改变。');
+        else cloudMessage('未找到云端导图，请重新连接。',true);
+        return;
+      }
+      cloud.revision=Number(row.revision);
+      setShadow(row);
+      cloud.dirty=!sameTopics(cloneTopics(),snapshot);
+      try{
+        await uploadCloudHistory(entries);
+      }catch(err){
+        cloud.pendingEntries.unshift(...entries);
+        console.error('历史上传失败：',err);
+        cloudMessage('导图已保存云端，但部分历史记录暂未同步：'+err.message,true);
+      }
+      if(!cloud.dirty){setCloudStatus('已同步到云端',true);}
+      if(!$('historyPanel').hidden)void renderHistory();
+    }catch(err){
+      cloud.pendingEntries.unshift(...entries);
+      cloud.dirty=true;
+      cloudMessage('云端暂时无法写入，本机已保存。恢复网络后可自动重试：'+err.message,true);
+      setCloudStatus('本机已保存 · 待同步');
+    }finally{
+      cloud.sending=false;
+      if(cloud.externalRow){
+        const remote=cloud.externalRow;cloud.externalRow=null;
+        if(Number(remote.revision)>Number(cloud.revision)){
+          if(cloud.dirty||state.editing)showCloudConflict(remote,'另一设备已更新，而本机仍有未同步修改。');
+          else adoptCloudRow(remote);
+        }
+      }
+      if((cloud.dirty||cloud.pendingEntries.length)&&!cloud.conflict&&navigator.onLine)requestCloudPush();
+    }
+  }
+  $('cloudBtn').addEventListener('click',()=>setCloudModal(true));
+  $('cloudClose').addEventListener('click',()=>setCloudModal(false));
+  $('cloudOverlay').addEventListener('click',e=>{if(e.target===$('cloudOverlay'))setCloudModal(false);});
+  $('cloudConnect').addEventListener('click',()=>void connectSupabase());
+  $('cloudModeLogin').addEventListener('click',()=>{setAuthMode('login');updateCloudAccountInfo();});
+  $('cloudModeRegister').addEventListener('click',()=>{setAuthMode('register');updateCloudAccountInfo();});
+  $('cloudSubmitAuth').addEventListener('click',()=>void submitPasswordAuth());
+  $('cloudConfirmPassword').addEventListener('keydown',e=>{if(e.key==='Enter')void submitPasswordAuth();});
+  $('cloudPassword').addEventListener('keydown',e=>{if(e.key==='Enter'&&authMode==='login')void submitPasswordAuth();});
+  $('cloudSignOut').addEventListener('click',()=>void signOutCloud());
+  $('cloudUseRemote').addEventListener('click',()=>void useRemote());
+  $('cloudUseLocal').addEventListener('click',()=>void useLocal());
+  window.addEventListener('online',()=>{if(cloud.user){if(cloud.ready&&(cloud.dirty||cloud.pendingEntries.length))requestCloudPush();else if(!cloud.ready)void openCloudDocument();}});
+  window.addEventListener('focus',()=>{if(cloud.ready&&cloud.user&&!cloud.conflict){
+    if(cloud.sending||topicDrag?.moved||axisDrag?.moved)return;
+    void readCloudDocument().then(row=>{
+      if(!row)return;
+      if(Number(row.revision)>Number(cloud.revision)){
+        if(cloud.dirty||state.editing||state.matrixEditing||cloud.sending)showCloudConflict(row,'重新进入页面时检测到另一设备的修改。');
+        else adoptCloudRow(row);
+      }else if(cloud.dirty||cloud.pendingEntries.length)requestCloudPush();
+    }).catch(err=>console.warn('检查云端新版本失败',err));
+  }});
+  const startupConfig=currentConfig();
+  // 专用项目参数在 HTML 内固定配置；不沿用其它项目的连接设置。
+  $('cloudUrl').value=CLOUD_PROJECT_URL;
+  $('cloudKey').value=CLOUD_PROJECT_KEY;
+  $('cloudUrl').readOnly=true;
+  $('cloudKey').readOnly=true;
+  $('cloudEmail').value=(startupConfig.url===CLOUD_PROJECT_URL?startupConfig.email:'')||'';
+  updateCloudAccountInfo();
+  // 自动连接独立项目。邮箱+密码登录，不需要邮件链接或验证码。
+  setTimeout(()=>void connectSupabase(true),100);
+  // ==================== 云同步逻辑结束 ====================
+
+  // 空白画布拖动（主题节点由思维导图布局自动排列）。
+  const pointers=new Map();let gesture=null;
+  function down(e) {
+    if(e.target.closest('.topic')||e.target.closest('.matrix-node')||e.target.closest('.zoom-tools'))return;
+    if(e.button!==0&&e.pointerType==='mouse')return;
+    stage.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pointers.size===1){gesture={type:'pan',x:e.clientX,y:e.clientY,panX:state.panX,panY:state.panY,moved:false};stage.classList.add('panning');}
+    else if(pointers.size===2) {
+      const pts=[...pointers.values()];const cx=(pts[0].x+pts[1].x)/2,cy=(pts[0].y+pts[1].y)/2;
+      const distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      gesture={type:'pinch',cx,cy,distance,zoom:state.zoom,panX:state.panX,panY:state.panY};
+    }
+  }
+  function move(e) {
+    if(!pointers.has(e.pointerId))return;
+    pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(!gesture)return;
+    if(pointers.size===1&&gesture.type==='pan'){
+      const pt=[...pointers.values()][0];
+      state.panX=gesture.panX+(pt.x-gesture.x);state.panY=gesture.panY+(pt.y-gesture.y);
+      if(Math.abs(pt.x-gesture.x)+Math.abs(pt.y-gesture.y)>4)gesture.moved=true;
+      applyTransform();
+    } else if(pointers.size===2) {
+      const pts=[...pointers.values()];
+      const cx=(pts[0].x+pts[1].x)/2,cy=(pts[0].y+pts[1].y)/2;
+      const distance=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      if(gesture.type!=='pinch')return;
+      const rect=stage.getBoundingClientRect();
+      const newZ=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,gesture.zoom*distance/Math.max(1,gesture.distance)));
+      const anchorX=(gesture.cx-rect.left-gesture.panX)/gesture.zoom;
+      const anchorY=(gesture.cy-rect.top-gesture.panY)/gesture.zoom;
+      state.zoom=newZ;state.panX=cx-rect.left-anchorX*newZ;state.panY=cy-rect.top-anchorY*newZ;
+      applyTransform();
+    }
+  }
+  function up(e) {
+    if(!pointers.has(e.pointerId))return;
+    const wasClick=pointers.size===1 && gesture?.type==='pan' && !gesture.moved;
+    pointers.delete(e.pointerId);
+    stage.classList.remove('panning');
+    if(pointers.size===0)gesture=null;
+    else if(pointers.size===1) {
+      const pt=[...pointers.values()][0];gesture={type:'pan',x:pt.x,y:pt.y,panX:state.panX,panY:state.panY,moved:true};
+    }
+    if(wasClick){ if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);state.selected=null;state.matrixSelection=null;hideDeleteContext();render(); }
+  }
+  stage.addEventListener('pointerdown',down);
+  stage.addEventListener('pointermove',move);
+  stage.addEventListener('pointerup',up);
+  stage.addEventListener('pointercancel',up);
+  stage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
+  $('zoomIn').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1.2,r.left+r.width/2,r.top+r.height/2);});
+  $('zoomOut').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1/1.2,r.left+r.width/2,r.top+r.height/2);});
+  $('fitBtn').addEventListener('click',fitToView);
+  document.addEventListener('keydown',e=>{
+    if(state.editing||state.matrixEditing||e.isComposing||e.altKey||e.ctrlKey||e.metaKey)return;
+    if(e.target.closest('[contenteditable=true]')||(e.target.matches('input,textarea')&&!e.target.readOnly))return;
+    if(e.key==='Escape'){hideDeleteContext();state.selected=null;state.matrixSelection=null;render();return;}
+    if(!state.selected)return;
+    if(e.key==='Delete'||e.key==='Backspace'){
+      e.preventDefault();deleteCurrentSelection();return;
+    }
+    if(e.key==='F2'){
+      e.preventDefault();
+      if(topicById(state.selected)?.kind==='matrix'){
+        const s=state.matrixSelection?.id===state.selected?state.matrixSelection:null;
+        startMatrixEditing(state.selected,s?.row??0,s?.col??0);
+      }else startEditing(state.selected,true);
+      return;
+    }
+    if(topicById(state.selected)?.kind==='matrix'){
+      if(e.key==='Enter'&&state.matrixSelection?.id===state.selected){e.preventDefault();startMatrixEditing(state.selected,state.matrixSelection.row,state.matrixSelection.col);}
+      return;
+    }
+    if(e.key==='Tab'){e.preventDefault();addChild(state.selected);}
+    else if(e.key==='Enter'){e.preventDefault();addSibling(state.selected);}
+  });
+  $('contextDelete').addEventListener('click',e=>{e.stopPropagation();deleteCurrentSelection();});
+  $('deleteContext').addEventListener('pointerdown',e=>e.stopPropagation());
+  $('newBtn').addEventListener('click',createBoard);
+  $('newBtn').textContent='新建画布';
+  $('newBtn').title='不覆盖原有数据，添加一张新画布';
+  $('boardAdd').addEventListener('click',createBoard);
+  $('boardRename').addEventListener('click',renameBoard);
+  $('boardDelete').addEventListener('click',deleteBoard);
+  $('exportBtn').addEventListener('click',()=>{
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+    persist();
+    const blob=new Blob([JSON.stringify({...data,exportedAt:new Date().toISOString()},null,2)],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;
+    a.download='图谱笔记_节点备份_'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+    notify('已导出节点备份');
+  });
+  $('importBtn').addEventListener('click',()=>$('importFile').click());
+  $('importFile').addEventListener('change',async e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    try {
+      const loaded=normalize(JSON.parse(await file.text()));
+      if(!loaded)throw new Error('仅支持本版本导出的节点 JSON 文件');
+      if(!confirm('导入将覆盖当前导图，确定继续吗？'))return;
+      if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+      data=loaded;state.selected=null;state.editing=null;ensureBoardValid();scheduleSave('导入备份 · '+file.name);render();fitToView();notify(`导入成功，共 ${data.topics.length} 个主题`);
+    }catch(err){notify('导入失败：'+err.message);}
+    finally{e.target.value='';}
+  });
+  $('menuToggle').addEventListener('click',e=>{
+    e.stopPropagation();$('historyPanel').hidden=true;setMenu($('menuPopup').hidden);
+  });
+  $('historyMenuItem').addEventListener('click',e=>{
+    e.stopPropagation();setMenu(false);historyLimit=40;$('historyPanel').hidden=false;void renderHistory();
+  });
+  $('insertMenuItem').addEventListener('click',e=>{
+    e.stopPropagation();const open=$('insertSubmenu').hidden;
+    $('insertSubmenu').hidden=!open;
+    if(open)$('insertSubmenu').style.top=$('insertMenuItem').offsetTop+'px';
+    $('insertMenuItem').setAttribute('aria-expanded',String(open));
+  });
+  $('insertMatrixItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertMatrix();});
+  $('historyClose').addEventListener('click',()=>$('historyPanel').hidden=true);
+  document.addEventListener('pointerdown',e=>{
+    if(!e.target.closest('#deleteContext'))hideDeleteContext();
+    if(!e.target.closest('#menuToggle, #menuPopup'))setMenu(false);
+    if(!e.target.closest('#boardPopup, .board-arrow'))hideBoardPopup();
+    if(!e.target.closest('#historyPanel, #menuToggle, #menuPopup'))$('historyPanel').hidden=true;
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){setMenu(false);$('historyPanel').hidden=true;hideBoardPopup();}
+  });
+  window.addEventListener('pagehide',()=>{if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);persist();});
+  window.addEventListener('resize',applyTransform);
+  render();centerInitial();
+  // 启用历史功能时先为已有数据建立一个基准版本，供后续恢复。
+  void getHistory(1).then(({total})=>{
+    if(total===0)void appendHistory({at:new Date().toISOString(),label:'初始记录',topics:data.topics.map(t=>({...t}))});
+  });
+})();
+</script>
+<script>
+(() => {
+  'use strict';
+  const BUILD = "2026.11.15.1";
+  const $ = id => document.getElementById(id);
+  const installButton = $('pwaInstallBtn');
+  const banner = $('appUpdateBanner');
+  let deferredInstall = null;
+  let registration = null;
+  let waitingWorker = null;
+  let requestedUpdate = false;
+  const localSite = location.protocol==='https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+
+  window.addEventListener('beforeinstallprompt', event => {
+    event.preventDefault();
+    deferredInstall = event;
+    installButton.hidden = false;
+  });
+  window.addEventListener('appinstalled', () => { installButton.hidden = true; deferredInstall = null; });
+  installButton.addEventListener('click', async () => {
+    if (!deferredInstall) return;
+    const evt = deferredInstall;
+    deferredInstall = null;
+    installButton.hidden = true;
+    try { await evt.prompt(); await evt.userChoice; } catch (error) { console.warn('安装交互不可用',error); }
+  });
+
+  function offerUpdate(worker) {
+    if (worker) waitingWorker = worker;
+    banner.hidden = false;
+  }
+  $('appUpdateLater').addEventListener('click', () => { banner.hidden=true; });
+  $('appUpdateNow').addEventListener('click', () => {
+    const info = $('saveStatus')?.textContent||'';
+    if (/待同步|未登录|同步中|保存中/.test(info) &&
+      !window.confirm('当前可能仍有未同步的修改。请确认已经备份或愿意稍后再同步，然后再刷新。继续更新吗？')) return;
+    requestedUpdate=true;
+    if (waitingWorker) {
+      waitingWorker.postMessage({type:'SKIP_WAITING'});
+      // 正常情况下 controllerchange 会触发刷新。
+      setTimeout(() => { if(requestedUpdate)location.reload(); },2800);
+    } else { location.reload(); }
+  });
+
+  async function checkLatestVersion() {
+    if (!localSite || !navigator.onLine || document.hidden) return;
+    try {
+      const path = new URL('./version.json?check='+Date.now(), location.href);
+      const result = await fetch(path, {cache:'no-store'});
+      if (!result.ok) return;
+      const current = await result.json();
+      if (typeof current.version==='string' && current.version!==BUILD) offerUpdate(null);
+    } catch (error) { console.debug('暂不能检查版本',error); }
+  }
+
+  if ('serviceWorker' in navigator && localSite) {
+    window.addEventListener('load', async () => {
+      try {
+        registration = await navigator.serviceWorker.register('./service-worker.js', {scope:'./',updateViaCache:'none'});
+        if(registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
+        registration.addEventListener('updatefound', () => {
+          const installing=registration.installing;
+          if(!installing) return;
+          installing.addEventListener('statechange',()=> {
+            if(installing.state==='installed' && navigator.serviceWorker.controller) offerUpdate(installing);
+          });
+        });
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (requestedUpdate) { requestedUpdate=false; location.reload(); }
+        });
+      } catch(error) { console.warn('PWA 离线功能未启用',error); }
+      await checkLatestVersion();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if(!document.hidden) { registration?.update().catch(()=>{}); checkLatestVersion(); }
+    });
+    // 只做检查，不强制重新加载；正常编辑不被中断。
+    setInterval(() => { if(!document.hidden){registration?.update().catch(()=>{});checkLatestVersion();} },5*60*1000);
+  }
+})();
+</script>
+</body>
+</html>
