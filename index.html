@@ -319,6 +319,96 @@
 .rich-popover .rich-custom input[type=color]{width:62px;height:35px;background:transparent;border:1px solid #cdd5e0;border-radius:6px;padding:2px;cursor:pointer;}
 .rich-popover .rich-custom .rich-save{display:block;background:#238bcd;color:white;width:100%;font-weight:700;margin-top:9px;}
 @media(max-width:640px){.rich-toolbar{padding:4px;}.rich-popover{max-height:55vh;}}
+/* v7：计划表融入导图。表头直接编辑、自由排序、右键角标四视图。 */
+.plan-node.plan-inline{border-radius:10px;overflow:visible;}
+.plan-inline .plan-top{padding:8px 10px;gap:7px;flex-wrap:nowrap;min-height:43px;border-radius:9px 9px 0 0;}
+.plan-inline .plan-handle{padding:4px 7px;flex:none;}
+.plan-inline .plan-name{font-size:14px;min-width:70px;max-width:none;flex:1;}
+.plan-inline .plan-add-axis,.plan-inline .plan-view-trigger,.plan-inline .plan-fullscreen{font-size:12px;border:1px solid var(--matrix-grid,#888);color:var(--matrix-ink,#fff);background:transparent;border-radius:7px;padding:6px 8px;white-space:nowrap;cursor:pointer;}
+.plan-inline .plan-view-trigger:hover,.plan-inline .plan-add-axis:hover,.plan-inline .plan-fullscreen:hover{border-color:var(--blue);}
+.plan-inline .plan-scroll{padding:8px;}
+.plan-inline .plan-table-live{table-layout:fixed;width:max-content;min-width:0;border-spacing:0;}
+.plan-inline .plan-table-live th,.plan-inline .plan-table-live td{box-sizing:border-box;min-width:0;max-width:none;overflow-wrap:anywhere;position:relative;padding:8px;}
+.plan-inline .plan-table-live th:first-child{min-width:145px;max-width:145px;width:145px;}
+.plan-inline .plan-table-live .plan-corner{position:sticky;left:0;top:0;z-index:5;cursor:context-menu;}
+.plan-corner{user-select:none;}
+.plan-corner span{font-size:12px;}
+.plan-corner-arrow{border:1px solid var(--matrix-grid,#777);background:transparent;color:var(--matrix-ink,#fff);border-radius:4px;float:right;cursor:pointer;padding:1px 6px;}
+.plan-axis-label{display:block;width:100%;min-height:20px;max-width:100%;box-sizing:border-box;padding:4px 6px;text-align:left;white-space:normal;overflow-wrap:anywhere;font-weight:700;cursor:grab;border-radius:5px;user-select:none;outline:2px solid transparent;outline-offset:-2px;}
+.plan-axis-label:hover{background:color-mix(in srgb,var(--blue,#20b9ff) 12%,transparent);}
+.plan-axis-label:focus-visible,.plan-axis-label.plan-axis-selected{outline-color:var(--blue,#20b9ff);background:color-mix(in srgb,var(--blue,#20b9ff) 15%,transparent);}
+.plan-axis-label.plan-axis-editing{outline-color:var(--blue,#20b9ff);padding:0;cursor:text;}
+.plan-axis-input{display:block;width:100%;min-width:50px;max-width:100%;box-sizing:border-box;border:2px solid var(--blue,#20b9ff);outline:none;background:var(--matrix-bg,#333);color:var(--matrix-ink,#fff);border-radius:5px;font:inherit;font-size:13px;font-weight:700;padding:5px;}
+.plan-inline .plan-card-title{padding:8px 10px;}
+.plan-inline .plan-card-item{grid-template-columns:minmax(100px,25%) minmax(0,1fr);}
+.plan-inline .plan-card-subhead{font-size:12px;align-self:start;}
+.plan-inline .plan-note{min-width:0;}
+.plan-resizer{position:absolute;display:block;z-index:6;touch-action:none;user-select:none;}
+.plan-resizer:before{content:"";position:absolute;background:transparent;}
+.plan-resizer-x{right:-5px;top:0;bottom:0;width:10px;cursor:col-resize;}
+.plan-resizer-x:before{top:0;bottom:0;left:4px;width:2px;}
+.plan-resizer-y{left:0;right:0;bottom:-5px;height:10px;cursor:row-resize;}
+.plan-resizer-y:before{left:0;right:0;top:4px;height:2px;}
+.plan-resizer:hover:before,.plan-resizer.plan-resizing:before{background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff33;}
+.plan-resize-active{cursor:col-resize!important;user-select:none!important;}
+.plan-axis-origin{outline:2px dashed #a8abb2!important;opacity:.38;}
+.plan-axis-ghost{position:fixed;z-index:10010;pointer-events:none;min-width:90px;max-width:210px;padding:8px 12px;border:2px solid var(--blue,#20b9ff);color:#f8fbff;background:#1e4c70ed;border-radius:8px;box-shadow:0 10px 20px #0007;font-size:13px;font-weight:750;}
+.plan-is-dragging,.plan-is-dragging *{cursor:grabbing!important;user-select:none!important;}
+.plan-axis-drop-before,.plan-axis-drop-after{position:relative;}
+.plan-axis-drop-before:after,.plan-axis-drop-after:after{content:"";position:absolute;z-index:25;pointer-events:none;background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff55;}
+/* 表格列：蓝线竖排；表格行和卡片标签：蓝线横排。 */
+.plan-col-head .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-col-head .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-row-head .plan-axis-drop-before:after,.plan-card-item .plan-axis-drop-before:after{height:4px;top:-6px;left:0;right:0;}
+.plan-row-head .plan-axis-drop-after:after,.plan-card-item .plan-axis-drop-after:after{height:4px;bottom:-6px;left:0;right:0;}
+.plan-card-title .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-card-title .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-view-menu{position:fixed;z-index:10020;min-width:210px;max-width:min(95vw,300px);padding:8px;background:#fafbfc;color:#232831;border:1px solid #dae0e6;border-radius:12px;box-shadow:0 15px 38px #0007;display:flex;flex-direction:column;gap:3px;}
+.plan-view-menu-caption{font-size:12px;color:#667085;padding:8px 10px;border-bottom:1px solid #dde2e7;margin-bottom:3px;}
+.plan-view-menu button{display:block;text-align:left;width:100%;font:500 13px/1.4 inherit;color:#222;background:transparent;border:0;border-radius:7px;padding:10px 12px;cursor:pointer;}
+.plan-view-menu button:hover{background:#eaf3ff;color:#1759a4;}
+@media(max-width:700px){.plan-inline .plan-top{gap:4px;padding:6px;}.plan-inline .plan-name{font-size:13px;}.plan-inline .plan-view-trigger{padding:5px;}.plan-inline .plan-add-axis{padding:5px;}.plan-inline .plan-fullscreen{padding:5px;}.plan-inline .plan-scroll{padding:5px;}.plan-card-grid{grid-template-columns:1fr;}}
+/* 调整热区全部放在当前单元格内部，避免被相邻单元格挡住而无法拖动。 */
+.plan-resizer-x{right:0;width:12px;}
+.plan-resizer-x:before{left:9px;}
+.plan-resizer-y{bottom:0;height:12px;}
+.plan-resizer-y:before{top:9px;}
+/* 手机全屏下留出关闭按钮位置，不让标题与关闭按钮重叠。 */
+.plan-focus-overlay .plan-inline .plan-top{padding-right:58px!important;}
+.plan-focus-overlay .plan-fullscreen{display:none!important;}
+@media(max-width:440px){.plan-focus-overlay .plan-inline .plan-top{gap:3px;}.plan-focus-overlay .plan-inline .plan-view-trigger{font-size:11px;padding:5px 4px;}.plan-focus-overlay .plan-inline .plan-add-axis{font-size:11px;padding:5px 4px;}}
+
+
+/* 云同步冲突不遮挡工作区，但用顶部提示提供显眼的处理入口。 */
+.sync-conflict-chip{background:#85542d!important;border:1px solid #e2ad74!important;color:#fff!important;
+ border-radius:7px;padding:5px 10px;font-size:12px;white-space:nowrap;}
+.sync-conflict-chip[hidden]{display:none!important;}
+/* v8: 主题不再限制显示两行。长文本自动完整换行，选中后可拖拽宽度/高度。 */
+.topic-text{display:block!important;-webkit-line-clamp:unset!important;line-clamp:unset!important;
+  overflow:visible!important;white-space:pre-wrap!important;overflow-wrap:anywhere;word-break:break-word;}
+.topic{min-height:44px;box-sizing:border-box;}
+.topic-editor{white-space:pre-wrap!important;overflow-wrap:anywhere;resize:none!important;
+  box-sizing:border-box;overflow:hidden;max-height:none;min-height:24px;color:var(--topic-ink,#fff)!important;}
+.topic-resize-handle{position:absolute;z-index:15;touch-action:none;user-select:none;-webkit-user-select:none;
+  border:0;background:transparent;color:#f8fcff;cursor:pointer;padding:0;}
+.topic-resize-handle:before{content:"";position:absolute;background:#20b9ff;opacity:0;}
+.topic-resize-handle:hover:before,.topic-resize-handle.dragging:before{opacity:1;}
+.topic-resize-x{right:-11px;top:8px;bottom:8px;width:22px;cursor:col-resize;}
+.topic-resize-x:before{left:10px;top:0;bottom:0;width:3px;}
+.topic-resize-x:after{content:"↔";position:absolute;left:-4px;top:50%;transform:translateY(-50%);
+ background:#168fc9;border:1px solid #68c7ff;border-radius:6px;padding:3px 5px;font-size:17px;}
+.topic-resize-y{bottom:-11px;left:9px;right:9px;height:22px;cursor:row-resize;}
+.topic-resize-y:before{top:10px;left:0;right:0;height:3px;}
+.topic-resize-y:after{content:"↕";position:absolute;top:0;left:50%;transform:translateX(-50%);
+ background:#168fc9;border:1px solid #68c7ff;border-radius:6px;padding:0 8px;font-size:16px;}
+.menu-entry{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.menu-shortcut{color:#657181;font-size:11px;white-space:nowrap;}
+.top-actions #cloudBtn{display:none!important;}
+.rich-mobile-helper{position:fixed;bottom:84px;right:12px;z-index:225;background:#266ba4;color:#fff;
+ border:1px solid #84c9ff;border-radius:10px;padding:9px 12px;font-size:13px;box-shadow:0 5px 20px #0008;}
+.rich-mobile-helper[hidden]{display:none!important;}
+@media(pointer:coarse){.rich-mobile-helper:not([hidden]){display:block;}}
+@media(pointer:fine){.rich-mobile-helper{display:none!important;}}
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -328,7 +418,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="2026.11.16.5">
+<meta name="app-build" content="2026.11.16.6">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -344,6 +434,65 @@
   font-size:12px; background:#eef7ff; color:#194b71; font-weight:650; cursor:pointer; }
 #appUpdateBanner .later { color:#ebeff3; background:transparent; border-color:#627d94; }
 @media(max-width:640px) { #appUpdateBanner {top:64px; right:8px; width:calc(100vw - 16px);} #pwaInstallBtn {padding:6px!important;} }
+/* v7：计划表融入导图。表头直接编辑、自由排序、右键角标四视图。 */
+.plan-node.plan-inline{border-radius:10px;overflow:visible;}
+.plan-inline .plan-top{padding:8px 10px;gap:7px;flex-wrap:nowrap;min-height:43px;border-radius:9px 9px 0 0;}
+.plan-inline .plan-handle{padding:4px 7px;flex:none;}
+.plan-inline .plan-name{font-size:14px;min-width:70px;max-width:none;flex:1;}
+.plan-inline .plan-add-axis,.plan-inline .plan-view-trigger,.plan-inline .plan-fullscreen{font-size:12px;border:1px solid var(--matrix-grid,#888);color:var(--matrix-ink,#fff);background:transparent;border-radius:7px;padding:6px 8px;white-space:nowrap;cursor:pointer;}
+.plan-inline .plan-view-trigger:hover,.plan-inline .plan-add-axis:hover,.plan-inline .plan-fullscreen:hover{border-color:var(--blue);}
+.plan-inline .plan-scroll{padding:8px;}
+.plan-inline .plan-table-live{table-layout:fixed;width:max-content;min-width:0;border-spacing:0;}
+.plan-inline .plan-table-live th,.plan-inline .plan-table-live td{box-sizing:border-box;min-width:0;max-width:none;overflow-wrap:anywhere;position:relative;padding:8px;}
+.plan-inline .plan-table-live th:first-child{min-width:145px;max-width:145px;width:145px;}
+.plan-inline .plan-table-live .plan-corner{position:sticky;left:0;top:0;z-index:5;cursor:context-menu;}
+.plan-corner{user-select:none;}
+.plan-corner span{font-size:12px;}
+.plan-corner-arrow{border:1px solid var(--matrix-grid,#777);background:transparent;color:var(--matrix-ink,#fff);border-radius:4px;float:right;cursor:pointer;padding:1px 6px;}
+.plan-axis-label{display:block;width:100%;min-height:20px;max-width:100%;box-sizing:border-box;padding:4px 6px;text-align:left;white-space:normal;overflow-wrap:anywhere;font-weight:700;cursor:grab;border-radius:5px;user-select:none;outline:2px solid transparent;outline-offset:-2px;}
+.plan-axis-label:hover{background:color-mix(in srgb,var(--blue,#20b9ff) 12%,transparent);}
+.plan-axis-label:focus-visible,.plan-axis-label.plan-axis-selected{outline-color:var(--blue,#20b9ff);background:color-mix(in srgb,var(--blue,#20b9ff) 15%,transparent);}
+.plan-axis-label.plan-axis-editing{outline-color:var(--blue,#20b9ff);padding:0;cursor:text;}
+.plan-axis-input{display:block;width:100%;min-width:50px;max-width:100%;box-sizing:border-box;border:2px solid var(--blue,#20b9ff);outline:none;background:var(--matrix-bg,#333);color:var(--matrix-ink,#fff);border-radius:5px;font:inherit;font-size:13px;font-weight:700;padding:5px;}
+.plan-inline .plan-card-title{padding:8px 10px;}
+.plan-inline .plan-card-item{grid-template-columns:minmax(100px,25%) minmax(0,1fr);}
+.plan-inline .plan-card-subhead{font-size:12px;align-self:start;}
+.plan-inline .plan-note{min-width:0;}
+.plan-resizer{position:absolute;display:block;z-index:6;touch-action:none;user-select:none;}
+.plan-resizer:before{content:"";position:absolute;background:transparent;}
+.plan-resizer-x{right:-5px;top:0;bottom:0;width:10px;cursor:col-resize;}
+.plan-resizer-x:before{top:0;bottom:0;left:4px;width:2px;}
+.plan-resizer-y{left:0;right:0;bottom:-5px;height:10px;cursor:row-resize;}
+.plan-resizer-y:before{left:0;right:0;top:4px;height:2px;}
+.plan-resizer:hover:before,.plan-resizer.plan-resizing:before{background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff33;}
+.plan-resize-active{cursor:col-resize!important;user-select:none!important;}
+.plan-axis-origin{outline:2px dashed #a8abb2!important;opacity:.38;}
+.plan-axis-ghost{position:fixed;z-index:10010;pointer-events:none;min-width:90px;max-width:210px;padding:8px 12px;border:2px solid var(--blue,#20b9ff);color:#f8fbff;background:#1e4c70ed;border-radius:8px;box-shadow:0 10px 20px #0007;font-size:13px;font-weight:750;}
+.plan-is-dragging,.plan-is-dragging *{cursor:grabbing!important;user-select:none!important;}
+.plan-axis-drop-before,.plan-axis-drop-after{position:relative;}
+.plan-axis-drop-before:after,.plan-axis-drop-after:after{content:"";position:absolute;z-index:25;pointer-events:none;background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff55;}
+/* 表格列：蓝线竖排；表格行和卡片标签：蓝线横排。 */
+.plan-col-head .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-col-head .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-row-head .plan-axis-drop-before:after,.plan-card-item .plan-axis-drop-before:after{height:4px;top:-6px;left:0;right:0;}
+.plan-row-head .plan-axis-drop-after:after,.plan-card-item .plan-axis-drop-after:after{height:4px;bottom:-6px;left:0;right:0;}
+.plan-card-title .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-card-title .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-view-menu{position:fixed;z-index:10020;min-width:210px;max-width:min(95vw,300px);padding:8px;background:#fafbfc;color:#232831;border:1px solid #dae0e6;border-radius:12px;box-shadow:0 15px 38px #0007;display:flex;flex-direction:column;gap:3px;}
+.plan-view-menu-caption{font-size:12px;color:#667085;padding:8px 10px;border-bottom:1px solid #dde2e7;margin-bottom:3px;}
+.plan-view-menu button{display:block;text-align:left;width:100%;font:500 13px/1.4 inherit;color:#222;background:transparent;border:0;border-radius:7px;padding:10px 12px;cursor:pointer;}
+.plan-view-menu button:hover{background:#eaf3ff;color:#1759a4;}
+@media(max-width:700px){.plan-inline .plan-top{gap:4px;padding:6px;}.plan-inline .plan-name{font-size:13px;}.plan-inline .plan-view-trigger{padding:5px;}.plan-inline .plan-add-axis{padding:5px;}.plan-inline .plan-fullscreen{padding:5px;}.plan-inline .plan-scroll{padding:5px;}.plan-card-grid{grid-template-columns:1fr;}}
+/* 调整热区全部放在当前单元格内部，避免被相邻单元格挡住而无法拖动。 */
+.plan-resizer-x{right:0;width:12px;}
+.plan-resizer-x:before{left:9px;}
+.plan-resizer-y{bottom:0;height:12px;}
+.plan-resizer-y:before{top:9px;}
+/* 手机全屏下留出关闭按钮位置，不让标题与关闭按钮重叠。 */
+.plan-focus-overlay .plan-inline .plan-top{padding-right:58px!important;}
+.plan-focus-overlay .plan-fullscreen{display:none!important;}
+@media(max-width:440px){.plan-focus-overlay .plan-inline .plan-top{gap:3px;}.plan-focus-overlay .plan-inline .plan-view-trigger{font-size:11px;padding:5px 4px;}.plan-focus-overlay .plan-inline .plan-add-axis{font-size:11px;padding:5px 4px;}}
+
 </style>
 <style id="diy-ui-theme">
 /* DIY记录：紧凑导航与画布栏，最大化工作区域 */
@@ -433,6 +582,122 @@ body{color:var(--app-ink,#f5f5f6);}
 .board-arrow:hover,.board-add:hover{background:var(--nav-hover)!important;}
 .zoom-tools{background:var(--nav);border-color:var(--nav-border);}
 #zoomValue{color:var(--app-ink);}
+
+
+/* 手机可读性：计划表支持脱离画布缩放的全屏编辑，不影响原画布位置。 */
+.plan-focus-overlay{position:fixed;inset:8px;z-index:28;background:var(--matrix-bg,#363638);
+  border-radius:13px;box-shadow:0 0 0 100vmax #000b,0 15px 45px #0007;overflow:hidden;}
+.plan-focus-overlay .plan-node.plan-focused{position:relative!important;left:0!important;top:0!important;width:100%!important;height:100%!important;max-width:none!important;box-shadow:none!important;transform:none!important;}
+.plan-focus-overlay .plan-handle{display:none;}
+.plan-focus-overlay .plan-top{padding-right:65px;}
+.plan-focus-close{position:absolute;right:10px;top:9px;z-index:5;border:1px solid var(--matrix-grid,#aaa);background:var(--nav);
+ color:var(--app-ink,#fff);font-size:19px;border-radius:8px;width:36px;height:34px;}
+@media(max-width:650px){.plan-focus-overlay{inset:0;border-radius:0;}.plan-focus-overlay .plan-node.plan-focused{border:0;border-radius:0;}.plan-focus-overlay .plan-toolbar{gap:5px;}.plan-focus-overlay .plan-segments button{padding:7px 9px;}.plan-focus-overlay .plan-card-grid{grid-template-columns:1fr;}}
+
+/* 四视图计划表：同一组事项，表格/卡片 × 日期/分类两套独立开关。 */
+.plan-node{position:absolute;display:flex;flex-direction:column;overflow:visible;background:var(--matrix-bg,#333437);
+  color:var(--matrix-ink,#f5f5f5);border:2px solid var(--matrix-grid,#8b8b8b);border-radius:14px;
+  box-shadow:0 12px 34px #0004;font-family:inherit;touch-action:pan-x pan-y;}
+.plan-node.selected{border-color:var(--blue);box-shadow:0 0 0 3px #20b9ff22,0 15px 35px #0004;}
+.plan-top{flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:13px 14px;background:var(--nav);border-radius:12px 12px 0 0;border-bottom:1px solid var(--matrix-grid,#777);}
+.plan-handle{background:var(--topic);border:1px solid var(--matrix-grid,#888);border-radius:7px;padding:5px 9px;font-weight:700;color:var(--topic-ink);cursor:grab;}
+.plan-name{font-size:17px;font-weight:750;flex:1;min-width:90px;max-width:245px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.plan-subtitle{font-size:11px;color:var(--matrix-muted,#b8b8b8);white-space:nowrap;}
+.plan-toolbar{position:relative;display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:11px 14px;border-bottom:1px solid var(--matrix-grid,#777);background:var(--nav);}
+.plan-segments{display:flex;align-items:center;padding:3px;border-radius:9px;background:var(--matrix-bg,#424244);border:1px solid var(--matrix-grid,#777);gap:2px;}
+.plan-segments button{border:0;background:transparent;color:var(--matrix-ink,#fff);border-radius:7px;padding:7px 12px;font-size:13px;white-space:nowrap;}
+.plan-segments button[aria-pressed=true]{background:var(--blue-fill);color:#fff;font-weight:700;}
+.plan-actions{display:flex;gap:5px;flex-wrap:wrap;margin-left:auto;}
+.plan-actions button,.plan-manage button{border:1px solid var(--matrix-grid,#888);border-radius:7px;background:var(--matrix-bg,#454545);color:var(--matrix-ink,#fff);font-size:12px;padding:7px 9px;}
+.plan-actions button:hover,.plan-manage button:hover{border-color:var(--blue);}
+.plan-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:16px;touch-action:pan-x pan-y;scrollbar-width:thin;}
+.plan-table{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;table-layout:fixed;font-size:13px;color:var(--matrix-ink,#fff);}
+.plan-table th,.plan-table td{vertical-align:top;border-right:1px solid var(--matrix-grid,#666);border-bottom:1px solid var(--matrix-grid,#666);padding:9px;min-width:155px;max-width:275px;}
+.plan-table th:first-child,.plan-table td:first-child{position:sticky;left:0;z-index:1;min-width:136px;max-width:136px;background:var(--matrix-rowhead,#676767);font-weight:700;}
+.plan-table thead th{position:sticky;top:0;z-index:2;background:var(--matrix-top,#434343);}
+.plan-table thead th:first-child{z-index:3;background:var(--matrix-corner,#666);}
+.plan-table th:first-child,.plan-table td:first-child{border-left:1px solid var(--matrix-grid,#666);}
+.plan-table thead th{border-top:1px solid var(--matrix-grid,#666);}
+.plan-label{display:block;background:transparent;border:0;color:var(--matrix-ink,#fff);text-align:left;font-weight:750;font-size:13px;padding:3px;max-width:100%;overflow-wrap:anywhere;}
+.plan-label:hover{color:var(--blue);}
+.plan-note{display:block;width:100%;min-height:58px;resize:none;overflow:hidden;outline:none;border:1px solid transparent;background:transparent;color:var(--matrix-ink,#fff);border-radius:6px;
+  font:500 13px/1.55 inherit;font-family:inherit;line-height:1.55;padding:7px;white-space:pre-wrap;overflow-wrap:anywhere;box-sizing:border-box;}
+.plan-note:focus{background:var(--matrix-bg,#333);border-color:var(--blue);box-shadow:0 0 0 2px #20b9ff22;}
+.plan-note::placeholder{color:var(--matrix-muted,#aaa);}
+.plan-card-grid{display:grid;grid-template-columns:repeat(2,minmax(305px,1fr));gap:14px;align-items:start;}
+.plan-card{background:var(--matrix-bg,#424244);border:1px solid var(--matrix-grid,#888);border-radius:11px;min-width:0;overflow:hidden;}
+.plan-card-title{background:var(--matrix-rowhead,#666);padding:12px 13px;font-size:15px;font-weight:750;}
+.plan-card-body{padding:10px 12px;display:flex;flex-direction:column;gap:10px;}
+.plan-card-item{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:start;gap:9px;min-width:0;}
+.plan-card-item+.plan-card-item{border-top:1px solid var(--matrix-grid,#666);padding-top:10px;}
+.plan-card-item .plan-label{font-size:12px;}
+.plan-manage{position:absolute;right:10px;top:calc(100% + 4px);z-index:30;width:330px;max-height:425px;overflow:auto;padding:13px;background:var(--nav);border:1px solid var(--matrix-grid,#888);border-radius:11px;box-shadow:0 13px 35px #0008;}
+.plan-manage[hidden]{display:none!important;}
+.plan-manage-section{margin-bottom:14px;}
+.plan-manage-section h4{font-size:13px;margin:2px 0 9px;}
+.plan-manage-row{display:flex;align-items:center;gap:7px;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid var(--matrix-grid,#666);}
+.plan-manage-row span{flex:1;overflow-wrap:anywhere;}
+.plan-help{color:var(--matrix-muted,#aaa);font-size:11px;margin:4px 0 0;}
+@media(max-width:650px){.plan-top{padding:9px;}.plan-toolbar{padding:8px;}.plan-scroll{padding:10px;}.plan-card-grid{grid-template-columns:1fr;}.plan-manage{right:6px;width:min(300px,90%);}}
+/* v7：计划表融入导图。表头直接编辑、自由排序、右键角标四视图。 */
+.plan-node.plan-inline{border-radius:10px;overflow:visible;}
+.plan-inline .plan-top{padding:8px 10px;gap:7px;flex-wrap:nowrap;min-height:43px;border-radius:9px 9px 0 0;}
+.plan-inline .plan-handle{padding:4px 7px;flex:none;}
+.plan-inline .plan-name{font-size:14px;min-width:70px;max-width:none;flex:1;}
+.plan-inline .plan-add-axis,.plan-inline .plan-view-trigger,.plan-inline .plan-fullscreen{font-size:12px;border:1px solid var(--matrix-grid,#888);color:var(--matrix-ink,#fff);background:transparent;border-radius:7px;padding:6px 8px;white-space:nowrap;cursor:pointer;}
+.plan-inline .plan-view-trigger:hover,.plan-inline .plan-add-axis:hover,.plan-inline .plan-fullscreen:hover{border-color:var(--blue);}
+.plan-inline .plan-scroll{padding:8px;}
+.plan-inline .plan-table-live{table-layout:fixed;width:max-content;min-width:0;border-spacing:0;}
+.plan-inline .plan-table-live th,.plan-inline .plan-table-live td{box-sizing:border-box;min-width:0;max-width:none;overflow-wrap:anywhere;position:relative;padding:8px;}
+.plan-inline .plan-table-live th:first-child{min-width:145px;max-width:145px;width:145px;}
+.plan-inline .plan-table-live .plan-corner{position:sticky;left:0;top:0;z-index:5;cursor:context-menu;}
+.plan-corner{user-select:none;}
+.plan-corner span{font-size:12px;}
+.plan-corner-arrow{border:1px solid var(--matrix-grid,#777);background:transparent;color:var(--matrix-ink,#fff);border-radius:4px;float:right;cursor:pointer;padding:1px 6px;}
+.plan-axis-label{display:block;width:100%;min-height:20px;max-width:100%;box-sizing:border-box;padding:4px 6px;text-align:left;white-space:normal;overflow-wrap:anywhere;font-weight:700;cursor:grab;border-radius:5px;user-select:none;outline:2px solid transparent;outline-offset:-2px;}
+.plan-axis-label:hover{background:color-mix(in srgb,var(--blue,#20b9ff) 12%,transparent);}
+.plan-axis-label:focus-visible,.plan-axis-label.plan-axis-selected{outline-color:var(--blue,#20b9ff);background:color-mix(in srgb,var(--blue,#20b9ff) 15%,transparent);}
+.plan-axis-label.plan-axis-editing{outline-color:var(--blue,#20b9ff);padding:0;cursor:text;}
+.plan-axis-input{display:block;width:100%;min-width:50px;max-width:100%;box-sizing:border-box;border:2px solid var(--blue,#20b9ff);outline:none;background:var(--matrix-bg,#333);color:var(--matrix-ink,#fff);border-radius:5px;font:inherit;font-size:13px;font-weight:700;padding:5px;}
+.plan-inline .plan-card-title{padding:8px 10px;}
+.plan-inline .plan-card-item{grid-template-columns:minmax(100px,25%) minmax(0,1fr);}
+.plan-inline .plan-card-subhead{font-size:12px;align-self:start;}
+.plan-inline .plan-note{min-width:0;}
+.plan-resizer{position:absolute;display:block;z-index:6;touch-action:none;user-select:none;}
+.plan-resizer:before{content:"";position:absolute;background:transparent;}
+.plan-resizer-x{right:-5px;top:0;bottom:0;width:10px;cursor:col-resize;}
+.plan-resizer-x:before{top:0;bottom:0;left:4px;width:2px;}
+.plan-resizer-y{left:0;right:0;bottom:-5px;height:10px;cursor:row-resize;}
+.plan-resizer-y:before{left:0;right:0;top:4px;height:2px;}
+.plan-resizer:hover:before,.plan-resizer.plan-resizing:before{background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff33;}
+.plan-resize-active{cursor:col-resize!important;user-select:none!important;}
+.plan-axis-origin{outline:2px dashed #a8abb2!important;opacity:.38;}
+.plan-axis-ghost{position:fixed;z-index:10010;pointer-events:none;min-width:90px;max-width:210px;padding:8px 12px;border:2px solid var(--blue,#20b9ff);color:#f8fbff;background:#1e4c70ed;border-radius:8px;box-shadow:0 10px 20px #0007;font-size:13px;font-weight:750;}
+.plan-is-dragging,.plan-is-dragging *{cursor:grabbing!important;user-select:none!important;}
+.plan-axis-drop-before,.plan-axis-drop-after{position:relative;}
+.plan-axis-drop-before:after,.plan-axis-drop-after:after{content:"";position:absolute;z-index:25;pointer-events:none;background:var(--blue,#20b9ff);box-shadow:0 0 0 1px #20b9ff55;}
+/* 表格列：蓝线竖排；表格行和卡片标签：蓝线横排。 */
+.plan-col-head .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-col-head .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-row-head .plan-axis-drop-before:after,.plan-card-item .plan-axis-drop-before:after{height:4px;top:-6px;left:0;right:0;}
+.plan-row-head .plan-axis-drop-after:after,.plan-card-item .plan-axis-drop-after:after{height:4px;bottom:-6px;left:0;right:0;}
+.plan-card-title .plan-axis-drop-before:after{width:4px;top:0;bottom:0;left:-6px;}
+.plan-card-title .plan-axis-drop-after:after{width:4px;top:0;bottom:0;right:-6px;}
+.plan-view-menu{position:fixed;z-index:10020;min-width:210px;max-width:min(95vw,300px);padding:8px;background:#fafbfc;color:#232831;border:1px solid #dae0e6;border-radius:12px;box-shadow:0 15px 38px #0007;display:flex;flex-direction:column;gap:3px;}
+.plan-view-menu-caption{font-size:12px;color:#667085;padding:8px 10px;border-bottom:1px solid #dde2e7;margin-bottom:3px;}
+.plan-view-menu button{display:block;text-align:left;width:100%;font:500 13px/1.4 inherit;color:#222;background:transparent;border:0;border-radius:7px;padding:10px 12px;cursor:pointer;}
+.plan-view-menu button:hover{background:#eaf3ff;color:#1759a4;}
+@media(max-width:700px){.plan-inline .plan-top{gap:4px;padding:6px;}.plan-inline .plan-name{font-size:13px;}.plan-inline .plan-view-trigger{padding:5px;}.plan-inline .plan-add-axis{padding:5px;}.plan-inline .plan-fullscreen{padding:5px;}.plan-inline .plan-scroll{padding:5px;}.plan-card-grid{grid-template-columns:1fr;}}
+/* 调整热区全部放在当前单元格内部，避免被相邻单元格挡住而无法拖动。 */
+.plan-resizer-x{right:0;width:12px;}
+.plan-resizer-x:before{left:9px;}
+.plan-resizer-y{bottom:0;height:12px;}
+.plan-resizer-y:before{top:9px;}
+/* 手机全屏下留出关闭按钮位置，不让标题与关闭按钮重叠。 */
+.plan-focus-overlay .plan-inline .plan-top{padding-right:58px!important;}
+.plan-focus-overlay .plan-fullscreen{display:none!important;}
+@media(max-width:440px){.plan-focus-overlay .plan-inline .plan-top{gap:3px;}.plan-focus-overlay .plan-inline .plan-view-trigger{font-size:11px;padding:5px 4px;}.plan-focus-overlay .plan-inline .plan-add-axis{font-size:11px;padding:5px 4px;}}
+
 </style>
 </head>
 <body>
@@ -442,8 +707,9 @@ body{color:var(--app-ink,#f5f5f6);}
     
     <div class="top-actions">
       <span class="saved" id="saveStatus">已保存到本机</span>
+      <button type="button" id="syncConflictChip" class="sync-conflict-chip" hidden title="云端与本机数据存在冲突，点击处理">⚠ 同步待处理</button>
       <button id="pwaInstallBtn" type="button" hidden title="把 DIY记录 安装到设备上">安装应用</button>
-      <button id="cloudBtn" class="cloud-button" title="设置账号与云同步">☁ 云同步</button>
+      <button id="cloudBtn" class="cloud-button" title="设置账号与云同步" hidden>☁ 云同步</button>
       <button id="newBtn" title="创建一张新导图" hidden>新建</button>
       <button id="exportBtn" title="备份当前导图为 JSON 文件" hidden>导出</button>
       <button id="importBtn" title="恢复此前导出的 JSON 文件" hidden>导入</button>
@@ -451,10 +717,15 @@ body{color:var(--app-ink,#f5f5f6);}
       <button type="button" class="more-toggle" id="beautyOpen" title="美化与配色" aria-label="打开美化设置" aria-controls="beautyPanel" aria-expanded="false">···</button>
     </div>
     <div class="menu-popup" id="menuPopup" hidden>
+      <button type="button" class="menu-entry" id="undoMenuItem">撤销 <span class="menu-shortcut">Ctrl+Z</span></button>
+      <button type="button" class="menu-entry" id="redoMenuItem">重做 <span class="menu-shortcut">Ctrl+Y</span></button>
       <button type="button" class="menu-entry" id="historyMenuItem">历史修改</button>
+      <button type="button" class="menu-entry" id="settingsMenuItem">设置 · 账号与云同步</button>
       <button type="button" class="menu-entry has-arrow" id="insertMenuItem" aria-expanded="false" aria-controls="insertSubmenu">插入 <span class="menu-arrow">›</span></button>
       <div class="insert-submenu" id="insertSubmenu" hidden>
         <button type="button" class="menu-entry" id="insertMatrixItem">横纵表格</button>
+        <button type="button" class="menu-entry" id="insertWeeklyPlan">四视图 · 周计划</button>
+        <button type="button" class="menu-entry" id="insertMonthlyPlan">四视图 · 月计划</button>
       </div>
     </div>
   </header>
@@ -508,7 +779,7 @@ body{color:var(--app-ink,#f5f5f6);}
 <div class="delete-context" id="deleteContext" role="menu" aria-label="选中项目操作" hidden>
   <button type="button" id="contextDelete" role="menuitem">删除</button>
 </div>
-<!-- 云端账号弹窗：独立于左上角只有“历史修改”的菜单 -->
+<!-- 云端账号弹窗：只有通过左上角 设置 手动打开；真实冲突展示非阻断状态 -->
 <div class="cloud-overlay" id="cloudOverlay" hidden>
   <section class="cloud-card" role="dialog" aria-modal="true" aria-label="云同步设置">
     <div class="cloud-head"><div><strong>云同步</strong><small>同一个邮箱账号，在电脑和手机同步同一张导图</small></div><button type="button" id="cloudClose" aria-label="关闭">×</button></div>
@@ -559,6 +830,7 @@ body{color:var(--app-ink,#f5f5f6);}
   <button type="button" id="richApply" class="rich-preview" title="直接使用最近一次颜色组合">Aa</button>
   <button type="button" id="richExpand" class="rich-arrow" title="选择文字颜色和背景色组合" aria-expanded="false">▾</button>
 </div>
+<button type="button" id="richMobileHelper" class="rich-mobile-helper" hidden title="长按选中几个字后，点这里设置颜色">🎨 文字标注</button>
 <div id="richPopover" class="rich-popover" hidden>
   <div class="rich-head"><span>已保存的颜色组合</span><button type="button" id="richAddPreset" title="创建新颜色组合">＋ 新建</button></div>
   <div id="richPresetList" class="rich-list"></div>
@@ -575,7 +847,7 @@ body{color:var(--app-ink,#f5f5f6);}
 'use strict';
 (() => {
   // XMind 风格主题、历史记录、本机保存、my-notes 云同步。
-  // v2026-11-16c: 竖线左右调整列宽、横线上下调整行高，分别保存并自动避让长文本。
+  // v2026-11-17.1: 手机选区格式、账号静默恢复、撤销重做、多行节点及自由宽高。
   // 保留上一个版本的节点编辑及登录逻辑；本次增加独立矩阵主题。
   const $ = id => document.getElementById(id);
   // 此存储键与上一版保持一致：更新 HTML 文件时不改变保存位置。
@@ -591,13 +863,14 @@ body{color:var(--app-ink,#f5f5f6);}
   const OLD_CHAT_PROJECT_URL = 'https://bpkipmnvvrjsfckzhfrl.supabase.co'; // 防止误连用户现有的聊天项目。
   const NODE_GAP_X = 82;
   const NODE_GAP_Y = 24;
+  const MAX_TOPIC_TEXT = 30000;
   const MIN_ZOOM = 0.3;
   const MAX_ZOOM = 2.4;
   const stage = $('stage');
   const world = $('world');
   const topicLayer = $('topicLayer');
   const svg = $('connections');
-  const state = { selected: null, editing: null, editDraft: null, matrixEditing: null, matrixSelection: null, panX: 250, panY: 260, zoom: 1, positions: new Map(), toastTimer: null, activeBoardId: null };
+  const state = { selected: null, editing: null, editDraft: null, matrixEditing: null, matrixSelection: null, planEditing: null, panX: 250, panY: 260, zoom: 1, positions: new Map(), toastTimer: null, activeBoardId: null };
   let topicDrag=null, axisDrag=null, columnResize=null, rowResize=null, ignoreTopicClickId=null;
   let data = readSaved() || freshData();
   try{state.activeBoardId=localStorage.getItem(ACTIVE_BOARD_KEY)||'main';}catch{state.activeBoardId='main';}
@@ -623,6 +896,7 @@ body{color:var(--app-ink,#f5f5f6);}
     $('saveStatus').textContent=message;
     $('cloudBtn').title=message;
     $('cloudBtn').textContent=ok?'☁ 已同步':'☁ 云同步';
+    $('syncConflictChip').hidden=!(cloud.conflict||message.includes('同步冲突'));
   }
   function cloudMessage(message,error=false){$('cloudInfo').textContent=message;$('cloudInfo').classList.toggle('error',error);}
   function currentConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'{}')||{};}catch{return {};}}
@@ -733,6 +1007,13 @@ body{color:var(--app-ink,#f5f5f6);}
     try { const raw = localStorage.getItem(STORE); if (!raw) return null; return normalize(JSON.parse(raw)); }
     catch (e) { console.warn('无法读取本地数据',e); return null; }
   }
+  function cleanPlanDims(raw){
+    const sizes={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return sizes;
+    for(const [id,value] of Object.entries(raw).slice(0,100)){
+      const n=Number(value);if(id.length<=90&&Number.isFinite(n)&&n>=40&&n<=1500)sizes[id]=Math.round(n);
+    }
+    return sizes;
+  }
   function normalize(raw) {
     if (!raw || !Array.isArray(raw.topics) || raw.topics.length===0 || raw.topics.length>4000) return null;
     const ids = new Set();
@@ -740,7 +1021,12 @@ body{color:var(--app-ink,#f5f5f6);}
     for (const n of raw.topics) {
       if (!n || typeof n.id!=='string' || !n.id || ids.has(n.id) || typeof n.text!=='string') return null;
       ids.add(n.id);
-      const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,1000) };
+      const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,MAX_TOPIC_TEXT) };
+      if(n.kind!=='matrix'&&n.kind!=='plan'){
+        const bw=Number(n.boxWidth), bh=Number(n.boxMinHeight);
+        if(Number.isFinite(bw)&&bw>=100&&bw<=1800)node.boxWidth=Math.round(bw);
+        if(Number.isFinite(bh)&&bh>=44&&bh<=4000)node.boxMinHeight=Math.round(bh);
+      }
       if(Array.isArray(n.marks))node.marks=validMarks(n.marks,node.text);
       if(n.id===ROOT_ID && Array.isArray(n.formatPresets))node.formatPresets=validPresets(n.formatPresets);
       if(n.id===ROOT_ID && Number.isInteger(n.appearancePreset) && n.appearancePreset>=0 && n.appearancePreset<=5)node.appearancePreset=n.appearancePreset;
@@ -749,6 +1035,23 @@ body{color:var(--app-ink,#f5f5f6);}
         const b=n.boards.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'&&typeof x.rootId==='string')
           .slice(0,60).map(x=>({id:x.id.slice(0,80),name:x.name.slice(0,80),rootId:x.rootId.slice(0,80)}));
         if(b.length)node.boards=b;
+      }
+      if(n.kind==='plan'){
+        const p=n.plan;
+        if(!p||!Array.isArray(p.categories)||!Array.isArray(p.periods)||!p.cells||typeof p.cells!=='object')return null;
+        const cleanAxis=(items,max)=>items.slice(0,max).filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string')
+          .map(x=>({id:x.id.slice(0,90),name:x.name.slice(0,100)}));
+        const categories=cleanAxis(p.categories,20),periods=cleanAxis(p.periods,40);
+        if(!categories.length||!periods.length||new Set(categories.map(x=>x.id)).size!==categories.length||new Set(periods.map(x=>x.id)).size!==periods.length)return null;
+        const validKeys=new Set(categories.flatMap(c=>periods.map(d=>c.id+'|'+d.id)));
+        const cells={};
+        for(const [k,v] of Object.entries(p.cells))if(validKeys.has(k)&&typeof v==='string')cells[k]=v.slice(0,30000);
+        node.kind='plan';node.plan={periodKind:p.periodKind==='month'?'month':'week',
+          layout:p.layout==='cards'?'cards':'table',group:p.group==='category'?'category':'date',
+          categories,periods,cells,
+          // 行列宽高以 axisId 存储，排序切换后始终跟随原分类/日期。
+          colSizes:{date:cleanPlanDims(p.colSizes?.date),category:cleanPlanDims(p.colSizes?.category)},
+          rowSizes:{date:cleanPlanDims(p.rowSizes?.date),category:cleanPlanDims(p.rowSizes?.category)}};
       }
       if(n.kind==='matrix') {
         const m=n.matrix;
@@ -800,9 +1103,35 @@ body{color:var(--app-ink,#f5f5f6);}
     try { localStorage.setItem(STORE,JSON.stringify(data)); if(!cloud.ready || !cloud.user)setCloudStatus('已保存到本机'); else setCloudStatus('本机已保存 · 等待云同步'); }
     catch(e) { setCloudStatus('本地保存失败'); notify('无法保存到浏览器，请使用“导出”备份'); }
   }
+  // Ctrl+Z / Ctrl+Y：只记录已完成的一次操作，不会把每个按键当成单独的历史。
+  let lastCommittedTopics=cloneTopics();
+  let suppressUndoCapture=false;
+  const undoSnapshots=[],redoSnapshots=[];
+  function resetLocalUndoBaseline(){lastCommittedTopics=cloneTopics();undoSnapshots.length=0;redoSnapshots.length=0;}
+  function applyUndoRedo(direction){
+    // 编辑中的输入框交给系统原生撤销；此函数处理已提交到导图的操作。
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const source=direction==='undo'?undoSnapshots:redoSnapshots;
+    const opposite=direction==='undo'?redoSnapshots:undoSnapshots;
+    if(!source.length){notify(direction==='undo'?'没有可撤销的操作':'没有可重做的操作');return;}
+    const next=source.pop();opposite.push(cloneTopics());if(opposite.length>80)opposite.shift();
+    const restored=normalize({topics:next});if(!restored){notify('该历史快照无效');return;}
+    suppressUndoCapture=true;
+    data=restored;state.selected=null;state.matrixSelection=null;ensureBoardValid();
+    scheduleSave(direction==='undo'?'撤销操作':'重做操作');
+    suppressUndoCapture=false;render();lastCommittedTopics=cloneTopics();
+    notify(direction==='undo'?'已撤销':'已重做');
+  }
   // 一次操作写入一条不可覆盖的历史快照。改文字时在确认/失焦后记录，
   // 而不是每按一个字母记录一次，以免输入过程中产生大量无意义版本。
   function scheduleSave(label='修改主题') {
+    if(!suppressUndoCapture){
+      const latest=cloneTopics();
+      if(!sameTopics(lastCommittedTopics,latest)){undoSnapshots.push(lastCommittedTopics);if(undoSnapshots.length>80)undoSnapshots.shift();redoSnapshots.length=0;}
+    }
+    lastCommittedTopics=cloneTopics();
     persist();
     const snapshot = cloneTopics();
     const entry={cloudId:uniqueUUID(),at:new Date().toISOString(),label,topics:snapshot};
@@ -911,7 +1240,7 @@ body{color:var(--app-ink,#f5f5f6);}
     const normalized=normalize({topics:item.topics});
     if(!normalized){notify('该历史版本的数据无法恢复');return;}
     if(!confirm(`恢复到 ${formatTime(item.at)} 的导图吗？\n当前版本会自动保存到历史中，可以再恢复。`))return;
-    if(state.editing)endEditing(true);
+    if(state.editing)endEditing(true);settlePlanEditor();
     data=normalized;state.selected=null;state.matrixSelection=null;state.editing=null;ensureBoardValid();
     scheduleSave('恢复历史 · '+formatTime(item.at));
     render();fitToView();notify('已恢复历史内容');
@@ -956,14 +1285,16 @@ body{color:var(--app-ink,#f5f5f6);}
   }
   function switchBoard(id){
     if(!boards().some(b=>b.id===id))return;
-    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();
     if(topicDrag||axisDrag||columnResize||rowResize)return;
+    if(expandedPlanId)closeExpandedPlan();
     hideBoardPopup();state.activeBoardId=id;
     try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
     state.selected=null;state.editing=null;render();centerInitial();fitToView();
   }
   function createBoard(){
-    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();
+    if(expandedPlanId)closeExpandedPlan();
     if(boards().length>=50){notify('最多支持 50 张画布');return;}
     const list=boardMeta();const id='board_'+makeId(),rootId='board_root_'+makeId();
     const name='画布 '+(Math.max(0,...list.map(b=>Number((b.name.match(/^画布 (\d+)$/)||[])[1])||0))+1);
@@ -1061,16 +1392,27 @@ body{color:var(--app-ink,#f5f5f6);}
     return metrics;
   }
   function getSize(t) {
+    if(t.kind==='plan'&&t.plan)return {width:990,height:650};
     if(t.kind==='matrix'&&t.matrix){
       const size=getMatrixMetrics(t);
       return {width:size.width,height:size.height};
     }
-    const canvas = getSize.canvas || (getSize.canvas=document.createElement('canvas'));
-    const ctx=canvas.getContext('2d'); ctx.font='640 15px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
-    const length=ctx.measureText(t.text || '新主题').width;
-    const width=Math.ceil(Math.max(92,Math.min(244,length+34)));
-    const height=length > width-34 ? 64 : 46;
-    return { width,height };
+    const text=String(t.text||'新主题');
+    const canvas=getSize.canvas||(getSize.canvas=document.createElement('canvas'));
+    const ctx=canvas.getContext('2d');ctx.font='640 15px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    const lines=text.split('\n'),maxLine=Math.max(0,...lines.slice(0,200).map(line=>ctx.measureText(line.slice(0,160)).width));
+    const naturalWidth=Math.ceil(Math.max(108,Math.min(460,maxLine+34)));
+    const width=Math.round(Number(t.boxWidth)||naturalWidth);
+    if(!getSize.probe){
+      const probe=document.createElement('div');
+      Object.assign(probe.style,{position:'absolute',left:'-200000px',top:'0',visibility:'hidden',pointerEvents:'none',
+        boxSizing:'border-box',fontFamily:'system-ui, "PingFang SC", "Microsoft YaHei",sans-serif',fontSize:'15px',fontWeight:'640',lineHeight:'1.35',
+        whiteSpace:'pre-wrap',overflowWrap:'anywhere',wordBreak:'break-word',textAlign:'center',padding:'10px 15px'});
+      document.body.append(probe);getSize.probe=probe;
+    }
+    const probe=getSize.probe;probe.style.width=width+'px';probe.textContent=text+'\u200b';
+    const naturalHeight=Math.max(46,Math.ceil(probe.getBoundingClientRect().height)+4);
+    return {width,height:Math.max(naturalHeight,Number(t.boxMinHeight)||44)};
   }
   function computeLayout() {
     matrixMeasureCache.clear();
@@ -1123,11 +1465,13 @@ body{color:var(--app-ink,#f5f5f6);}
     state.matrixSelection=matrixSelection;
     topicLayer.querySelectorAll('.topic,.matrix-node').forEach(el=>{
       el.classList.toggle('selected',el.dataset.id===id);
-      el.querySelectorAll(':scope > .plus,:scope > .matrix-tools,:scope > .matrix-plus').forEach(b=>b.remove());
+      el.querySelectorAll(':scope > .plus,:scope > .matrix-tools,:scope > .matrix-plus,:scope > .topic-resize-handle').forEach(b=>b.remove());
     });
     const el=[...topicLayer.children].find(n=>n.dataset.id===id);
     const t=topicById(id);
-    if(el&&t?.kind==='matrix'){
+    if(el&&t?.kind==='plan'){
+      topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
+    }else if(el&&t?.kind==='matrix'){
       applyMatrixSelection(el);
       showMatrixControls(el,t);
     }else if(el&&t){
@@ -1135,6 +1479,7 @@ body{color:var(--app-ink,#f5f5f6);}
       if(state.editing!==id){
         el.append(createButton('child','添加子主题（Tab）',()=>addChild(id)));
         if(t.parentId!==null&&id!==activeRootId())el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(id)));
+        attachTopicResizeHandles(el,id);
       }
     }else topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
     drawConnections();
@@ -1400,6 +1745,416 @@ body{color:var(--app-ink,#f5f5f6);}
     scheduleSave('横纵表格 · 添加'+(axis==='row'?'行':'列'));
     render();ensureVisible(t.id);
   }
+
+  // DIY记录 v7：表格/卡片 × 时间/分类四视图，所见即所得编辑与排序。
+  // 内部永远只存一份 categories、periods 和 keyed cells；切换视图不复制数据。
+  let expandedPlanId=null;
+  let planViewMenu=null, planAxisDrag=null, planSizeDrag=null, ignorePlanClickUntil=0, selectedPlanAxis=null;
+  const PLAN_MIN_COL=115,PLAN_MAX_COL=950,PLAN_MIN_ROW=64,PLAN_MAX_ROW=1500;
+  function redrawExpandedPlan(){
+    if(!expandedPlanId)return;
+    const t=topicById(expandedPlanId);
+    if(!t||t.kind!=='plan'){document.getElementById('planFocusOverlay')?.remove();expandedPlanId=null;return;}
+    hidePlanViewMenu();
+    let overlay=document.getElementById('planFocusOverlay');
+    if(!overlay){overlay=document.createElement('div');overlay.className='plan-focus-overlay';overlay.id='planFocusOverlay';document.body.append(overlay);}
+    overlay.replaceChildren();
+    const node=renderPlanNode(t,{x:0,y:0,w:980,h:650});node.classList.add('plan-focused');overlay.append(node);
+    const close=document.createElement('button');close.className='plan-focus-close';close.type='button';close.textContent='×';close.title='退出全屏计划';
+    close.setAttribute('aria-label','关闭全屏计划表');
+    close.addEventListener('click',e=>{e.stopPropagation();closeExpandedPlan();});overlay.append(close);
+  }
+  function openExpandedPlan(id){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    if(state.planEditing)settlePlanEditor();
+    expandedPlanId=id;state.selected=id;redrawExpandedPlan();
+  }
+  function closeExpandedPlan(){
+    settlePlanEditor();hidePlanViewMenu();expandedPlanId=null;document.getElementById('planFocusOverlay')?.remove();render();
+  }
+  function createPlanData(kind){
+    const days=['周一','周二','周三','周四','周五','周六','周日'];
+    const weeks=['第1周','第2周','第3周','第4周','第5周'];
+    return {periodKind:kind,layout:'table',group:'date',
+      categories:['分类1','分类2','分类3'].map((name,i)=>({id:'c'+i,name})),
+      periods:(kind==='month'?weeks:days).map((name,i)=>({id:'p'+i,name})),cells:{},
+      colSizes:{date:{},category:{}},rowSizes:{date:{},category:{}}};
+  }
+  function insertPlan(kind){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const selected=topicById(state.selected);
+    const parent=selected?.kind==='plan'?(selected.parentId||activeRootId()):(selected?.id||activeRootId());
+    const t={id:makeId(),parentId:parent,text:kind==='month'?'月计划':'周计划',kind:'plan',plan:createPlanData(kind)};
+    data.topics.splice(subtreeLastIndex(parent)+1,0,t);
+    state.selected=t.id;state.matrixSelection=null;
+    scheduleSave('插入四视图'+t.text);render();ensureVisible(t.id);fitToView();
+    if(innerWidth<=700)openExpandedPlan(t.id);
+    notify('已插入可直接编辑的四视图计划：双击表头改名，右键左上角切换视图');
+  }
+  function planCellKey(c,p){return c.id+'|'+p.id;}
+  function planValue(t,key){return t.plan.cells[key]||'';}
+  function makePlanButton(text,action,title,css=''){
+    const b=document.createElement('button');b.type='button';b.textContent=text;
+    if(title)b.title=title;if(css)b.className=css;
+    b.addEventListener('pointerdown',e=>e.stopPropagation());
+    b.addEventListener('click',e=>{e.stopPropagation();action(e);});return b;
+  }
+  function planAxes(t){
+    const byDate=t.plan.group==='date';return {
+      rows:byDate?t.plan.categories:t.plan.periods,
+      cols:byDate?t.plan.periods:t.plan.categories,
+      rowAxis:byDate?'categories':'periods',
+      colAxis:byDate?'periods':'categories'
+    };
+  }
+  function planAxisArray(t,axis){return t.plan[axis];}
+  function planSelectAxis(t,axis,id){
+    state.selected=t.id;
+    selectedPlanAxis={planId:t.id,axis,id};
+    const hosts=[...document.querySelectorAll('.plan-node')].filter(e=>e.dataset.id===t.id);
+    for(const host of hosts){
+      host.classList.add('selected');host.querySelectorAll('.plan-axis-selected').forEach(el=>el.classList.remove('plan-axis-selected'));
+      host.querySelectorAll('.plan-axis-target').forEach(el=>{if(el.dataset.axis===axis&&el.dataset.axisId===id)el.classList.add('plan-axis-selected');});
+    }
+  }
+  function planRename(t,axis,id){
+    const root=document.querySelector('#planFocusOverlay .plan-node[data-id="'+t.id+'"]')||document.querySelector('.plan-node[data-id="'+t.id+'"]');
+    const el=[...root?.querySelectorAll('.plan-axis-target')||[]].find(x=>x.dataset.axis===axis&&x.dataset.axisId===id);
+    if(el)startPlanAxisEditing(t,axis,id,el);
+  }
+  function planAddAxis(t,axis){
+    settlePlanEditor();const list=t.plan[axis],max=axis==='categories'?20:40;
+    if(list.length>=max){notify('最多 '+max+' 个'+(axis==='categories'?'分类':'时间段'));return;}
+    const name=axis==='categories'?'分类'+(list.length+1):(t.plan.periodKind==='month'?'第'+(list.length+1)+'周':'时间段'+(list.length+1));
+    const next={id:makeId(),name};list.push(next);
+    scheduleSave('计划 · 新增'+name);render();
+    // 添加后直接进入新标题的编辑，不再要求先去管理菜单。
+    const box=document.querySelector('#planFocusOverlay .plan-node[data-id="'+t.id+'"]')||document.querySelector('.plan-node[data-id="'+t.id+'"]');
+    const title=[...box?.querySelectorAll('.plan-axis-target')||[]].find(x=>x.dataset.axis===axis&&x.dataset.axisId===next.id);
+    if(title)startPlanAxisEditing(t,axis,next.id,title);
+  }
+  function planDeleteAxis(t,axis,id){
+    settlePlanEditor();const arr=t.plan[axis],idx=arr.findIndex(a=>a.id===id);if(idx<0)return;
+    if(arr.length<=1){notify('至少保留一个分类及一个时间段');return;}
+    const name=arr[idx].name;
+    if(!confirm('删除「'+name+'」以及该行/列所有事项？'))return;
+    const dead=arr.splice(idx,1)[0];
+    if(selectedPlanAxis?.planId===t.id&&selectedPlanAxis.id===id)selectedPlanAxis=null;
+    for(const key of Object.keys(t.plan.cells)){
+      const [c,p]=key.split('|');if(axis==='categories'?c===dead.id:p===dead.id)delete t.plan.cells[key];
+    }
+    for(const group of ['date','category']){
+      delete t.plan.colSizes?.[group]?.[dead.id];delete t.plan.rowSizes?.[group]?.[dead.id];
+    }
+    scheduleSave('计划 · 删除'+name);render();
+  }
+  function planStableFields(t){
+    t.plan.colSizes ||= {date:{},category:{}};
+    t.plan.rowSizes ||= {date:{},category:{}};
+    t.plan.colSizes.date ||= {};t.plan.colSizes.category ||= {};
+    t.plan.rowSizes.date ||= {};t.plan.rowSizes.category ||= {};
+  }
+  function settlePlanEditor(commit=true){
+    const ed=state.planEditing;if(!ed)return;
+    state.planEditing=null;
+    const t=topicById(ed.id);if(!t||t.kind!=='plan')return;
+    if(ed.axis){
+      const item=t.plan[ed.axis].find(v=>v.id===ed.axisId);if(!item)return;
+      if(!commit)item.name=ed.original;
+      if(commit&&item.name!==ed.original)scheduleSave('计划 · 更名'+item.name);
+      else persist();
+      finishPlanRemote();if(cloud.dirty&&!cloud.conflict)requestCloudPush();return;
+    }
+    const current=planValue(t,ed.key);
+    if(!commit)t.plan.cells[ed.key]=ed.original;
+    if(commit&&current!==ed.original)scheduleSave('计划事项 · '+(current||'清空').slice(0,22));
+    else persist();
+    finishPlanRemote();if(cloud.dirty&&!cloud.conflict)requestCloudPush();
+  }
+  function finishPlanRemote(){
+    if(cloud.externalRow&&!cloud.sending){
+      const row=cloud.externalRow;cloud.externalRow=null;
+      if(Number(row.revision)>Number(cloud.revision)){
+        if(cloud.dirty)showCloudConflict(row,'另一台设备在你编辑计划表时修改了内容。');
+        else{adoptCloudRow(row);notify('已接收另一设备的修改');}
+      }
+    }
+  }
+  function startPlanAxisEditing(t,axis,id,el){
+    if(Date.now()<ignorePlanClickUntil)return;
+    if(state.planEditing)settlePlanEditor();
+    const item=t.plan[axis].find(v=>v.id===id);if(!item)return;
+    planSelectAxis(t,axis,id);
+    const input=document.createElement('input');input.className='plan-axis-input';input.type='text';input.maxLength=100;
+    input.value=item.name;input.setAttribute('aria-label','编辑'+(axis==='categories'?'分类':'日期')+'名称');
+    state.planEditing={id:t.id,axis,axisId:id,original:item.name};
+    el.replaceChildren(input);el.classList.add('plan-axis-editing');
+    input.addEventListener('pointerdown',e=>e.stopPropagation());input.addEventListener('click',e=>e.stopPropagation());
+    input.addEventListener('input',()=>{item.name=input.value;persist();});
+    const finish=(commit)=>{
+      if(state.planEditing?.axisId!==id)return;
+      item.name=(commit?input.value:state.planEditing.original).trim()||state.planEditing.original;
+      settlePlanEditor(commit);el.classList.remove('plan-axis-editing');el.textContent=item.name;
+      // 计划表视图内的同一个标题可能出现多次，立即就地更新它们。
+      document.querySelectorAll('.plan-axis-target').forEach(other=>{
+        if(other===el||other.dataset.axis!==axis||other.dataset.axisId!==id||other.querySelector('input'))return;
+        if(other.closest('.plan-node')?.dataset.id===t.id)other.textContent=item.name;
+      });
+    };
+    input.addEventListener('blur',()=>finish(true));
+    input.addEventListener('keydown',e=>{
+      e.stopPropagation();if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Enter'){e.preventDefault();input.blur();}
+      if(e.key==='Escape'){e.preventDefault();finish(false);}
+    });
+    input.focus();input.select();
+  }
+  function planNote(t,cat,period){
+    const key=planCellKey(cat,period),area=document.createElement('textarea');
+    area.className='plan-note';area.rows=2;area.maxLength=30000;area.spellcheck=false;
+    area.placeholder='输入事项';area.value=planValue(t,key);
+    area.setAttribute('aria-label',period.name+' · '+cat.name+' 事项');
+    area.addEventListener('pointerdown',e=>{e.stopPropagation();if(innerWidth<=700&&!expandedPlanId){e.preventDefault();openExpandedPlan(t.id);}});
+    area.addEventListener('click',e=>e.stopPropagation());
+    const grow=()=>{area.style.height='auto';area.style.height=Math.max(58,area.scrollHeight+3)+'px';};
+    area.addEventListener('focus',()=>{
+      selectedPlanAxis=null;
+      if(state.planEditing&&(state.planEditing.key!==key||state.planEditing.id!==t.id))settlePlanEditor();
+      state.planEditing={id:t.id,key,original:planValue(t,key)};
+      state.selected=t.id;
+    });
+    area.addEventListener('input',()=>{t.plan.cells[key]=area.value;persist();grow();});
+    area.addEventListener('blur',()=>{
+      if(state.planEditing?.id===t.id&&state.planEditing?.key===key)settlePlanEditor();
+    });
+    area.addEventListener('keydown',e=>{
+      if(e.key==='Escape'){
+        e.stopPropagation();e.preventDefault();if(state.planEditing?.key===key)t.plan.cells[key]=state.planEditing.original;
+        area.blur();
+      }
+    });
+    requestAnimationFrame(()=>{if(area.isConnected)grow();});
+    return area;
+  }
+  function hidePlanViewMenu(){planViewMenu?.remove();planViewMenu=null;}
+  function openPlanViewMenu(t,x,y){
+    hidePlanViewMenu();settlePlanEditor();
+    const menu=document.createElement('div');menu.className='plan-view-menu';menu.setAttribute('role','menu');
+    const label=document.createElement('div');label.className='plan-view-menu-caption';label.textContent='显示方式 · 选择视图';menu.append(label);
+    for(const [layout,group,label] of [['table','date','表格 · 按日期'],['table','category','表格 · 按分类'],['cards','date','卡片 · 按日期'],['cards','category','卡片 · 按分类']]){
+      const selected=t.plan.layout===layout&&t.plan.group===group;
+      const b=makePlanButton((selected?'✓　':'　　')+label,()=>{
+        hidePlanViewMenu();if(selected)return;
+        t.plan.layout=layout;t.plan.group=group;scheduleSave('计划 · 视图'+label);render();
+      },'切换'+label);b.setAttribute('role','menuitemradio');b.setAttribute('aria-checked',String(selected));
+      menu.append(b);
+    }
+    document.body.append(menu);planViewMenu=menu;
+    const rect=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';
+    menu.style.top=Math.max(8,Math.min(y,innerHeight-rect.height-8))+'px';
+  }
+  document.addEventListener('pointerdown',e=>{if(planViewMenu&&!planViewMenu.contains(e.target))hidePlanViewMenu();},true);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape')hidePlanViewMenu();
+    if((e.key==='Backspace'||e.key==='Delete')&&selectedPlanAxis&&!state.planEditing){
+      const a=selectedPlanAxis,el=[...document.querySelectorAll('.plan-node .plan-axis-selected')]
+        .find(node=>node.closest('.plan-node')?.dataset.id===a.planId&&node.dataset.axis===a.axis&&node.dataset.axisId===a.id);
+      if(el){
+        e.preventDefault();e.stopImmediatePropagation();const t=topicById(a.planId);if(t)planDeleteAxis(t,a.axis,a.id);
+      }
+    }
+  });
+  function planAxisClass(el,axis,id){
+    el.classList.add('plan-axis-target');el.dataset.axis=axis;el.dataset.axisId=id;el.title='单击选中，双击直接编辑；拖动调整顺序';
+  }
+  // 拖动分类或日期标题：只移动原数组中的 id，事项 key 不动，所有视图自然对齐。
+  function planAxisPointerDown(e,t,axis,id,element){
+    if(e.button!==0||e.target.closest('input,button,.plan-resizer'))return;
+    e.stopPropagation();planSelectAxis(t,axis,id);
+    if(innerWidth<=700&&!expandedPlanId){openExpandedPlan(t.id);return;}
+    const startX=e.clientX,startY=e.clientY;
+    const getTargets=()=>[...document.querySelectorAll('.plan-node .plan-axis-target')]
+      .filter(el=>el.closest('.plan-node')?.dataset.id===t.id&&el.closest('#planFocusOverlay')===element.closest('#planFocusOverlay')&&el.dataset.axis===axis&&el.dataset.axisId!==id);
+    let dragging=false,ghost=null,drop=null;
+    const move=ev=>{
+      if(ev.pointerId!==e.pointerId)return;
+      if(!dragging&&Math.hypot(ev.clientX-startX,ev.clientY-startY)<9)return;
+      if(!dragging){
+        dragging=true;document.body.classList.add('plan-is-dragging');
+        ghost=document.createElement('div');ghost.className='plan-axis-ghost';ghost.textContent=element.textContent;document.body.append(ghost);
+        element.classList.add('plan-axis-origin');
+      }
+      ev.preventDefault();ghost.style.left=(ev.clientX+15)+'px';ghost.style.top=(ev.clientY+15)+'px';
+      for(const el of document.querySelectorAll('.plan-axis-drop-before,.plan-axis-drop-after'))el.classList.remove('plan-axis-drop-before','plan-axis-drop-after');
+      let winner=null,dist=Infinity;
+      for(const el of getTargets()){
+        const r=el.getBoundingClientRect();const dx=Math.max(r.left-ev.clientX,0,ev.clientX-r.right),dy=Math.max(r.top-ev.clientY,0,ev.clientY-r.bottom);
+        const d=Math.hypot(dx,dy);if(d<dist){dist=d;winner=el;}
+      }
+      // 允许从左边列/上边行向近处拖动，而不要求两个单元格完全重叠。
+      if(winner&&dist<180){
+        const r=winner.getBoundingClientRect(),horizontal=winner.closest('.plan-card-grid')!==null?true:axis===planAxes(t).colAxis;
+        const after=horizontal?ev.clientX>r.left+r.width/2:ev.clientY>r.top+r.height/2;
+        winner.classList.add(after?'plan-axis-drop-after':'plan-axis-drop-before');drop={id:winner.dataset.axisId,after};
+      }else drop=null;
+    };
+    const clear=()=>{
+      window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);
+      ghost?.remove();element.classList.remove('plan-axis-origin');document.body.classList.remove('plan-is-dragging');
+      document.querySelectorAll('.plan-axis-drop-before,.plan-axis-drop-after').forEach(el=>el.classList.remove('plan-axis-drop-before','plan-axis-drop-after'));
+    };
+    const up=ev=>{
+      if(ev.pointerId!==e.pointerId)return;const dest=drop,was=dragging;clear();
+      if(!was)return;ignorePlanClickUntil=Date.now()+350;ev.preventDefault();
+      if(!dest)return;
+      const arr=planAxisArray(t,axis),from=arr.findIndex(v=>v.id===id),to=arr.findIndex(v=>v.id===dest.id);
+      if(from<0||to<0)return;
+      const moved=arr.splice(from,1)[0];let insert=to+(dest.after?1:0);if(from<insert)insert--;
+      insert=Math.max(0,Math.min(arr.length,insert));arr.splice(insert,0,moved);
+      if(insert!==from){scheduleSave('计划 · 拖动'+moved.name+'调整顺序');render();}
+    };
+    const cancel=()=>clear();
+    window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);
+  }
+  function makePlanAxisLabel(t,axis,item,tag,role){
+    const el=document.createElement(tag);el.className='plan-axis-label';planAxisClass(el,axis,item.id);el.textContent=item.name;
+    el.tabIndex=0;el.setAttribute('role',role||'button');
+    el.addEventListener('pointerdown',e=>planAxisPointerDown(e,t,axis,item.id,el));
+    el.addEventListener('click',e=>{e.stopPropagation();if(Date.now()<ignorePlanClickUntil)return;planSelectAxis(t,axis,item.id);});
+    el.addEventListener('dblclick',e=>{e.stopPropagation();startPlanAxisEditing(t,axis,item.id,el);});
+    el.addEventListener('keydown',e=>{
+      if(e.key==='Enter'||e.key==='F2'){e.preventDefault();e.stopPropagation();startPlanAxisEditing(t,axis,item.id,el);}
+    });
+    el.addEventListener('contextmenu',e=>{
+      e.preventDefault();e.stopPropagation();planSelectAxis(t,axis,item.id);openPlanAxisContext(t,axis,item.id,e.clientX,e.clientY);
+    });
+    return el;
+  }
+  function openPlanAxisContext(t,axis,id,x,y){
+    hidePlanViewMenu();const menu=document.createElement('div');menu.className='plan-view-menu';menu.setAttribute('role','menu');
+    const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='表头操作';menu.append(title);
+    menu.append(makePlanButton('✎　直接编辑',()=>{hidePlanViewMenu();planRename(t,axis,id);}));
+    menu.append(makePlanButton('×　删除'+(axis==='categories'?'分类':'日期'),()=>{hidePlanViewMenu();planDeleteAxis(t,axis,id);}));
+    document.body.append(menu);planViewMenu=menu;const r=menu.getBoundingClientRect();
+    menu.style.left=Math.max(8,Math.min(x,innerWidth-r.width-8))+'px';menu.style.top=Math.max(8,Math.min(y,innerHeight-r.height-8))+'px';
+  }
+  function planBorderResize(e,t,orientation,axisId,table,anchor,otherCol){
+    if(e.button!==0)return;e.preventDefault();e.stopPropagation();
+    if(state.planEditing)settlePlanEditor();
+    planStableFields(t);const group=t.plan.group;
+    const map=orientation==='x'?t.plan.colSizes[group]:t.plan.rowSizes[group];
+    const origin=Number(map[axisId])||(orientation==='x'?(otherCol?210:145):84);
+    const start=orientation==='x'?e.clientX:e.clientY;
+    anchor.classList.add('plan-resizing');document.body.classList.add('plan-resize-active');
+    const move=ev=>{
+      if(ev.pointerId!==e.pointerId)return;ev.preventDefault();
+      const scale=anchor.closest('#planFocusOverlay')?1:Math.max(.25,state.zoom);
+      const diff=((orientation==='x'?ev.clientX:ev.clientY)-start)/scale;
+      const value=Math.round(Math.max(orientation==='x'?PLAN_MIN_COL:PLAN_MIN_ROW,Math.min(orientation==='x'?PLAN_MAX_COL:PLAN_MAX_ROW,origin+diff)));
+      map[axisId]=value;
+      if(orientation==='x')table.querySelectorAll('col').forEach(col=>{if(col.dataset.axisId===axisId)col.style.width=value+'px';});
+      else for(const row of table.querySelectorAll('tr'))if(row.dataset.axisId===axisId)row.style.height=value+'px';
+    };
+    const finish=ev=>{
+      if(ev.pointerId!==e.pointerId)return;
+      window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',finish);window.removeEventListener('pointercancel',finish);
+      anchor.classList.remove('plan-resizing');document.body.classList.remove('plan-resize-active');
+      if(map[axisId]&&map[axisId]!==origin)scheduleSave('计划表 · 调整'+(orientation==='x'?'列宽':'行高'));
+    };
+    window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
+  }
+  function renderPlanNode(t,p){
+    planStableFields(t);
+    const plan=t.plan,wrap=document.createElement('section');wrap.className='plan-node plan-inline';
+    wrap.dataset.id=t.id;wrap.setAttribute('aria-label',t.text+'，四视图计划');
+    if(state.selected===t.id)wrap.classList.add('selected');
+    Object.assign(wrap.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+    wrap.addEventListener('pointerdown',e=>e.stopPropagation());
+    wrap.addEventListener('click',e=>{
+      e.stopPropagation();if(state.selected!==t.id)selectInteractive(t.id);
+      if(innerWidth<=700&&!expandedPlanId&&!e.target.closest('button,textarea,input,.plan-axis-target'))openExpandedPlan(t.id);
+    });
+    wrap.addEventListener('contextmenu',e=>{
+      if(e.target.closest('textarea,input,button,.plan-axis-target,.plan-corner'))return;
+      e.preventDefault();e.stopPropagation();selectInteractive(t.id);showDeleteContext(e.clientX,e.clientY);
+    });
+    const header=document.createElement('div');header.className='plan-top';
+    const dragHandle=document.createElement('span');dragHandle.className='plan-handle';dragHandle.textContent='⠿';
+    dragHandle.title='拖动整个计划主题';dragHandle.setAttribute('role','button');dragHandle.tabIndex=0;header.append(dragHandle);
+    dragHandle.addEventListener('pointerdown',e=>{e.stopPropagation();prepareTopicDrag(e,t.id,wrap);});
+    const title=document.createElement('strong');title.className='plan-name';title.textContent=t.text;
+    title.title='双击重命名';title.addEventListener('dblclick',e=>{
+      e.stopPropagation();settlePlanEditor();const text=prompt('计划表标题',t.text);
+      if(text?.trim()&&text.trim()!==t.text){t.text=text.trim().slice(0,100);scheduleSave('计划标题更名');render();}
+    });header.append(title);
+    const miniView=makePlanButton('▦　切换视图 ▾',e=>{
+      const r=e.currentTarget?.getBoundingClientRect?.()||header.getBoundingClientRect();
+      openPlanViewMenu(t,r.left,r.bottom+4);
+    },'点击选择四种视图，表格左上角也支持右键','plan-view-trigger');
+    header.append(miniView);
+    header.append(makePlanButton('＋分类',()=>planAddAxis(t,'categories'),'新增分类并直接输入名称','plan-add-axis'));
+    header.append(makePlanButton('＋'+(plan.periodKind==='month'?'周':'日期'),()=>planAddAxis(t,'periods'),'新增时间段并直接输入名称','plan-add-axis'));
+    header.append(makePlanButton(expandedPlanId===t.id?'退出全屏':'⛶',()=>expandedPlanId===t.id?closeExpandedPlan():openExpandedPlan(t.id),'全屏放大编辑','plan-fullscreen'));
+    wrap.append(header);
+    const body=document.createElement('div');body.className='plan-scroll';
+    const axes=planAxes(t),groupByDate=plan.group==='date';
+    if(plan.layout==='table'){
+      const table=document.createElement('table');table.className='plan-table plan-table-live';
+      const colgroup=document.createElement('colgroup');
+      const cornerCol=document.createElement('col');cornerCol.style.width='145px';colgroup.append(cornerCol);
+      for(const col of axes.cols){const element=document.createElement('col');element.dataset.axisId=col.id;
+        element.style.width=(plan.colSizes[plan.group][col.id]||210)+'px';colgroup.append(element);}
+      table.append(colgroup);
+      const thead=document.createElement('thead'),tr=document.createElement('tr');
+      const corner=document.createElement('th');corner.className='plan-corner';corner.title='右键切换四种视图';
+      const cornerLabel=document.createElement('span');cornerLabel.textContent=groupByDate?(plan.periodKind==='month'?'分类 / 周':'分类 / 日期'):(plan.periodKind==='month'?'周 / 分类':'日期 / 分类');corner.append(cornerLabel);
+      const cornerArrow=makePlanButton('▾',e=>{const r=corner.getBoundingClientRect();openPlanViewMenu(t,r.left,r.bottom+3);},'切换表格与卡片、日期与分类','plan-corner-arrow');corner.append(cornerArrow);
+      corner.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();openPlanViewMenu(t,e.clientX,e.clientY);});
+      tr.append(corner);
+      for(const col of axes.cols){const th=document.createElement('th');th.className='plan-col-head';
+        th.append(makePlanAxisLabel(t,axes.colAxis,col,'span'));
+        const grip=document.createElement('span');grip.className='plan-resizer plan-resizer-x';grip.title='左右拖动调整列宽';
+        grip.addEventListener('pointerdown',e=>planBorderResize(e,t,'x',col.id,table,grip,true));th.append(grip);tr.append(th);}
+      thead.append(tr);table.append(thead);
+      const tbody=document.createElement('tbody');
+      for(const row of axes.rows){
+        const r=document.createElement('tr');r.dataset.axisId=row.id;
+        const desired=plan.rowSizes[plan.group][row.id];if(desired)r.style.height=desired+'px';
+        const th=document.createElement('th');th.className='plan-row-head';
+        th.append(makePlanAxisLabel(t,axes.rowAxis,row,'span'));
+        const grip=document.createElement('span');grip.className='plan-resizer plan-resizer-y';grip.title='上下拖动调整行高';
+        grip.addEventListener('pointerdown',e=>planBorderResize(e,t,'y',row.id,table,grip,false));th.append(grip);r.append(th);
+        for(const col of axes.cols){
+          const cat=groupByDate?row:col,period=groupByDate?col:row;
+          const td=document.createElement('td');td.append(planNote(t,cat,period));r.append(td);
+        }
+        tbody.append(r);
+      }
+      table.append(tbody);body.append(table);
+    }else{
+      const grid=document.createElement('div');grid.className='plan-card-grid';
+      const groups=groupByDate?plan.periods:plan.categories,inners=groupByDate?plan.categories:plan.periods;
+      const groupAxis=groupByDate?'periods':'categories',itemAxis=groupByDate?'categories':'periods';
+      for(const g of groups){
+        const card=document.createElement('section');card.className='plan-card';
+        const heading=document.createElement('div');heading.className='plan-card-title';
+        heading.append(makePlanAxisLabel(t,groupAxis,g,'span'));card.append(heading);
+        const inner=document.createElement('div');inner.className='plan-card-body';
+        for(const i of inners){
+          const item=document.createElement('div');item.className='plan-card-item';
+          const label=makePlanAxisLabel(t,itemAxis,i,'span');label.classList.add('plan-card-subhead');item.append(label);
+          const cat=groupByDate?i:g,period=groupByDate?g:i;item.append(planNote(t,cat,period));inner.append(item);
+        }
+        card.append(inner);grid.append(card);
+      }
+      body.append(grid);
+    }
+    wrap.append(body);return wrap;
+  }
+
   function insertMatrix(){
     if(state.editing)endEditing(true);
     if(state.matrixEditing)settleMatrixEditor(true);
@@ -1426,7 +2181,7 @@ body{color:var(--app-ink,#f5f5f6);}
     if((e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button,input,.topic-editor'))return;
     e.stopPropagation();
     if(id===activeRootId())return; // 当前画布中心主题固定；其余主题可重组。
-    if(state.editing||state.matrixEditing)return;
+    if(state.editing||state.matrixEditing||state.planEditing)return;
     try{el.setPointerCapture(e.pointerId);}catch{}
     topicDrag={id,pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,
       element:el,moved:false,drop:null,ghost:null,hint:null,wire:null,ignore:new Set(),parentId:topicById(id)?.parentId};
@@ -1769,10 +2524,18 @@ body{color:var(--app-ink,#f5f5f6);}
 
 
   // 在普通输入框内选中部分文字后才显示悬浮工具条；不抢占文字输入焦点。
-  let richSelection=null,richLastPreset=0;
+  let richSelection=null,richLastPreset=0,lastRichEditor=null;
+  const richMobileHelper=$('richMobileHelper');
+  function showRichMobileHelper(){
+    const editor=document.activeElement;
+    if(editor?.matches?.('.topic-editor,.matrix-cell-input:not([readonly])'))lastRichEditor=editor;
+    const active=(state.editing||state.matrixEditing)&&lastRichEditor?.isConnected&&$('richToolbar').hidden;
+    richMobileHelper.hidden=!active;
+  }
   const richBar=$('richToolbar'),richPopover=$('richPopover');
   function hideRichBar(clear=true){richBar.hidden=true;richPopover.hidden=true;$('richCustom').hidden=true;
-    $('richExpand').setAttribute('aria-expanded','false');if(clear)richSelection=null;}
+    $('richExpand').setAttribute('aria-expanded','false');if(clear)richSelection=null;
+    requestAnimationFrame(showRichMobileHelper); }
   function selectedTextCoordinates(field,index){
     const rect=field.getBoundingClientRect(),style=getComputedStyle(field);
     const mirror=document.createElement('div');
@@ -1791,7 +2554,8 @@ body{color:var(--app-ink,#f5f5f6);}
     return {x:Math.max(rect.left,Math.min(rect.right,x)),y:Math.max(rect.top,Math.min(rect.bottom,y))};
   }
   function richSelectionFromDOM(){
-    const field=document.activeElement;
+    const focused=document.activeElement;
+    const field=(focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement)?focused:lastRichEditor;
     if(!(field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement))return;
     if(!field.matches('.matrix-cell-input,.topic-editor')||!field.isConnected)return;
     const start=field.selectionStart,end=field.selectionEnd;
@@ -1803,7 +2567,7 @@ body{color:var(--app-ink,#f5f5f6);}
       id=wrapper.dataset.id;r=tr.rowIndex;c=td.cellIndex;
       if(state.matrixEditing?.id!==id||state.matrixEditing?.row!==r||state.matrixEditing?.col!==c)return;
     }else {id=field.closest('.topic')?.dataset.id;if(state.editing!==id)return;}
-    richSelection={id,row:r,col:c,start,end,field};
+    richSelection={id,row:r,col:c,start,end,field};lastRichEditor=field;richMobileHelper.hidden=true;
     const caret=selectedTextCoordinates(field,end),w=richBar.offsetWidth||90;
     const left=Math.max(8,Math.min(innerWidth-w-8,caret.x-w/2));
     let top=caret.y-58;
@@ -1877,11 +2641,20 @@ body{color:var(--app-ink,#f5f5f6);}
     richSelectionFromDOM();
   },0);}
   document.addEventListener('mouseup',deferRichSelection);
-  document.addEventListener('touchend',()=>setTimeout(richSelectionFromDOM,100),{passive:true});
+  // Android 长按/拖拽选区柄主要触发 select、selectionchange，而非 mouseup。
+  let mobileSelectTimer=null;
+  function deferredMobileSelect(){clearTimeout(mobileSelectTimer);mobileSelectTimer=setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},90);}
+  document.addEventListener('selectionchange',deferredMobileSelect);
+  document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input'))deferredMobileSelect();},true);
+  document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input')){lastRichEditor=e.target;showRichMobileHelper();}},true);
+  document.addEventListener('touchend',()=>{[100,320,650].forEach(ms=>setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},ms));},{passive:true});
+  richMobileHelper.addEventListener('pointerdown',e=>e.preventDefault());
+  richMobileHelper.addEventListener('click',()=>{richSelectionFromDOM();if(!richSelection){notify('请先长按选中一段文字，再点标注');return;}richBar.hidden=false;showRichPresets();richPopover.hidden=false;placeRichPopover();});
   document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input'))deferRichSelection();});
   document.addEventListener('pointerdown',e=>{
     if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input')){
       if(!richBar.hidden)hideRichBar();
+      showRichMobileHelper();
     }
   },true);
   // 黑白灰整体主题，与笔记数据一起写入 root.appearancePreset；旧版默认禅心。
@@ -1957,6 +2730,10 @@ body{color:var(--app-ink,#f5f5f6);}
     for(const t of data.topics) {
       const p=state.positions.get(t.id);
       if(!p)continue;
+      if(t.kind==='plan' && t.plan){
+        topicLayer.append(renderPlanNode(t,p));
+        continue;
+      }
       if(t.kind==='matrix' && t.matrix){
         topicLayer.append(renderMatrixNode(t,p));
         continue;
@@ -1982,10 +2759,61 @@ body{color:var(--app-ink,#f5f5f6);}
       if(t.id===state.selected && state.editing!==t.id) {
         el.append(createButton('child','添加子主题（Tab）',()=>addChild(t.id)));
         if(t.parentId!==null && t.id!==activeRootId()) el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(t.id)));
+        attachTopicResizeHandles(el,t.id);
       }
       topicLayer.append(el);
     }
     applyTransform();renderBoards();
+    redrawExpandedPlan();
+  }
+  // 只更新现有 DOM 的位置和尺寸，不拆掉正在输入文字的 textarea。
+  let nodeReflowPending=false;
+  function reflowTopicsInPlace(){
+    if(nodeReflowPending)return;nodeReflowPending=true;
+    requestAnimationFrame(()=>{
+      nodeReflowPending=false;computeLayout();
+      for(const el of topicLayer.children){const p=state.positions.get(el.dataset.id);if(!p)continue;
+        Object.assign(el.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+        const editor=el.querySelector('.topic-editor');if(editor)fitTopicEditor(editor);
+      }
+      drawConnections();
+    });
+  }
+  function fitTopicEditor(input){
+    input.style.height='auto';input.style.height=Math.max(24,input.scrollHeight)+'px';
+  }
+  function attachTopicResizeHandles(el,id){
+    if(state.editing===id||topicById(id)?.kind)return;
+    for(const axis of ['x','y']){
+      const h=document.createElement('button');h.type='button';h.className='topic-resize-handle topic-resize-'+axis;
+      h.setAttribute('aria-label',axis==='x'?'拖动调整主题宽度':'拖动调整主题高度');
+      h.title=axis==='x'?'左右拖动调整主题宽度':'上下拖动调整主题高度';
+      h.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+      h.addEventListener('pointerdown',e=>{
+        if(e.pointerType==='mouse'&&e.button!==0)return;
+        e.preventDefault();e.stopPropagation();hideDeleteContext();
+        const t=topicById(id);if(!t)return;
+        const measured=getSize(t),start=e[axis==='x'?'clientX':'clientY'];
+        const initial=axis==='x'?measured.width:measured.height;
+        let changed=false;h.classList.add('dragging');try{h.setPointerCapture(e.pointerId);}catch{}
+        const move=ev=>{
+          if(ev.pointerId!==e.pointerId)return;ev.preventDefault();ev.stopPropagation();
+          const delta=(ev[axis==='x'?'clientX':'clientY']-start)/state.zoom;
+          const next=Math.round(Math.max(axis==='x'?100:44,Math.min(axis==='x'?1800:4000,initial+delta)));
+          if(axis==='x')t.boxWidth=next;else t.boxMinHeight=next;
+          changed=true;reflowTopicsInPlace();
+        };
+        const end=ev=>{
+          if(ev.pointerId!==e.pointerId)return;
+          h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',cancel);
+          h.classList.remove('dragging');try{h.releasePointerCapture(e.pointerId);}catch{}
+          if(changed){scheduleSave(axis==='x'?'调整主题宽度':'调整主题高度');render();}
+        };
+        const cancel=ev=>{if(ev.pointerId!==e.pointerId)return;end(ev);};
+        h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',cancel);
+      });
+      el.append(h);
+    }
   }
   // 编辑草稿保存在 state/editDraft 和本机数据中，防止输入框因重绘/失焦丢字。
   // 每次真正结束编辑才生成一条历史记录，并向云端提交。
@@ -2006,8 +2834,8 @@ body{color:var(--app-ink,#f5f5f6);}
     render();
     const el=[...topicLayer.children].find(n=>n.dataset.id===id);if(!el)return;
     el.replaceChildren();
-    const input=document.createElement('input');
-    input.type='text';input.className='topic-editor';input.value=state.editDraft.raw;input.maxLength=1000;
+    const input=document.createElement('textarea');
+    input.rows=1;input.className='topic-editor';input.value=state.editDraft.raw;input.maxLength=MAX_TOPIC_TEXT;
     if(newNode)input.placeholder='新主题';
     input.setAttribute('aria-label','编辑主题文字');
     // 正在输入的每个字都先写入内存+本地存储；这里不触发云端上传，
@@ -2016,18 +2844,20 @@ body{color:var(--app-ink,#f5f5f6);}
       if(state.editing!==id||!state.editDraft)return;
       const before=state.editDraft.raw;state.editDraft.raw=input.value;
       const node=topicById(id);
-      if(node){node.marks=updateMarksForEdit(node.marks||[],before,input.value);node.text=input.value.trim()||'新主题';persist();}
+      if(node){node.marks=updateMarksForEdit(node.marks||[],before,input.value);node.text=input.value.trim()?input.value:'新主题';persist();}
+      fitTopicEditor(input);reflowTopicsInPlace();
     });
     input.addEventListener('click',e=>e.stopPropagation());
     input.addEventListener('pointerdown',e=>e.stopPropagation());
     input.addEventListener('keydown',e=>{
       // 中文拼音输入的 Enter 可能只是确认候选词，不能提前结束编辑。
       if(e.isComposing||e.keyCode===229)return;
-      if(e.key==='Enter'){e.preventDefault();e.stopPropagation();endEditing(true);}
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();e.stopPropagation();endEditing(true);}
+      else if(e.key==='Enter'&&e.shiftKey){e.stopPropagation();}
       if(e.key==='Escape'){e.preventDefault();e.stopPropagation();endEditing(false);}
     });
     input.addEventListener('blur',()=>{if(!richPopover.hidden)return;endEditing(true);});
-    el.append(input);input.focus();
+    el.append(input);input.focus();fitTopicEditor(input);showRichMobileHelper();
     if(selectAll)input.select();else input.setSelectionRange(input.value.length,input.value.length);
   }
   function endEditing(save) {
@@ -2037,7 +2867,7 @@ body{color:var(--app-ink,#f5f5f6);}
     // 先关闭编辑态，再重绘：避免移除输入框时触发 blur 重复保存。
     const input=topicLayer.querySelector('.topic-editor');
     const raw=input&&input.closest('.topic')?.dataset.id===id?input.value:draft.raw;
-    const finalText=raw.trim()||'新主题';
+    const finalText=raw.trim()?raw:'新主题';
     const t=topicById(id);
     state.editing=null;state.editDraft=null;
     if(t){
@@ -2050,7 +2880,7 @@ body{color:var(--app-ink,#f5f5f6);}
         persist();
       }
     }
-    render();
+    render();showRichMobileHelper();
     // 正在编辑时暂存的远程通知，在编辑结束后再判断；不让旧数据抢占输入框。
     if(cloud.externalRow&&!cloud.sending){
       const row=cloud.externalRow;cloud.externalRow=null;
@@ -2368,7 +3198,7 @@ body{color:var(--app-ink,#f5f5f6);}
     const remote=normalize({topics:row.topics});if(!remote)return;
     if(state.editing)endEditing(false);
     if(state.matrixEditing)settleMatrixEditor(false);
-    data=remote;state.selected=null;state.matrixSelection=null;state.editing=null;ensureBoardValid();
+    data=remote;state.selected=null;state.matrixSelection=null;state.editing=null;ensureBoardValid();resetLocalUndoBaseline();
     cloud.revision=Number(row.revision);clearPending();cloud.externalRow=null;cloud.conflict=null;
     $('cloudConflict').hidden=true;
     try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){console.warn(e);}
@@ -2381,8 +3211,8 @@ body{color:var(--app-ink,#f5f5f6);}
     $('cloudConflictText').textContent=reason+' 云端 '+(row.topics?.length||0)+' 个主题；本机 '+data.topics.length+' 个主题。';
     $('cloudConflict').hidden=false;
     cloudMessage('检测到数据版本不同，等待你选择保留哪份。');
-    setCloudStatus('同步冲突 · 请处理');
-    setCloudModal(true);
+    setCloudStatus('同步冲突 · 设置中处理');
+    notify('云端与本机存在不同修改，请从左上角「设置」确认保留哪份');
   }
   async function useRemote(){
     let row=cloud.conflict;if(!row)return;
@@ -2420,7 +3250,7 @@ body{color:var(--app-ink,#f5f5f6);}
           const sh=getShadow(id);
           if(sh&&sameTopics(sh.topics,row.topics))return;
         }
-        if(state.editing||state.matrixEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize){
+        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize){
           // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
           if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
           return;
@@ -2436,7 +3266,7 @@ body{color:var(--app-ink,#f5f5f6);}
       });
   }
   function requestCloudPush(){
-    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     clearTimeout(cloud.timer);
     cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
   }
@@ -2464,7 +3294,7 @@ body{color:var(--app-ink,#f5f5f6);}
     }
   }
   async function flushCloud(){
-    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     cloud.sending=true;clearTimeout(cloud.timer);
     const snapshot=cloneTopics();
     const entries=cloud.pendingEntries.splice(0);
@@ -2505,7 +3335,7 @@ body{color:var(--app-ink,#f5f5f6);}
       if(cloud.externalRow){
         const remote=cloud.externalRow;cloud.externalRow=null;
         if(Number(remote.revision)>Number(cloud.revision)){
-          if(cloud.dirty||state.editing)showCloudConflict(remote,'另一设备已更新，而本机仍有未同步修改。');
+          if(cloud.dirty||state.editing||state.planEditing)showCloudConflict(remote,'另一设备已更新，而本机仍有未同步修改。');
           else adoptCloudRow(remote);
         }
       }
@@ -2513,6 +3343,8 @@ body{color:var(--app-ink,#f5f5f6);}
     }
   }
   $('cloudBtn').addEventListener('click',()=>setCloudModal(true));
+  $('syncConflictChip').addEventListener('click',()=>setCloudModal(true));
+  $('settingsMenuItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);setCloudModal(true);});
   $('cloudClose').addEventListener('click',()=>setCloudModal(false));
   $('cloudOverlay').addEventListener('click',e=>{if(e.target===$('cloudOverlay'))setCloudModal(false);});
   $('cloudConnect').addEventListener('click',()=>void connectSupabase());
@@ -2530,6 +3362,7 @@ body{color:var(--app-ink,#f5f5f6);}
     void readCloudDocument().then(row=>{
       if(!row)return;
       if(Number(row.revision)>Number(cloud.revision)){
+        if(state.planEditing){cloud.externalRow=row;return;}
         if(cloud.dirty||state.editing||state.matrixEditing||cloud.sending)showCloudConflict(row,'重新进入页面时检测到另一设备的修改。');
         else adoptCloudRow(row);
       }else if(cloud.dirty||cloud.pendingEntries.length)requestCloudPush();
@@ -2550,7 +3383,7 @@ body{color:var(--app-ink,#f5f5f6);}
   // 空白画布拖动（主题节点由思维导图布局自动排列）。
   const pointers=new Map();let gesture=null;
   function down(e) {
-    if(e.target.closest('.topic')||e.target.closest('.matrix-node')||e.target.closest('.zoom-tools'))return;
+    if(e.target.closest('.topic')||e.target.closest('.matrix-node')||e.target.closest('.plan-node')||e.target.closest('.zoom-tools'))return;
     if(e.button!==0&&e.pointerType==='mouse')return;
     stage.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -2598,12 +3431,20 @@ body{color:var(--app-ink,#f5f5f6);}
   stage.addEventListener('pointermove',move);
   stage.addEventListener('pointerup',up);
   stage.addEventListener('pointercancel',up);
-  stage.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
+  stage.addEventListener('wheel',e=>{if(e.target.closest('.plan-scroll'))return;e.preventDefault();zoomAt(e.deltaY<0?1.12:1/1.12,e.clientX,e.clientY);},{passive:false});
   $('zoomIn').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1.2,r.left+r.width/2,r.top+r.height/2);});
   $('zoomOut').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1/1.2,r.left+r.width/2,r.top+r.height/2);});
   $('fitBtn').addEventListener('click',fitToView);
   document.addEventListener('keydown',e=>{
-    if(state.editing||state.matrixEditing||e.isComposing||e.altKey||e.ctrlKey||e.metaKey)return;
+    if(e.isComposing||e.altKey||!(e.ctrlKey||e.metaKey))return;
+    const target=e.target;
+    if(target?.closest?.('input:not([readonly]),textarea:not([readonly]),[contenteditable=true]'))return;
+    const key=e.key.toLowerCase();
+    if(key==='z'){e.preventDefault();applyUndoRedo(e.shiftKey?'redo':'undo');}
+    else if(key==='y'){e.preventDefault();applyUndoRedo('redo');}
+  },true);
+  document.addEventListener('keydown',e=>{
+    if(state.editing||state.matrixEditing||state.planEditing||e.isComposing||e.altKey||e.ctrlKey||e.metaKey)return;
     if(e.target.closest('[contenteditable=true]')||(e.target.matches('input,textarea')&&!e.target.readOnly))return;
     if(e.key==='Escape'){hideDeleteContext();state.selected=null;state.matrixSelection=null;render();return;}
     if(!state.selected)return;
@@ -2612,12 +3453,14 @@ body{color:var(--app-ink,#f5f5f6);}
     }
     if(e.key==='F2'){
       e.preventDefault();
+      if(topicById(state.selected)?.kind==='plan')return;
       if(topicById(state.selected)?.kind==='matrix'){
         const s=state.matrixSelection?.id===state.selected?state.matrixSelection:null;
         startMatrixEditing(state.selected,s?.row??0,s?.col??0);
       }else startEditing(state.selected,true);
       return;
     }
+    if(topicById(state.selected)?.kind==='plan')return;
     if(topicById(state.selected)?.kind==='matrix'){
       if(e.key==='Enter'&&state.matrixSelection?.id===state.selected){e.preventDefault();startMatrixEditing(state.selected,state.matrixSelection.row,state.matrixSelection.col);}
       return;
@@ -2657,6 +3500,8 @@ body{color:var(--app-ink,#f5f5f6);}
   $('menuToggle').addEventListener('click',e=>{
     e.stopPropagation();$('historyPanel').hidden=true;setMenu($('menuPopup').hidden);
   });
+  $('undoMenuItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);applyUndoRedo('undo');});
+  $('redoMenuItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);applyUndoRedo('redo');});
   $('historyMenuItem').addEventListener('click',e=>{
     e.stopPropagation();setMenu(false);historyLimit=40;$('historyPanel').hidden=false;void renderHistory();
   });
@@ -2667,6 +3512,8 @@ body{color:var(--app-ink,#f5f5f6);}
     $('insertMenuItem').setAttribute('aria-expanded',String(open));
   });
   $('insertMatrixItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertMatrix();});
+  $('insertWeeklyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('week');});
+  $('insertMonthlyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('month');});
   $('historyClose').addEventListener('click',()=>$('historyPanel').hidden=true);
   document.addEventListener('pointerdown',e=>{
     if(!e.target.closest('#deleteContext'))hideDeleteContext();
@@ -2677,7 +3524,7 @@ body{color:var(--app-ink,#f5f5f6);}
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){setMenu(false);$('historyPanel').hidden=true;hideBoardPopup();}
   });
-  window.addEventListener('pagehide',()=>{if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);persist();});
+  window.addEventListener('pagehide',()=>{if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();persist();});
   window.addEventListener('resize',applyTransform);
   render();centerInitial();
   // 启用历史功能时先为已有数据建立一个基准版本，供后续恢复。
@@ -2689,7 +3536,7 @@ body{color:var(--app-ink,#f5f5f6);}
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.16.5";
+  const BUILD = "2026.11.17.1";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');

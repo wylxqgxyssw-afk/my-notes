@@ -1,34 +1,14 @@
-图谱笔记 · PWA 完整代码包
-===========================
+DIY记录 · 2026.11.17.1
 
-【你得到的是完整软件，不是空壳】
-index.html 直接保留上一版的 XMind 风格节点、多画布、横纵表格、拖动排序、历史记录、邮箱密码登录与 Supabase my-notes 云同步；另外增加 PWA 安装与版本更新提示。
+已有 GitHub Pages 用户：下载 3 文件更新包，解压后把 index.html、service-worker.js、version.json 上传覆盖到 my-notes 仓库根目录，点击 Commit changes。
+电脑/手机已安装 PWA 无需重新安装。重新打开，按照更新提示刷新。
 
-【一次性发布（GitHub Pages）】
-1. 在 GitHub 新建一个 Public 仓库（例如 my-notes-web），不要把笔记 JSON、账号密码、数据库私钥上传。
-2. 将本压缩包里的 index.html、manifest.webmanifest、service-worker.js、version.json、icons 目录里的两个 PNG、.nojekyll 一起放在仓库根目录。
-3. 仓库 Settings → Pages → Deploy from a branch → main → /(root) → Save。
-4. 发布成功后访问 https://你的用户名.github.io/my-notes-web/ （以实际地址为准）。
-5. 电脑 Edge 打开网址 → … → 应用 → 将此站点安装为应用。手机 Chrome/Edge 打开同一网址 → 菜单 → 安装应用 / 添加到主屏幕。
-6. 两端用已有 my-notes Supabase 邮箱+密码登录；数据是通过云端同步的，不是通过 GitHub 传输。
+使用说明：
+1. 左上角三条杠 → 设置 · 账号与云同步。此前登录过同一网页的账号会自动恢复，平常不会弹出登录窗口。
+2. 如果出现 “⚠ 同步待处理”，说明本机与云端有实际内容冲突，须先备份数据，再通过设置选择保留云端或本机；程序不会擅自覆盖。
+3. 手机在普通节点或横纵表格里双击进入编辑，长按选择文字，浮动工具条选择配色；若系统选词菜单没有触发浮动框，可点击备用的 🎨文字标注按钮。
+4. 普通节点按 Shift+Enter 换行、Enter 完成输入；编辑结束后 Ctrl+Z 撤销，Ctrl+Y 或 Ctrl+Shift+Z 重做。编辑文字过程中 Ctrl+Z 为浏览器原生文本撤销。
+5. 选中普通节点后，在右侧或底部拖动蓝色控制点调整宽高；文字自动完整换行，不再仅保留两行。普通横纵表格仍能独立拖动列宽、行高。
 
-【后续更新（非常重要）】
-后续只需要更新同一个仓库里的代码文件；每次发布新版本，把以下三处版本同步升级：
-  A. index.html 中的 <meta name="app-build"> 及尾部 const BUILD
-  B. version.json 里的 version
-  C. service-worker.js 里的 CACHE_NAME 版本号
-这样设备在打开/切回前台时会发现新版本，点击“更新”后刷新。请先确认云端已同步或做好 JSON 备份再更新。
-如果只修改 index.html 但没改版本号，网络优先仍会在重新打开/刷新时读取新代码，但不会显示明确的更新提醒。
-
-【本地文件迁移】
-在电脑以 file:// 打开旧版图谱笔记与安装后的 https:// 站点属于不同的浏览器存储来源。
-如已有本机笔记而云端没有，先在旧版导出 JSON，进入 PWA 后手动导入；不要直接覆盖有重要数据的云端版本。
-若旧版数据已成功保存到 Supabase，同一账号登录新版可以从云端获取（出现版本冲突时请先备份后选择）。
-
-【隐私】
-GitHub Pages 免费公开站点不能简单切换成“只允许自己访问”。公开仓库里的 index.html 前端源代码可查看，里面只应包含 Supabase Publishable Key（本来就是公开密钥），不要写入密码或 Secret/service_role Key。
-个人笔记不上传到 GitHub，而是通过已经启用 RLS 的 my-notes Supabase 表按账号隔离。
-以后若要限制连软件入口都只有自己能访问，可以将相同文件迁移到 Cloudflare Pages + Cloudflare Access 等具备访问控制的托管方式；软件与数据库结构不必重做，访问网址变更可能需要重新安装 PWA。
-
-【测试范围】
-已提供完整代码与 SW 缓存策略。真正安装/云端跨设备同步必须在你自己的 HTTPS 发布地址与两台设备验证，无法仅通过本地双击 HTML 验证 PWA 安装。
+注意：版本升级前建议先备份重要笔记；未登录或未联网时只能本机保存。浏览器本地数据和云端数据不是一回事。
+不要把用户真实笔记、邮箱密码或 Secret/Service Role Key 提交到公开仓库。
