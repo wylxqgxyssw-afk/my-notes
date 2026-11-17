@@ -698,6 +698,22 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-focus-overlay .plan-fullscreen{display:none!important;}
 @media(max-width:440px){.plan-focus-overlay .plan-inline .plan-top{gap:3px;}.plan-focus-overlay .plan-inline .plan-view-trigger{font-size:11px;padding:5px 4px;}.plan-focus-overlay .plan-inline .plan-add-axis{font-size:11px;padding:5px 4px;}}
 
+
+/* v9 统一文字标注：计划表与普通横纵表格共用同一套颜色方案。 */
+.plan-note-wrap{position:relative;width:100%;min-width:0;}
+.plan-note-wrap .plan-note{position:relative;z-index:2;color:transparent!important;
+  -webkit-text-fill-color:transparent;caret-color:var(--matrix-ink,#fff);}
+.plan-note-wrap .plan-note:focus{background:transparent!important;}
+.plan-note-wrap .plan-note::selection{background:rgba(35,186,255,.30);color:transparent;}
+.plan-note-wrap .plan-note::placeholder{color:transparent!important;}
+.plan-note-visual{position:absolute;z-index:1;inset:0;pointer-events:none;
+  box-sizing:border-box;padding:7px;border:1px solid transparent;white-space:pre-wrap;
+  overflow-wrap:anywhere;word-break:break-word;font-family:inherit;font-size:13px;
+  font-weight:500;line-height:1.55;color:var(--matrix-ink,#fff);min-height:58px;}
+.plan-note-visual.is-placeholder{color:var(--matrix-muted,#aaa);}
+.plan-axis-label .rich-fragment,.plan-note-visual .rich-fragment{box-decoration-break:clone;-webkit-box-decoration-break:clone;}
+@media(max-width:700px){.rich-toolbar{z-index:10090;}.rich-popover{z-index:10095;}.rich-mobile-helper{z-index:10080;}}
+
 </style>
 </head>
 <body>
@@ -847,7 +863,7 @@ body{color:var(--app-ink,#f5f5f6);}
 'use strict';
 (() => {
   // XMind 风格主题、历史记录、本机保存、my-notes 云同步。
-  // v2026-11-17.1: 手机选区格式、账号静默恢复、撤销重做、多行节点及自由宽高。
+  // v2026-11-17.2: 手机选区格式、账号静默恢复、撤销重做、多行节点及自由宽高。
   // 保留上一个版本的节点编辑及登录逻辑；本次增加独立矩阵主题。
   const $ = id => document.getElementById(id);
   // 此存储键与上一版保持一致：更新 HTML 文件时不改变保存位置。
@@ -920,6 +936,31 @@ body{color:var(--app-ink,#f5f5f6);}
       if(!/^(0|[1-9]\d?),(0|[1-9]\d?)$/.test(key))continue;
       if(Array.isArray(val))result[key]=val.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=200000&&(validColor(v.fg)||validColor(v.bg)))
         .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg)}));
+    }
+    return result;
+  }
+  // 计划表的格式存于稳定 ID 对应的键：改变视图、拖动行列时不会改变所属事项。
+  function planCellMarkKey(key){return 'cell:'+key;}
+  function planAxisMarkKey(axis,id){return 'axis:'+axis+':'+id;}
+  function planMarks(t,key){return t.plan.richMap?.[key]||[];}
+  function putPlanMarks(t,key,marks){
+    t.plan.richMap ||= {};
+    if(marks.length)t.plan.richMap[key]=marks;
+    else delete t.plan.richMap[key];
+  }
+  function readPlanRichMap(raw,categories,periods,cells){
+    const result={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return result;
+    const limits={};
+    for(const cat of categories)limits[planAxisMarkKey('categories',cat.id)]=cat.name.length;
+    for(const period of periods)limits[planAxisMarkKey('periods',period.id)]=period.name.length;
+    for(const cat of categories)for(const period of periods){
+      const cellKey=cat.id+'|'+period.id;
+      limits[planCellMarkKey(cellKey)]=(cells[cellKey]||'').length;
+    }
+    for(const [key,marks] of Object.entries(raw).slice(0,1200)){
+      if(!Object.hasOwn(limits,key))continue;
+      const clean=validMarks(marks,' '.repeat(limits[key]));
+      if(clean.length)result[key]=clean;
     }
     return result;
   }
@@ -1048,7 +1089,7 @@ body{color:var(--app-ink,#f5f5f6);}
         for(const [k,v] of Object.entries(p.cells))if(validKeys.has(k)&&typeof v==='string')cells[k]=v.slice(0,30000);
         node.kind='plan';node.plan={periodKind:p.periodKind==='month'?'month':'week',
           layout:p.layout==='cards'?'cards':'table',group:p.group==='category'?'category':'date',
-          categories,periods,cells,
+          categories,periods,cells,richMap:readPlanRichMap(p.richMap,categories,periods,cells),
           // 行列宽高以 axisId 存储，排序切换后始终跟随原分类/日期。
           colSizes:{date:cleanPlanDims(p.colSizes?.date),category:cleanPlanDims(p.colSizes?.category)},
           rowSizes:{date:cleanPlanDims(p.rowSizes?.date),category:cleanPlanDims(p.rowSizes?.category)}};
@@ -1778,7 +1819,7 @@ body{color:var(--app-ink,#f5f5f6);}
     const weeks=['第1周','第2周','第3周','第4周','第5周'];
     return {periodKind:kind,layout:'table',group:'date',
       categories:['分类1','分类2','分类3'].map((name,i)=>({id:'c'+i,name})),
-      periods:(kind==='month'?weeks:days).map((name,i)=>({id:'p'+i,name})),cells:{},
+      periods:(kind==='month'?weeks:days).map((name,i)=>({id:'p'+i,name})),cells:{},richMap:{},
       colSizes:{date:{},category:{}},rowSizes:{date:{},category:{}}};
   }
   function insertPlan(kind){
@@ -1844,8 +1885,11 @@ body{color:var(--app-ink,#f5f5f6);}
     const dead=arr.splice(idx,1)[0];
     if(selectedPlanAxis?.planId===t.id&&selectedPlanAxis.id===id)selectedPlanAxis=null;
     for(const key of Object.keys(t.plan.cells)){
-      const [c,p]=key.split('|');if(axis==='categories'?c===dead.id:p===dead.id)delete t.plan.cells[key];
+      const [c,p]=key.split('|');if(axis==='categories'?c===dead.id:p===dead.id){
+        delete t.plan.cells[key];delete t.plan.richMap?.[planCellMarkKey(key)];
+      }
     }
+    if(t.plan.richMap)delete t.plan.richMap[planAxisMarkKey(axis,dead.id)];
     for(const group of ['date','category']){
       delete t.plan.colSizes?.[group]?.[dead.id];delete t.plan.rowSizes?.[group]?.[dead.id];
     }
@@ -1863,13 +1907,13 @@ body{color:var(--app-ink,#f5f5f6);}
     const t=topicById(ed.id);if(!t||t.kind!=='plan')return;
     if(ed.axis){
       const item=t.plan[ed.axis].find(v=>v.id===ed.axisId);if(!item)return;
-      if(!commit)item.name=ed.original;
+      if(!commit){item.name=ed.original;putPlanMarks(t,planAxisMarkKey(ed.axis,ed.axisId),ed.originalMarks||[]);}
       if(commit&&item.name!==ed.original)scheduleSave('计划 · 更名'+item.name);
       else persist();
       finishPlanRemote();if(cloud.dirty&&!cloud.conflict)requestCloudPush();return;
     }
     const current=planValue(t,ed.key);
-    if(!commit)t.plan.cells[ed.key]=ed.original;
+    if(!commit){t.plan.cells[ed.key]=ed.original;putPlanMarks(t,planCellMarkKey(ed.key),ed.originalMarks||[]);}
     if(commit&&current!==ed.original)scheduleSave('计划事项 · '+(current||'清空').slice(0,22));
     else persist();
     finishPlanRemote();if(cloud.dirty&&!cloud.conflict)requestCloudPush();
@@ -1890,18 +1934,26 @@ body{color:var(--app-ink,#f5f5f6);}
     planSelectAxis(t,axis,id);
     const input=document.createElement('input');input.className='plan-axis-input';input.type='text';input.maxLength=100;
     input.value=item.name;input.setAttribute('aria-label','编辑'+(axis==='categories'?'分类':'日期')+'名称');
-    state.planEditing={id:t.id,axis,axisId:id,original:item.name};
+    state.planEditing={id:t.id,axis,axisId:id,original:item.name,
+      originalMarks:JSON.parse(JSON.stringify(planMarks(t,planAxisMarkKey(axis,id))))};
+    input.dataset.planAxis=axis;input.dataset.planAxisId=id;
     el.replaceChildren(input);el.classList.add('plan-axis-editing');
     input.addEventListener('pointerdown',e=>e.stopPropagation());input.addEventListener('click',e=>e.stopPropagation());
-    input.addEventListener('input',()=>{item.name=input.value;persist();});
+    input.addEventListener('input',()=>{
+      const before=item.name,markKey=planAxisMarkKey(axis,id);
+      putPlanMarks(t,markKey,updateMarksForEdit(planMarks(t,markKey),before,input.value));
+      item.name=input.value;persist();
+    });
     const finish=(commit)=>{
       if(state.planEditing?.axisId!==id)return;
       item.name=(commit?input.value:state.planEditing.original).trim()||state.planEditing.original;
-      settlePlanEditor(commit);el.classList.remove('plan-axis-editing');el.textContent=item.name;
+      settlePlanEditor(commit);el.classList.remove('plan-axis-editing');
+      renderMarkedText(el,item.name,planMarks(t,planAxisMarkKey(axis,id)));
       // 计划表视图内的同一个标题可能出现多次，立即就地更新它们。
       document.querySelectorAll('.plan-axis-target').forEach(other=>{
         if(other===el||other.dataset.axis!==axis||other.dataset.axisId!==id||other.querySelector('input'))return;
-        if(other.closest('.plan-node')?.dataset.id===t.id)other.textContent=item.name;
+        if(other.closest('.plan-node')?.dataset.id===t.id)
+          renderMarkedText(other,item.name,planMarks(t,planAxisMarkKey(axis,id)));
       });
     };
     input.addEventListener('blur',()=>finish(true));
@@ -1913,31 +1965,48 @@ body{color:var(--app-ink,#f5f5f6);}
     input.focus();input.select();
   }
   function planNote(t,cat,period){
-    const key=planCellKey(cat,period),area=document.createElement('textarea');
+    const key=planCellKey(cat,period),markKey=planCellMarkKey(key);
+    const wrap=document.createElement('div');wrap.className='plan-note-wrap';wrap.dataset.planKey=key;
+    const area=document.createElement('textarea');
     area.className='plan-note';area.rows=2;area.maxLength=30000;area.spellcheck=false;
+    area.dataset.planKey=key;
     area.placeholder='输入事项';area.value=planValue(t,key);
     area.setAttribute('aria-label',period.name+' · '+cat.name+' 事项');
+    const visual=document.createElement('div');visual.className='plan-note-visual';visual.setAttribute('aria-hidden','true');
+    const refresh=()=>renderMarkedText(visual,area.value,planMarks(t,markKey),'输入事项');
+    refresh();
     area.addEventListener('pointerdown',e=>{e.stopPropagation();if(innerWidth<=700&&!expandedPlanId){e.preventDefault();openExpandedPlan(t.id);}});
     area.addEventListener('click',e=>e.stopPropagation());
     const grow=()=>{area.style.height='auto';area.style.height=Math.max(58,area.scrollHeight+3)+'px';};
     area.addEventListener('focus',()=>{
       selectedPlanAxis=null;
       if(state.planEditing&&(state.planEditing.key!==key||state.planEditing.id!==t.id))settlePlanEditor();
-      state.planEditing={id:t.id,key,original:planValue(t,key)};
+      if(!state.planEditing||state.planEditing.key!==key||state.planEditing.id!==t.id)
+        state.planEditing={id:t.id,key,original:planValue(t,key),
+          originalMarks:JSON.parse(JSON.stringify(planMarks(t,markKey)))};
       state.selected=t.id;
     });
-    area.addEventListener('input',()=>{t.plan.cells[key]=area.value;persist();grow();});
+    area.addEventListener('input',()=>{
+      const before=planValue(t,key);
+      putPlanMarks(t,markKey,updateMarksForEdit(planMarks(t,markKey),before,area.value));
+      t.plan.cells[key]=area.value;persist();grow();refresh();
+    });
     area.addEventListener('blur',()=>{
       if(state.planEditing?.id===t.id&&state.planEditing?.key===key)settlePlanEditor();
     });
     area.addEventListener('keydown',e=>{
       if(e.key==='Escape'){
-        e.stopPropagation();e.preventDefault();if(state.planEditing?.key===key)t.plan.cells[key]=state.planEditing.original;
+        e.stopPropagation();e.preventDefault();
+        if(state.planEditing?.key===key){
+          t.plan.cells[key]=state.planEditing.original;
+          putPlanMarks(t,markKey,state.planEditing.originalMarks||[]);
+        }
         area.blur();
       }
     });
-    requestAnimationFrame(()=>{if(area.isConnected)grow();});
-    return area;
+    wrap.append(visual,area);
+    requestAnimationFrame(()=>{if(area.isConnected){grow();refresh();}});
+    return wrap;
   }
   function hidePlanViewMenu(){planViewMenu?.remove();planViewMenu=null;}
   function openPlanViewMenu(t,x,y){
@@ -2020,7 +2089,8 @@ body{color:var(--app-ink,#f5f5f6);}
     window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',up);window.addEventListener('pointercancel',cancel);
   }
   function makePlanAxisLabel(t,axis,item,tag,role){
-    const el=document.createElement(tag);el.className='plan-axis-label';planAxisClass(el,axis,item.id);el.textContent=item.name;
+    const el=document.createElement(tag);el.className='plan-axis-label';planAxisClass(el,axis,item.id);
+    renderMarkedText(el,item.name,planMarks(t,planAxisMarkKey(axis,item.id)));
     el.tabIndex=0;el.setAttribute('role',role||'button');
     el.addEventListener('pointerdown',e=>planAxisPointerDown(e,t,axis,item.id,el));
     el.addEventListener('click',e=>{e.stopPropagation();if(Date.now()<ignorePlanClickUntil)return;planSelectAxis(t,axis,item.id);});
@@ -2528,8 +2598,8 @@ body{color:var(--app-ink,#f5f5f6);}
   const richMobileHelper=$('richMobileHelper');
   function showRichMobileHelper(){
     const editor=document.activeElement;
-    if(editor?.matches?.('.topic-editor,.matrix-cell-input:not([readonly])'))lastRichEditor=editor;
-    const active=(state.editing||state.matrixEditing)&&lastRichEditor?.isConnected&&$('richToolbar').hidden;
+    if(editor?.matches?.('.topic-editor,.matrix-cell-input:not([readonly]),.plan-note,.plan-axis-input'))lastRichEditor=editor;
+    const active=(state.editing||state.matrixEditing||state.planEditing)&&lastRichEditor?.isConnected&&$('richToolbar').hidden;
     richMobileHelper.hidden=!active;
   }
   const richBar=$('richToolbar'),richPopover=$('richPopover');
@@ -2557,17 +2627,25 @@ body{color:var(--app-ink,#f5f5f6);}
     const focused=document.activeElement;
     const field=(focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement)?focused:lastRichEditor;
     if(!(field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement))return;
-    if(!field.matches('.matrix-cell-input,.topic-editor')||!field.isConnected)return;
+    if(!field.matches('.matrix-cell-input,.topic-editor,.plan-note,.plan-axis-input')||!field.isConnected)return;
     const start=field.selectionStart,end=field.selectionEnd;
     if(start===null||end===null||start===end){if(!richPopover.hidden)return;hideRichBar();return;}
-    let id,r=null,c=null;
+    let id,r=null,c=null,kind='topic',planKey=null,planAxis=null,planAxisId=null;
     if(field.classList.contains('matrix-cell-input')){
       const wrapper=field.closest('.matrix-node'),tr=field.closest('tr'),td=field.closest('td');
       if(!wrapper||!tr||!td)return;
-      id=wrapper.dataset.id;r=tr.rowIndex;c=td.cellIndex;
+      id=wrapper.dataset.id;r=tr.rowIndex;c=td.cellIndex;kind='matrix';
       if(state.matrixEditing?.id!==id||state.matrixEditing?.row!==r||state.matrixEditing?.col!==c)return;
+    }else if(field.classList.contains('plan-note')){
+      id=field.closest('.plan-node')?.dataset.id;planKey=field.dataset.planKey;kind='planCell';
+      if(state.planEditing?.id!==id||state.planEditing?.key!==planKey)return;
+    }else if(field.classList.contains('plan-axis-input')){
+      id=field.closest('.plan-node')?.dataset.id;
+      planAxis=field.dataset.planAxis;planAxisId=field.dataset.planAxisId;kind='planAxis';
+      if(state.planEditing?.id!==id||state.planEditing?.axis!==planAxis||state.planEditing?.axisId!==planAxisId)return;
     }else {id=field.closest('.topic')?.dataset.id;if(state.editing!==id)return;}
-    richSelection={id,row:r,col:c,start,end,field};lastRichEditor=field;richMobileHelper.hidden=true;
+    richSelection={id,row:r,col:c,kind,planKey,planAxis,planAxisId,start,end,field};
+    lastRichEditor=field;richMobileHelper.hidden=true;
     const caret=selectedTextCoordinates(field,end),w=richBar.offsetWidth||90;
     const left=Math.max(8,Math.min(innerWidth-w-8,caret.x-w/2));
     let top=caret.y-58;
@@ -2581,18 +2659,48 @@ body{color:var(--app-ink,#f5f5f6);}
   function applyColorPreset(preset){
     const s=richSelection;if(!s){notify('请先双击进入文字编辑，再选中要标注的文字');return;}
     const t=topicById(s.id);if(!t)return;
-    const text=s.row===null?t.text:tableValue(t,s.row,s.col);
+    let text='',existing=[],markKey=null;
+    if(s.kind==='planCell'){
+      if(t.kind!=='plan')return;
+      markKey=planCellMarkKey(s.planKey);text=planValue(t,s.planKey);existing=planMarks(t,markKey);
+    }else if(s.kind==='planAxis'){
+      if(t.kind!=='plan')return;
+      const axisItem=t.plan[s.planAxis]?.find(v=>v.id===s.planAxisId);if(!axisItem)return;
+      markKey=planAxisMarkKey(s.planAxis,s.planAxisId);text=axisItem.name;existing=planMarks(t,markKey);
+    }else{
+      text=s.kind==='matrix'?tableValue(t,s.row,s.col):t.text;
+      existing=activeMarks(t,s.row,s.col);
+    }
     const start=Math.min(s.start,text.length),end=Math.min(s.end,text.length);
     if(end<=start){notify('请重新选中要标注的文字');return;}
-    putMarks(t,s.row,s.col,assignMarks(activeMarks(t,s.row,s.col),text,start,end,preset.fg,preset.bg));
-    const marked=s.field.closest('td')?.querySelector('.matrix-cell-visual');
-    if(marked)renderMarkedText(marked,text,activeMarks(t,s.row,s.col));
-    if(s.row===null){ // 普通节点的富文本标注在结束编辑后显示。
-      const node=s.field.closest('.topic'); if(node)node.title='已保存局部颜色标注';
+    const next=assignMarks(existing,text,start,end,preset.fg,preset.bg);
+    if(markKey){
+      putPlanMarks(t,markKey,next);
+      if(s.kind==='planCell'){
+        document.querySelectorAll('.plan-note-wrap').forEach(w=>{
+          if(w.closest('.plan-node')?.dataset.id===t.id&&w.dataset.planKey===s.planKey){
+            const visual=w.querySelector('.plan-note-visual');if(visual)renderMarkedText(visual,text,next,'输入事项');
+          }
+        });
+      }else{
+        document.querySelectorAll('.plan-axis-target').forEach(el=>{
+          if(el.closest('.plan-node')?.dataset.id===t.id&&el.dataset.axis===s.planAxis&&
+             el.dataset.axisId===s.planAxisId&&!el.querySelector('input'))renderMarkedText(el,text,next);
+        });
+      }
+    }else{
+      putMarks(t,s.row,s.col,next);
+      const marked=s.field.closest('td')?.querySelector('.matrix-cell-visual');
+      if(marked)renderMarkedText(marked,text,activeMarks(t,s.row,s.col));
+      if(s.kind==='topic'){
+        const node=s.field.closest('.topic');if(node)node.title='已保存局部颜色标注';
+      }
     }
     scheduleSave('标注文字颜色 · '+text.slice(start,Math.min(end,start+14)));
-    if(s.row===null&&state.editing===s.id)endEditing(true);
-    hideRichBar(false);
+    if(s.kind==='topic'&&state.editing===s.id)endEditing(true);
+    // 完成标注后折叠选区，防止悬浮框再次弹出并遮挡相邻表头。
+    try{if(s.field.isConnected&&typeof s.field.setSelectionRange==='function')s.field.setSelectionRange(end,end);}catch{}
+    hideRichBar(true);
     notify('文字与背景颜色已保存，可在另一台设备同步');
   }
   function showRichPresets(){
@@ -2645,14 +2753,14 @@ body{color:var(--app-ink,#f5f5f6);}
   let mobileSelectTimer=null;
   function deferredMobileSelect(){clearTimeout(mobileSelectTimer);mobileSelectTimer=setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},90);}
   document.addEventListener('selectionchange',deferredMobileSelect);
-  document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input'))deferredMobileSelect();},true);
-  document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input')){lastRichEditor=e.target;showRichMobileHelper();}},true);
+  document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input'))deferredMobileSelect();},true);
+  document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input')){lastRichEditor=e.target;showRichMobileHelper();}},true);
   document.addEventListener('touchend',()=>{[100,320,650].forEach(ms=>setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},ms));},{passive:true});
   richMobileHelper.addEventListener('pointerdown',e=>e.preventDefault());
   richMobileHelper.addEventListener('click',()=>{richSelectionFromDOM();if(!richSelection){notify('请先长按选中一段文字，再点标注');return;}richBar.hidden=false;showRichPresets();richPopover.hidden=false;placeRichPopover();});
-  document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input'))deferRichSelection();});
+  document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input'))deferRichSelection();});
   document.addEventListener('pointerdown',e=>{
-    if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input')){
+    if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input')){
       if(!richBar.hidden)hideRichBar();
       showRichMobileHelper();
     }
