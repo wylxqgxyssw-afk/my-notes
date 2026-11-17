@@ -714,6 +714,22 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-axis-label .rich-fragment,.plan-note-visual .rich-fragment{box-decoration-break:clone;-webkit-box-decoration-break:clone;}
 @media(max-width:700px){.rich-toolbar{z-index:10090;}.rich-popover{z-index:10095;}.rich-mobile-helper{z-index:10080;}}
 
+
+/* v10：普通横纵表格安卓触摸文字选择。不能再让画布/表格 touch-action:none 抢占编辑手势。 */
+@media (pointer:coarse) {
+  .stage.matrix-touch-select-mode { touch-action:pan-x pan-y; }
+  .matrix-node.selected, .matrix-node.matrix-text-editing { touch-action:pan-x pan-y; }
+  .matrix-node .matrix-table textarea.matrix-cell-input:not([readonly]) {
+    touch-action:pan-x pan-y; user-select:text!important; -webkit-user-select:text!important;
+    -webkit-touch-callout:default; cursor:text;
+  }
+  .matrix-node .matrix-cell-input[readonly] { touch-action:manipulation; }
+  .matrix-node.selected .matrix-tools .matrix-edit-cta { display:inline-flex; }
+}
+.matrix-node .matrix-tools .matrix-edit-cta { display:none; align-items:center; border-color:#20b9ff; }
+.matrix-node .matrix-table td.editing-cell { overflow:visible; }
+.matrix-node .matrix-table td.editing-cell textarea { -webkit-touch-callout:default; }
+
 </style>
 </head>
 <body>
@@ -863,7 +879,7 @@ body{color:var(--app-ink,#f5f5f6);}
 'use strict';
 (() => {
   // XMind 风格主题、历史记录、本机保存、my-notes 云同步。
-  // v2026-11-17.2: 手机选区格式、账号静默恢复、撤销重做、多行节点及自由宽高。
+  // v2026-11-17.3: 修复普通横纵表格在安卓手机上的选字/编辑触摸冲突；其余功能保持不变。
   // 保留上一个版本的节点编辑及登录逻辑；本次增加独立矩阵主题。
   const $ = id => document.getElementById(id);
   // 此存储键与上一版保持一致：更新 HTML 文件时不改变保存位置。
@@ -1504,6 +1520,9 @@ body{color:var(--app-ink,#f5f5f6);}
     if(state.matrixEditing)settleMatrixEditor(true);
     state.selected=id;
     state.matrixSelection=matrixSelection;
+    // 选中横纵表格后放开手机触摸文字选择；离开表格恢复画布原有拖动模式。
+    stage.classList.toggle('matrix-touch-select-mode',
+      !!(topicById(id)?.kind==='matrix' && matchMedia('(pointer:coarse)').matches));
     topicLayer.querySelectorAll('.topic,.matrix-node').forEach(el=>{
       el.classList.toggle('selected',el.dataset.id===id);
       el.querySelectorAll(':scope > .plus,:scope > .matrix-tools,:scope > .matrix-plus,:scope > .topic-resize-handle').forEach(b=>b.remove());
@@ -1576,6 +1595,7 @@ body{color:var(--app-ink,#f5f5f6);}
     const ed=state.matrixEditing;
     if(!ed)return;
     state.matrixEditing=null;
+    topicLayer.querySelectorAll('.matrix-node.matrix-text-editing').forEach(el=>el.classList.remove('matrix-text-editing'));
     const node=topicById(ed.id);
     if(!node||node.kind!=='matrix')return;
     if(!commit)setTableValue(node,ed.row,ed.col,ed.original);
@@ -1625,6 +1645,13 @@ body{color:var(--app-ink,#f5f5f6);}
     matrixReflowRequested=true;
     requestAnimationFrame(()=>{matrixReflowRequested=false;reflowMatrixGeometry();});
   }
+  // 触屏首次轻点选格，第二次轻点编辑；长按在系统选字前提前开启原生文本编辑。
+  let matrixTouchHold=null, matrixLastTouchTap=null;
+  function cancelMatrixTouchHold(pointerId=null){
+    if(!matrixTouchHold || (pointerId!==null && matrixTouchHold.pointerId!==pointerId))return;
+    clearTimeout(matrixTouchHold.timer);matrixTouchHold=null;
+  }
+  function mobileMatrixEditorAvailable(){return matchMedia('(pointer:coarse)').matches;}
   function renderMatrixNode(t,p){
     const wrap=document.createElement('div');wrap.className='matrix-node';wrap.dataset.id=t.id;
     if(state.selected===t.id)wrap.classList.add('selected');
@@ -1658,18 +1685,44 @@ body{color:var(--app-ink,#f5f5f6);}
         renderMarkedText(visual,field.value,activeMarks(t,r,c),hint);
         field.addEventListener('pointerdown',e=>{
           e.stopPropagation();
+          if(e.pointerType==='touch'&&field.readOnly){
+            cancelMatrixTouchHold();
+            const hold={pointerId:e.pointerId,x:e.clientX,y:e.clientY,timer:null};matrixTouchHold=hold;
+            // 短按仍然单击选中；持续按下则在浏览器原生长按选字前进入编辑。
+            hold.timer=setTimeout(()=>{
+              if(matrixTouchHold!==hold || !field.isConnected || !field.readOnly)return;
+              matrixTouchHold=null;
+              if(axisDrag&&!axisDrag.moved)axisDrag=null;
+              startMatrixEditing(t.id,r,c);
+            },230);
+          }
+          // 编辑期间不能启动“整行/列拖动”，否则触摸选区柄会被拖动操作抢走。
+          if(!field.readOnly)return;
           if(r>0&&c===0)prepareAxisDrag(e,t.id,'row',r-1,wrap,field);
           else if(r===0&&c>0)prepareAxisDrag(e,t.id,'col',c-1,wrap,field);
         });
         field.addEventListener('click',e=>{
           e.stopPropagation();if(axisDrag?.moved){e.preventDefault();return;}
           if(state.matrixEditing?.id===t.id&&state.matrixEditing.row===r&&state.matrixEditing.col===c)return;
+          if(mobileMatrixEditorAvailable()){
+            const now=Date.now(),prev=matrixLastTouchTap;
+            matrixLastTouchTap={id:t.id,row:r,col:c,at:now};
+            if(prev?.id===t.id&&prev.row===r&&prev.col===c&&now-prev.at<750){
+              matrixLastTouchTap=null;startMatrixEditing(t.id,r,c);return;
+            }
+          }
           selectInteractive(t.id,matrixTarget(t.id,r,c));
         });
         field.addEventListener('dblclick',e=>{
           e.preventDefault();e.stopPropagation();startMatrixEditing(t.id,r,c);
         });
         field.addEventListener('contextmenu',e=>{
+          // 编辑中的安卓长按必须交给系统原生选中文字/拖选柄，不能弹自定义删除菜单。
+          if(!field.readOnly){e.stopPropagation();return;}
+          if(mobileMatrixEditorAvailable()){
+            e.preventDefault();e.stopPropagation();startMatrixEditing(t.id,r,c);
+            return;
+          }
           e.preventDefault();e.stopPropagation();
           selectInteractive(t.id,matrixTarget(t.id,r,c));showDeleteContext(e.clientX,e.clientY);
         });
@@ -1743,7 +1796,10 @@ body{color:var(--app-ink,#f5f5f6);}
     selectInteractive(id,matrixTarget(id,row,col));
     state.matrixEditing={id,row,col,original:tableValue(t,row,col)};
     field.readOnly=false;field.closest('td')?.classList.add('editing-cell');
-    field.focus();field.setSelectionRange(field.value.length,field.value.length);
+    wrap.classList.add('matrix-text-editing');
+    if(mobileMatrixEditorAvailable())stage.classList.add('matrix-touch-select-mode');
+    field.focus({preventScroll:true});field.setSelectionRange(field.value.length,field.value.length);
+    lastRichEditor=field;showRichMobileHelper();
   }
   function showMatrixControls(wrap,t){
     if(wrap.querySelector('.matrix-tools'))return;
@@ -1752,7 +1808,19 @@ body{color:var(--app-ink,#f5f5f6);}
       const flip=document.createElement('button');flip.type='button';flip.textContent='⇄ 横纵切换';flip.title='一键交换行与列，保留全部单元格内容';
       flip.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
       flip.addEventListener('click',e=>{e.stopPropagation();settleMatrixEditor(true);t.matrix.orientation=t.matrix.orientation==='normal'?'transpose':'normal';scheduleSave('横纵表格 · 切换行列');render();ensureVisible(t.id);});
-      tools.append(flip);wrap.append(tools);
+      tools.append(flip);
+      const edit=document.createElement('button');edit.type='button';edit.className='matrix-edit-cta';
+      edit.textContent='✎ 编辑选中格';edit.title='手机：先轻点选中一个单元格，再点击这里编辑、长按选中文字';
+      edit.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+      edit.addEventListener('click',e=>{
+        e.preventDefault();e.stopPropagation();
+        const s=state.matrixSelection;
+        if(!s||s.id!==t.id){notify('请先轻点一个表格单元格');return;}
+        if(s.kind==='row')startMatrixEditing(t.id,s.row,0);
+        else if(s.kind==='col')startMatrixEditing(t.id,0,s.col);
+        else startMatrixEditing(t.id,s.row,s.col);
+      });
+      tools.append(edit);wrap.append(tools);
       const addCol=document.createElement('button');addCol.className='matrix-plus col';addCol.type='button';addCol.textContent='+';addCol.title='添加一列';addCol.setAttribute('aria-label','添加表格列');
       addCol.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
       addCol.addEventListener('click',e=>{e.stopPropagation();settleMatrixEditor(true);addMatrixAxis(t,'col');});
@@ -2478,7 +2546,8 @@ body{color:var(--app-ink,#f5f5f6);}
   function prepareAxisDrag(e,id,axis,from,wrap,field){
     if(e.pointerType==='mouse'&&e.button!==0)return;
     if(axisDrag||topicDrag||columnResize||rowResize)return;
-    try{field.setPointerCapture(e.pointerId);}catch{}
+    // 不捕获手机触摸指针：捕获会吞掉原生选择手柄/系统长按行为。
+    if(e.pointerType!=='touch')try{field.setPointerCapture(e.pointerId);}catch{}
     axisDrag={pointerId:e.pointerId,id,axis,from,wrap,field,startX:e.clientX,startY:e.clientY,
       moved:false,dropBoundary:null,ghost:null,line:null};
   }
@@ -2566,6 +2635,8 @@ body{color:var(--app-ink,#f5f5f6);}
     render();settleRemoteAfterDrag();
   }
   window.addEventListener('pointermove',e=>{
+    if(matrixTouchHold?.pointerId===e.pointerId&&
+       Math.hypot(e.clientX-matrixTouchHold.x,e.clientY-matrixTouchHold.y)>9)cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId)updateColumnResize(columnResize,e);
     if(rowResize&&rowResize.pointerId===e.pointerId)updateRowResize(rowResize,e);
     if(topicDrag&&topicDrag.pointerId===e.pointerId){
@@ -2580,12 +2651,14 @@ body{color:var(--app-ink,#f5f5f6);}
     }
   },{passive:false});
   window.addEventListener('pointerup',e=>{
+    cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,true);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,true);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,true);}
     if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,true);}
   });
   window.addEventListener('pointercancel',e=>{
+    cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,false);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,false);}
@@ -2751,7 +2824,10 @@ body{color:var(--app-ink,#f5f5f6);}
   document.addEventListener('mouseup',deferRichSelection);
   // Android 长按/拖拽选区柄主要触发 select、selectionchange，而非 mouseup。
   let mobileSelectTimer=null;
-  function deferredMobileSelect(){clearTimeout(mobileSelectTimer);mobileSelectTimer=setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},90);}
+  function deferredMobileSelect(){clearTimeout(mobileSelectTimer);mobileSelectTimer=setTimeout(()=>{
+    // 等 Android 原生文本选区柄完成位置更新后再计算工具条坐标。
+    richSelectionFromDOM();showRichMobileHelper();
+  },180);}
   document.addEventListener('selectionchange',deferredMobileSelect);
   document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input'))deferredMobileSelect();},true);
   document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input')){lastRichEditor=e.target;showRichMobileHelper();}},true);
@@ -2832,6 +2908,8 @@ body{color:var(--app-ink,#f5f5f6);}
   buildAppearancePicker();
 
   function render() {
+    stage.classList.toggle('matrix-touch-select-mode',
+      !!(state.selected && topicById(state.selected)?.kind==='matrix' && mobileMatrixEditorAvailable()));
     applyAppearance();
     hideRichBar();
     computeLayout(); drawConnections(); topicLayer.replaceChildren();
@@ -3533,7 +3611,7 @@ body{color:var(--app-ink,#f5f5f6);}
     else if(pointers.size===1) {
       const pt=[...pointers.values()][0];gesture={type:'pan',x:pt.x,y:pt.y,panX:state.panX,panY:state.panY,moved:true};
     }
-    if(wasClick){ if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);state.selected=null;state.matrixSelection=null;hideDeleteContext();render(); }
+    if(wasClick){ if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);state.selected=null;state.matrixSelection=null;stage.classList.remove('matrix-touch-select-mode');hideDeleteContext();render(); }
   }
   stage.addEventListener('pointerdown',down);
   stage.addEventListener('pointermove',move);
