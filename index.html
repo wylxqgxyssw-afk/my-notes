@@ -81,6 +81,13 @@
     text-align:center; font-weight:700; line-height:1.35; opacity:.94; }
   .drag-wire { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:2; overflow:visible; }
   .connection.selected-line { stroke:var(--blue); stroke-width:3.4; opacity:1; }
+  /* 层级括弧默认连接线：一条树干 / 一条竖向括弧 / N 条子叉。 */
+  .connection.fork-trunk {stroke-width:2.35;opacity:.97;}
+  .connection.fork-rail {stroke-width:2.15;opacity:.96;}
+  .connection.fork-arm {stroke-width:1.95;}
+
+  .resize-hold-ready::before {background:#20b9ff!important;opacity:1!important;}
+  .resize-hold-ready::after {opacity:1!important;}
   .connection.dragged-line { stroke:#a9abb0; stroke-width:2; stroke-dasharray:5 6; opacity:.5; }
   /* 整条分支拖动：框与所有下级框、线形成同一预览组 */
   .topic-drag-preview {position:absolute;inset:0;width:100%;height:100%;z-index:12;pointer-events:none;transform-origin:0 0;will-change:transform;}
@@ -122,6 +129,19 @@
   .matrix-node .matrix-col-resizer:hover::after,
   .matrix-node .matrix-col-resizer.resizing::after { opacity:1; }
   body.matrix-resizing, body.matrix-resizing * { cursor:col-resize!important; }
+  @media (pointer:coarse){
+    .matrix-node .matrix-col-resizer:not(.resizing):not(.resize-hold-ready)::before,
+    .matrix-node .matrix-row-resizer:not(.resizing):not(.resize-hold-ready)::before,
+    .plan-node .plan-col-resizer:not(.resizing):not(.resize-hold-ready)::before,
+    .plan-node .plan-row-resizer:not(.resizing):not(.resize-hold-ready)::before,
+    .topic-resize-handle:not(.dragging):not(.resize-hold-ready)::before {opacity:0;background:transparent!important;}
+    .matrix-node .matrix-col-resizer:not(.resizing):not(.resize-hold-ready)::after,
+    .matrix-node .matrix-row-resizer:not(.resizing):not(.resize-hold-ready)::after,
+    .plan-node .plan-col-resizer:not(.resizing):not(.resize-hold-ready)::after,
+    .plan-node .plan-row-resizer:not(.resizing):not(.resize-hold-ready)::after,
+    .topic-resize-handle:not(.dragging):not(.resize-hold-ready)::after {opacity:0!important;}
+  }
+
   /* 行高抓手独立于列宽抓手：拖动水平边界，只改变上方这一行的高度。 */
   .matrix-node .matrix-row-resizer { position:absolute; left:0; right:0; height:16px; margin-top:-8px; z-index:13;
     cursor:row-resize; touch-action:none; user-select:none; -webkit-user-select:none; }
@@ -199,6 +219,19 @@
   .board-tab-wrap {display:flex;align-items:center;flex:none;border:1px solid transparent;border-radius:7px;position:relative;background:#3b3c43;}
   .board-tab-wrap.active {background:#505158;border-color:#666871;}
   .board-tab-wrap:hover{background:#474950;}
+  .board-tab {cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none;}
+  .board-tab:active {cursor:grabbing;}
+  .board-tab-wrap.board-drag-origin{opacity:.42;border-style:dashed;border-color:#c9ced8;}
+  .board-tab-wrap.board-hold-ready{outline:2px solid #20b9ff;outline-offset:2px;}
+  .board-tab-wrap.board-drop-before:before,.board-tab-wrap.board-drop-after:after{
+    content:"";position:absolute;top:1px;bottom:1px;width:4px;border-radius:2px;background:#20b9ff;z-index:6;box-shadow:0 0 10px #20b9ff;
+  }
+  .board-tab-wrap.board-drop-before:before{left:-6px;}
+  .board-tab-wrap.board-drop-after:after{right:-6px;}
+  .board-drag-ghost{position:fixed;z-index:160;pointer-events:none;transform:translate(-50%,-125%);
+    padding:9px 15px;background:#565b66;color:white;border:2px solid #20b9ff;border-radius:8px;
+    white-space:nowrap;box-shadow:0 10px 25px #0008;font-size:13px;font-weight:650;}
+
   .board-tab {border:0;outline:0;border-radius:7px;background:transparent;color:#b9bac0;padding:0 9px 0 15px;
     font-weight:600;font-size:13px;min-width:65px;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .board-tab-wrap.active .board-tab {color:#fff;}
@@ -959,7 +992,7 @@ body{color:var(--app-ink,#f5f5f6);}
       <div class="map-style-grid" role="group" aria-label="选择导图结构">
         <button type="button" class="map-style-choice" data-map-layout="logic" aria-pressed="true">
           <svg viewBox="0 0 132 68" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M31 34H53M53 14V54M53 14H74M53 54H74M97 14h9M97 54h9"/></g><g fill="currentColor"><rect x="5" y="25" width="27" height="18" rx="5"/><rect x="74" y="5" width="27" height="18" rx="5"/><rect x="74" y="45" width="27" height="18" rx="5"/></g></svg>
-          <span>逻辑式</span><small>从左向右分层</small>
+          <span>逻辑式</span><small>层级括弧 · 清晰分叉</small>
         </button>
         <button type="button" class="map-style-choice" data-map-layout="radial" aria-pressed="false">
           <svg viewBox="0 0 132 68" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M57 34H35Q28 34 28 20M57 34H35Q28 34 28 50M75 34H96Q104 34 104 20M75 34H96Q104 34 104 50"/></g><g fill="currentColor"><rect x="51" y="23" width="30" height="22" rx="7"/><rect x="4" y="9" width="25" height="18" rx="5"/><rect x="4" y="43" width="25" height="18" rx="5"/><rect x="103" y="9" width="25" height="18" rx="5"/><rect x="103" y="43" width="25" height="18" rx="5"/></g></svg>
@@ -970,7 +1003,7 @@ body{color:var(--app-ink,#f5f5f6);}
       <input type="range" id="mapDensity" min="0" max="100" step="1" value="50" aria-label="拖动调整节点密集程度">
       <div class="map-density-ends"><span>分散</span><span>聚集</span></div>
       <button type="button" class="map-fit-button" id="mapFitAll">适应全图 · 显示全部节点</button>
-      <p class="beauty-explain">普通滚轮上下移动；Shift + 滚轮横向移动；Ctrl + 滚轮放大缩小。布局和密集程度会随笔记同步。</p>
+      <p class="beauty-explain">默认使用「层级括弧」连接线，明确显示每个父节点分出几个子叉。普通滚轮上下移动；Shift + 滚轮横向移动；Ctrl + 滚轮缩放。</p>
     </section>
     <div class="beauty-section-title">配色</div>
     <div class="beauty-card">
@@ -1561,12 +1594,91 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function children(id) { return data.topics.filter(t=>t.parentId===id && !(id===ROOT_ID && t.boardRoot)); }
   let boardMenuId=null;
   function hideBoardPopup(){boardMenuId=null;$('boardPopup').hidden=true;}
+  // 画布拖动排序（PC 直接拖动；手机长按标签后拖动）。只重排元数据，不动每张画布的 rootId。
+  let boardTabDrag=null,skipBoardClickUntil=0;
+  function startBoardTabDrag(e,boardId,wrap){
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    if(e.target.closest('.board-arrow'))return;
+    e.stopPropagation();
+    const originalX=e.clientX,originalY=e.clientY,originScroll=$('boardTabs').scrollLeft;
+    const touch=e.pointerType==='touch';
+    let armed=!touch,moved=false,panning=false,ghost=null,dropIndex=null,done=false;
+    let timer=null;
+    const all=()=>[...$('boardTabs').querySelectorAll('.board-tab-wrap')];
+    const cleanup=()=>{
+      if(done)return;done=true;clearTimeout(timer);
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onCancel);
+      wrap.classList.remove('board-drag-origin','board-hold-ready');
+      $('boardTabs').querySelectorAll('.board-drop-before,.board-drop-after').forEach(x=>x.classList.remove('board-drop-before','board-drop-after'));
+      ghost?.remove();boardTabDrag=null;
+    };
+    const onMove=ev=>{
+      if(done||ev.pointerId!==e.pointerId)return;
+      const dx=ev.clientX-originalX,dy=ev.clientY-originalY;
+      if(!armed){
+        if(Math.hypot(dx,dy)>9){panning=true;clearTimeout(timer);$('boardTabs').scrollLeft=originScroll-dx;}
+        if(panning)ev.preventDefault();
+        return;
+      }
+      if(!moved&&Math.hypot(dx,dy)<8)return;
+      ev.preventDefault();
+      if(!moved){
+        moved=true;wrap.classList.add('board-drag-origin');
+        ghost=document.createElement('div');ghost.className='board-drag-ghost';
+        ghost.textContent=boards().find(b=>b.id===boardId)?.name||'画布';
+        document.body.append(ghost);
+      }
+      ghost.style.left=ev.clientX+'px';ghost.style.top=ev.clientY+'px';
+      const strip=$('boardTabs'),stripBox=strip.getBoundingClientRect();
+      if(ev.clientX>stripBox.right-16)strip.scrollLeft+=10;
+      if(ev.clientX<stripBox.left+16)strip.scrollLeft-=10;
+      const wraps=all();wraps.forEach(w=>w.classList.remove('board-drop-before','board-drop-after'));
+      // 在任意标签的左/右半边插入，完全不要求先切换画布。
+      let candidate=wraps.find(w=>{const r=w.getBoundingClientRect();return ev.clientX>=r.left&&ev.clientX<=r.right;});
+      if(!candidate)candidate=ev.clientX<wraps[0].getBoundingClientRect().left?wraps[0]:wraps[wraps.length-1];
+      if(!candidate)return;
+      const r=candidate.getBoundingClientRect(),target=wraps.indexOf(candidate);
+      const after=ev.clientX>=r.left+r.width/2;
+      dropIndex=Math.max(0,Math.min(wraps.length,target+(after?1:0)));
+      candidate.classList.add(after?'board-drop-after':'board-drop-before');
+    };
+    const onUp=ev=>{
+      if(done||ev.pointerId!==e.pointerId)return;
+      const wasMoved=moved,position=dropIndex;cleanup();
+      if(!wasMoved||position===null)return;
+      ev.preventDefault();skipBoardClickUntil=Date.now()+550;
+      const list=boardMeta(),old=list.findIndex(x=>x.id===boardId);
+      if(old<0)return;
+      const item=list.splice(old,1)[0];
+      const next=Math.max(0,Math.min(list.length,position-(position>old?1:0)));
+      list.splice(next,0,item);
+      if(next!==old){scheduleSave('调整画布顺序 · '+item.name);renderBoards();notify('已调整画布顺序');}
+      else renderBoards();
+      settleRemoteAfterDrag();
+    };
+    const onCancel=ev=>{if(ev.pointerId===e.pointerId){cleanup();settleRemoteAfterDrag();}};
+    window.addEventListener('pointermove',onMove,{passive:false});
+    window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onCancel);
+    boardTabDrag={boardId,pointerId:e.pointerId};
+    if(touch){
+      timer=setTimeout(()=>{if(done||panning)return;armed=true;wrap.classList.add('board-hold-ready');
+        if(typeof navigator.vibrate==='function')try{navigator.vibrate(16);}catch{}
+      },370);
+    }
+  }
   function renderBoards(){
     ensureBoardValid();const list=boards(),active=activeBoard();const host=$('boardTabs');host.replaceChildren();
     for(const b of list){
       const wrap=document.createElement('div');wrap.className='board-tab-wrap'+(b.id===active.id?' active':'');
       const tab=document.createElement('button');tab.className='board-tab';tab.type='button';tab.textContent=b.name;tab.title=b.name;
-      tab.addEventListener('click',()=>switchBoard(b.id));
+      tab.addEventListener('pointerdown',e=>startBoardTabDrag(e,b.id,wrap));
+      tab.addEventListener('click',e=>{
+        if(Date.now()<skipBoardClickUntil){e.preventDefault();e.stopPropagation();return;}
+        switchBoard(b.id);
+      });
       const arrow=document.createElement('button');arrow.className='board-arrow';arrow.type='button';arrow.textContent='⌄';
       arrow.title='画布操作';arrow.setAttribute('aria-label',b.name+' 的更多操作');
       arrow.addEventListener('click',e=>{
@@ -1795,7 +1907,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // 旧版 x=12~152、y=4~44；默认值 82/24 导致同层间距过大。
     // 新版依旧保留滑块的疏密变化，但整体更接近 XMind 的紧凑排版。
     const open=(100-currentMapDensity())/100;
-    return {x:Math.round(6+56*open),y:Math.round(2+18*open)};
+    return {x:Math.round(28+49*open),y:Math.round(2+18*open)};
   }
   function computeLayout() {
     matrixMeasureCache.clear();
@@ -1858,20 +1970,56 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     state.positions=pos;
   }
+  // v21：层级括弧，父主题只有一条共享主干，每个子主题从括弧明确分叉。
+  // 按实际父子关系及左右方向分组，而非按全局纵线强制对齐。
   function drawConnections() {
     svg.replaceChildren();
-    for(const t of data.topics) {
-      if(!t.parentId)continue;
-      const p=state.positions.get(t.parentId),c=state.positions.get(t.id);
-      if(!p||!c)continue;
-      const left=(c.side===-1),fromX=left?p.x:p.x+p.w,fromY=p.y+p.h/2;
-      const toX=left?c.x+c.w:c.x,toY=c.y+c.h/2;
-      const middle=(fromX+toX)/2;
-      const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-      path.setAttribute('class','connection'+(state.selected===t.id?' selected-line':''));
-      path.dataset.childId=t.id;
-      path.setAttribute('d',`M ${fromX} ${fromY} C ${middle} ${fromY}, ${middle} ${toY}, ${toX} ${toY}`);
-      svg.append(path);
+    const NS='http://www.w3.org/2000/svg';
+    const path=(d,className,childId)=>{
+      const el=document.createElementNS(NS,'path');
+      el.setAttribute('class','connection'+(className?' '+className:''));
+      el.setAttribute('d',d);
+      if(childId)el.dataset.childId=childId;
+      svg.append(el);
+      return el;
+    };
+    for(const parent of data.topics){
+      const p=state.positions.get(parent.id);
+      if(!p)continue;
+      const groups=new Map();
+      for(const t of children(parent.id)){
+        const c=state.positions.get(t.id);
+        if(!c)continue;
+        const side=c.side===-1?-1:1;
+        if(!groups.has(side))groups.set(side,[]);
+        groups.get(side).push({t,c,y:c.y+c.h/2,toX:side===1?c.x:c.x+c.w});
+      }
+      for(const [side,branch] of groups){
+        const fromX=side===1?p.x+p.w:p.x,fromY=p.y+p.h/2;
+        if(branch.length===1){
+          const {t,y,toX}=branch[0],mid=(fromX+toX)/2;
+          path(`M ${fromX} ${fromY} C ${mid} ${fromY}, ${mid} ${y}, ${toX} ${y}`,
+            state.selected===t.id?'selected-line':'',t.id);
+          continue;
+        }
+        branch.sort((a,b)=>a.y-b.y);
+        const first=branch[0],last=branch[branch.length-1];
+        const nearest=side===1?Math.min(...branch.map(b=>b.toX)):Math.max(...branch.map(b=>b.toX));
+        const available=Math.abs(nearest-fromX);
+        const offset=Math.max(4,Math.min(32,available*.46));
+        const railX=fromX+side*offset;
+        const radius=Math.max(1,Math.min(10,(last.y-first.y)/3,available*.28));
+        // 先画共享主干，再画括弧，每个同级分支都从该括弧独立延伸。
+        path(`M ${fromX} ${fromY} H ${railX}`,'fork-trunk',null);
+        const endX=railX+side*radius;
+        path(`M ${endX} ${first.y} Q ${railX} ${first.y} ${railX} ${first.y+radius} V ${last.y-radius} Q ${railX} ${last.y} ${endX} ${last.y}`,
+          'fork-rail',null);
+        for(let i=0;i<branch.length;i++){
+          const {t,y,toX}=branch[i];
+          const x=(i===0||i===branch.length-1)?endX:railX;
+          path(`M ${x} ${y} H ${toX}`,state.selected===t.id?'selected-line fork-arm':'fork-arm',t.id);
+        }
+      }
     }
   }
   // 选择时不销毁 DOM：保证两次连续点击能够触发原生 dblclick。
@@ -2125,7 +2273,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');
       handle.setAttribute('aria-label','拖动调整第 '+c+' 列宽度');
       handle.title='左右拖动调整左侧一列的宽度';
-      handle.addEventListener('pointerdown',e=>beginColumnResize(e,t.id,c,handle));
+      handle.addEventListener('pointerdown',e=>guardedResizeDown(e,handle,()=>beginColumnResize(e,t.id,c,handle)));
       handle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
       handle.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();});
       handle.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
@@ -2141,7 +2289,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','horizontal');
       handle.setAttribute('aria-label','拖动调整第 '+r+' 行高度');
       handle.title='上下拖动调整上方这一行的高度';
-      handle.addEventListener('pointerdown',e=>beginRowResize(e,t.id,r,handle));
+      handle.addEventListener('pointerdown',e=>guardedResizeDown(e,handle,()=>beginRowResize(e,t.id,r,handle)));
       handle.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
       handle.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();});
       handle.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();});
@@ -2948,7 +3096,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       handle.dataset.boundary=String(c);handle.style.left=x+'px';
       handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','vertical');
       handle.title='左右拖动调整左侧列宽';
-      handle.addEventListener('pointerdown',e=>startPlanDividerResize(e,t,'x',c,handle));wrap.append(handle);
+      handle.addEventListener('pointerdown',e=>guardedResizeDown(e,handle,()=>startPlanDividerResize(e,t,'x',c,handle)));wrap.append(handle);
     }
     let y=0;
     for(let r=1;r<=d.heights.length;r++){
@@ -2956,7 +3104,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       handle.dataset.boundary=String(r);handle.style.top=y+'px';
       handle.setAttribute('role','separator');handle.setAttribute('aria-orientation','horizontal');
       handle.title='上下拖动调整上方行高';
-      handle.addEventListener('pointerdown',e=>startPlanDividerResize(e,t,'y',r,handle));wrap.append(handle);
+      handle.addEventListener('pointerdown',e=>guardedResizeDown(e,handle,()=>startPlanDividerResize(e,t,'y',r,handle)));wrap.append(handle);
     }
     if(state.selected===t.id)showPlanControls(wrap,t);
     return wrap;
@@ -3121,6 +3269,49 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     settleRemoteAfterDrag();
   }
   // 列宽拖动只改变当前显示方向的一列；完成拖动后保存一次修改历史并上传云端。
+  // 所有可拖动边框统一通过这里进入：手机必须先长按驻留，再允许改变宽高。
+  // 在驻留时间内直接滑动视为拖动画布，不会改变节点或表格数据；电脑鼠标依然即时调节。
+  const RESIZE_TOUCH_HOLD_MS=470;
+  function guardedResizeDown(e,handle,activate){
+    if(e.pointerType!=='touch'){activate();return;}
+    if(!e.isPrimary)return;
+    e.preventDefault();e.stopPropagation();
+    const pointerId=e.pointerId,startX=e.clientX,startY=e.clientY;
+    const originPanX=state.panX,originPanY=state.panY;
+    let armed=false,panning=false,finished=false;
+    let timer=null;
+    const clean=()=>{
+      if(finished)return;
+      finished=true;clearTimeout(timer);
+      handle.classList.remove('resize-hold-pending','resize-hold-ready');
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onEnd);
+      window.removeEventListener('pointercancel',onEnd);
+    };
+    const onMove=ev=>{
+      if(ev.pointerId!==pointerId||finished)return;
+      if(armed)return; // 真正的 resize 事件由原有处理器接管。
+      const dx=ev.clientX-startX,dy=ev.clientY-startY;
+      if(!panning&&Math.hypot(dx,dy)>9){panning=true;clearTimeout(timer);handle.classList.remove('resize-hold-pending');}
+      if(panning){
+        ev.preventDefault();
+        state.panX=originPanX+dx;state.panY=originPanY+dy;applyTransform();
+      }
+    };
+    const onEnd=ev=>{if(ev.pointerId===pointerId)clean();};
+    handle.classList.add('resize-hold-pending');
+    window.addEventListener('pointermove',onMove,{passive:false});
+    window.addEventListener('pointerup',onEnd);
+    window.addEventListener('pointercancel',onEnd);
+    timer=setTimeout(()=>{
+      if(finished||panning||!handle.isConnected)return;
+      armed=true;
+      handle.classList.remove('resize-hold-pending');
+      handle.classList.add('resize-hold-ready');
+      if(typeof navigator.vibrate==='function')try{navigator.vibrate(18);}catch{}
+      activate();
+    },RESIZE_TOUCH_HOLD_MS);
+  }
   function beginColumnResize(e,id,boundary,handle){
     if(e.button!==0&&e.pointerType==='mouse')return;
     if(columnResize||rowResize||axisDrag||topicDrag)return;
@@ -3684,7 +3875,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       h.setAttribute('aria-label',axis==='x'?'拖动调整主题宽度':'拖动调整主题高度');
       h.title=axis==='x'?'左右拖动调整主题宽度':'上下拖动调整主题高度';
       h.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
-      h.addEventListener('pointerdown',e=>{
+      h.addEventListener('pointerdown',e=>guardedResizeDown(e,h,()=>{
         if(e.pointerType==='mouse'&&e.button!==0)return;
         e.preventDefault();e.stopPropagation();hideDeleteContext();
         const t=topicById(id);if(!t)return;
@@ -3706,7 +3897,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         };
         const cancel=ev=>{if(ev.pointerId!==e.pointerId)return;end(ev);};
         h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',cancel);
-      });
+      }));
       el.append(h);
     }
   }
@@ -4146,7 +4337,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           const sh=getShadow(id);
           if(sh&&sameTopics(sh.topics,row.topics))return;
         }
-        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize){
+        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag){
           // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
           if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
           return;
@@ -4162,7 +4353,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
   }
   function requestCloudPush(){
-    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag)return;
     clearTimeout(cloud.timer);
     cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
   }
@@ -4190,7 +4381,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   }
   async function flushCloud(){
-    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag)return;
     cloud.sending=true;clearTimeout(cloud.timer);
     const snapshot=cloneTopics();
     const entries=cloud.pendingEntries.splice(0);
@@ -4254,7 +4445,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   $('cloudUseLocal').addEventListener('click',()=>void useLocal());
   window.addEventListener('online',()=>{if(cloud.user){if(cloud.ready&&(cloud.dirty||cloud.pendingEntries.length))requestCloudPush();else if(!cloud.ready)void openCloudDocument();}});
   window.addEventListener('focus',()=>{if(cloud.ready&&cloud.user&&!cloud.conflict){
-    if(cloud.sending||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(cloud.sending||boardTabDrag||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
     void readCloudDocument().then(row=>{
       if(!row)return;
       if(Number(row.revision)>Number(cloud.revision)){
@@ -4845,7 +5036,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.17.13";
+  const BUILD = "2026.11.18.1";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');
