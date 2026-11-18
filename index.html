@@ -58,10 +58,37 @@
   .top-actions button, .zoom-tools button { border:1px solid #55565b; background:#414247; border-radius:8px; padding:8px 13px; font-size:12px; min-height:35px; white-space:nowrap; }
   .top-actions button:hover, .zoom-tools button:hover { background:#525359; }
   .top-actions .accent { background:#3b4350; border-color:#76879d; }
-  .saved { color:#96c9ac; font-size:11px; white-space:nowrap; padding-right:3px; }
+  .saved { color:#e0b45b; font-size:11px; white-space:nowrap; padding-right:3px; font-weight:650; }
+  .saved[data-sync-state="synced"]{color:#72d9a2!important;}
+  .saved[data-sync-state="pending"]{color:#f2c15b!important;}
+  .saved[data-sync-state="error"]{color:#ff8a84!important;}
+  #cloudBtn[data-sync-state="synced"]{color:#72d9a2!important;}
+  #cloudBtn[data-sync-state="pending"]{color:#f2c15b!important;}
+  #cloudBtn[data-sync-state="error"]{color:#ff8a84!important;}
   .stage { position:relative; flex:1; min-height:0; background:var(--bg); touch-action:none; overflow:hidden; cursor:grab; }
   .stage.panning { cursor:grabbing; }
   .world { position:absolute; top:0; left:0; width:0; height:0; transform-origin:0 0; will-change:transform; }
+
+  /* v24 双布局：自由模式位置与自动布局分开保存。只有自由模式的手柄可拖线。 */
+  .map-free-switch{display:flex;justify-content:space-between;align-items:center;gap:14px;
+    margin:14px 0 18px;padding:13px 12px;border:1px solid #d5dbe4;background:#f5f7f9;border-radius:12px;cursor:pointer;}
+  .map-free-label{display:flex;flex-direction:column;gap:4px;min-width:0;color:#242b36;}
+  .map-free-label strong{font-size:14px;}
+  .map-free-label small{font-size:11px;color:#637080;line-height:1.5;}
+  #mapFreeMode{appearance:auto;accent-color:#278dd7;width:19px;height:19px;flex-shrink:0;cursor:pointer;}
+  .stage.free-mode .topic{cursor:grab;}
+  .stage.free-mode .topic.free-moving{cursor:grabbing;z-index:5;}
+  .stage.free-mode .topic.free-moving,.stage.free-mode .matrix-node.free-moving,.stage.free-mode .plan-node.free-moving {outline:2px solid #31baff;outline-offset:3px;}
+  .stage.free-mode .free-subtree-moving{filter:drop-shadow(0 0 2px rgba(49,186,255,.16));}
+  .free-wire-layer{position:absolute;top:0;left:0;width:0;height:0;overflow:visible;pointer-events:none;}
+  .free-node-grip{position:absolute;top:-13px;left:12px;z-index:17;min-width:35px;height:28px;
+    display:flex;align-items:center;justify-content:center;padding:0 8px;border:1px solid #108bc8;
+    background:#177eaf;color:#fff;border-radius:8px;cursor:grab;touch-action:none;font-size:18px;
+    box-shadow:0 2px 7px #0005;}
+  .free-node-grip:active{cursor:grabbing;background:#1ca7e9;}
+  .stage:not(.free-mode) .free-node-grip{display:none;}
+  @media(pointer:coarse){.free-node-grip{width:42px;height:34px;top:-18px;}}
+
   .connections { position:absolute; left:0; top:0; width:1px; height:1px; overflow:visible; pointer-events:none; }
   .connection { fill:none; stroke:var(--wire); stroke-width:2; stroke-linecap:round; stroke-linejoin:round; opacity:.88; }
   .topic { position:absolute; display:flex; align-items:center; justify-content:center; padding:10px 15px; background:var(--topic); border-radius:11px; border:2px solid transparent; font-size:15px; font-weight:640; line-height:1.35; color:var(--topic-ink); text-align:center; cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none; outline:none; overflow:visible; }
@@ -85,6 +112,25 @@
   .connection.fork-trunk {stroke-width:2.35;opacity:.97;}
   .connection.fork-rail {stroke-width:2.15;opacity:.96;}
   .connection.fork-arm {stroke-width:1.95;}
+
+/* v27：XMind 风格分叉收起按钮。正常连接线不变，悬停交点才显示控制；收起后显示子节点数。 */
+.branch-fold-layer{position:absolute;top:0;left:0;width:0;height:0;overflow:visible;pointer-events:none;z-index:8;}
+.branch-fold-button{position:absolute;width:30px;height:30px;display:grid;place-items:center;
+  transform:translate(-50%,-50%);border:2px solid var(--topic-ink,#fff);border-radius:50%;
+  background:var(--topic,#71737a);color:var(--topic-ink,#fff);font-size:16px;font-weight:700;
+  line-height:1;padding:0;cursor:pointer;pointer-events:auto;opacity:0;
+  transition:opacity .13s ease,background .13s ease;box-shadow:0 2px 7px rgba(0,0,0,.13);touch-action:manipulation;}
+.branch-fold-button:hover,.branch-fold-button:focus-visible,.branch-fold-button.is-collapsed{
+  opacity:1;outline:none;}
+.branch-fold-button:hover,.branch-fold-button:focus-visible{background:#328fce;color:#fff;border-color:#e7f4ff;}
+.branch-fold-button.is-collapsed{background:var(--topic,#71737a);font-size:13px;}
+/* 避免选中时原有的蓝色“加子主题”按钮盖住收起计数徽标。 */
+.topic.has-fold-children .plus.child{left:calc(100% + 51px);}
+@media(hover:none){
+ .branch-fold-button:not(.is-collapsed){opacity:0;}
+ .branch-fold-button.node-selected{opacity:1;}
+}
+
 
   .resize-hold-ready::before {background:#20b9ff!important;opacity:1!important;}
   .resize-hold-ready::after {opacity:1!important;}
@@ -928,6 +974,61 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-node .plan-category-inline-actions button:last-child{background:#54585f;border-color:#82868c;font-size:16px;}
 .plan-node .plan-category-inline-actions button:hover{filter:brightness(1.2);}
 @media(pointer:coarse){.plan-node .plan-category-controls-host:focus-within>.plan-category-inline-actions{opacity:1;visibility:visible;pointer-events:auto;}}
+
+/* DIY记录：与当前画布共用选中状态的层级大纲，不生成第二份导图数据 */
+.outline-toggle{position:absolute;z-index:17;top:12px;left:13px;width:43px;height:43px;border:1px solid #d9dce2;
+ border-radius:50%;display:grid;place-items:center;background:#fafafa;color:#31343b;box-shadow:0 2px 10px #0002;
+ touch-action:manipulation;cursor:pointer;}
+.outline-toggle svg{width:23px;height:23px;pointer-events:none;}
+.outline-toggle:hover,.outline-toggle[aria-expanded="true"]{background:#e8f0ff;color:#1f67bf;}
+.outline-panel{position:fixed;z-index:20;left:0;top:0;bottom:0;width:min(380px,88vw);display:flex;
+ flex-direction:column;min-width:0;background:#fdfdfd;color:#41454e;box-shadow:5px 0 26px #0003;
+ border-right:1px solid #e5e8ee;cursor:default;touch-action:pan-y;}
+.outline-panel[hidden],.outline-toggle[hidden]{display:none!important;}
+.outline-head{display:flex;align-items:center;gap:9px;flex:none;height:66px;padding:0 14px 0 13px;
+ border-bottom:1px solid #eff0f3;}
+.outline-close{border:0;background:transparent;color:#333c4a;font-size:28px;font-weight:300;width:40px;height:40px;
+ border-radius:9px;line-height:1;touch-action:manipulation;}
+.outline-close:hover{background:#edf1f6;}
+.outline-head-title{font-size:17px;color:#1c65bf;font-weight:700;border-bottom:3px solid #246cd0;
+ height:43px;padding:11px 1px 5px;}
+.outline-tree{overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;flex:1;padding:10px 7px 20px 7px;
+ scrollbar-width:thin;-webkit-overflow-scrolling:touch;}
+.outline-row{display:flex;align-items:center;gap:0;width:100%;min-height:41px;border-radius:6px;position:relative;
+ color:#676b73;padding:2px 6px 2px var(--indent,0px);}
+.outline-row:hover{background:#f1f3f7;}
+.outline-row.outline-selected{background:#dce8ff;color:#155bb3;}
+.outline-row.outline-selected .outline-node-label{font-weight:650;}
+.outline-chevron{width:22px;min-width:22px;height:31px;padding:0;border:0;background:transparent;color:#6b717b;
+ display:grid;place-items:center;font-size:16px;line-height:1;touch-action:manipulation;}
+.outline-chevron[aria-expanded="false"] .outline-triangle{display:inline-block;transform:rotate(-90deg);}
+.outline-chevron[aria-expanded="true"] .outline-triangle{display:inline-block;transform:rotate(0deg);}
+.outline-placeholder{width:22px;min-width:22px;}
+.outline-node-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;
+ text-align:left;border:0;background:none;color:inherit;font-size:14px;line-height:1.65;padding:5px 4px;
+ cursor:pointer;touch-action:manipulation;}
+.outline-chevron:hover,.outline-node-label:hover{color:#1267c7;}
+.outline-node-label:focus-visible,.outline-chevron:focus-visible,.outline-close:focus-visible,.outline-toggle:focus-visible{
+ outline:2px solid #2c89ee;outline-offset:-2px;}
+.outline-empty{font-size:13px;color:#8a8f99;padding:18px;}
+@media(max-width:650px){.outline-toggle{top:10px;left:10px;width:42px;height:42px;}
+ .outline-panel{width:min(360px,88vw);}.outline-head{height:60px;}.outline-node-label{font-size:15px;}}
+/* v23 大纲：直接编辑与拖动重排。蓝色线=同级插入；蓝色底框=放入目标内部。 */
+.outline-row.outline-drag-source{opacity:.43;background:#edf2f8;outline:1px dashed #9aa6ba;}
+.outline-row.outline-drop-child{background:#d4e7ff!important;box-shadow:inset 0 0 0 2px #2488ed;}
+.outline-row.outline-drop-before::before,.outline-row.outline-drop-after::after{
+ content:"";position:absolute;left:8px;right:4px;height:3px;border-radius:4px;background:#2488ed;
+ box-shadow:0 0 0 2px #2488ed22;pointer-events:none;z-index:4;}
+.outline-row.outline-drop-before::before{top:-2px;}.outline-row.outline-drop-after::after{bottom:-2px;}
+.outline-drag-ghost{position:fixed;z-index:140;pointer-events:none;background:#eef6ff;color:#13538f;
+ border:2px solid #2588ed;border-radius:9px;padding:7px 12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;
+ white-space:nowrap;box-shadow:0 8px 22px #0003;font-size:13px;font-weight:650;}
+.outline-node-editor{flex:1;min-width:0;height:34px;border:2px solid #2187ed;border-radius:5px;
+ padding:4px 6px;color:#252a35;background:#fff;font-size:14px;outline:none;}
+.outline-row.outline-longpress-ready{background:#e5f1ff;outline:1px solid #2488ed;}
+@media(pointer:coarse){.outline-node-label{touch-action:none!important;}}
+.outline-tree.outline-dragging{user-select:none;-webkit-user-select:none;}
+
 </style>
 </head>
 <body>
@@ -936,7 +1037,7 @@ body{color:var(--app-ink,#f5f5f6);}
     <button class="menu-toggle" id="menuToggle" title="打开菜单" aria-label="打开菜单" aria-expanded="false" aria-controls="menuPopup"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
     
     <div class="top-actions">
-      <span class="saved" id="saveStatus">已保存到本机</span>
+      <span class="saved" id="saveStatus" data-sync-state="pending">已保存到本机</span>
       <button type="button" id="syncConflictChip" class="sync-conflict-chip" hidden title="云端与本机数据存在冲突，点击处理">⚠ 同步待处理</button>
       <button id="pwaInstallBtn" type="button" hidden title="把 DIY记录 安装到设备上">安装应用</button>
       <button id="cloudBtn" class="cloud-button" title="设置账号与云同步" hidden>☁ 云同步</button>
@@ -969,7 +1070,12 @@ body{color:var(--app-ink,#f5f5f6);}
     <div class="history-list" id="historyList"></div>
   </aside>
   <main class="stage" id="stage" aria-label="思维导图画布">
-    <div class="world" id="world"><svg class="connections" id="connections" aria-hidden="true"></svg><div id="topicLayer"></div></div>
+    <div class="world" id="world"><svg class="connections" id="connections" aria-hidden="true"></svg><div id="topicLayer"></div><div id="freeWireLayer" class="free-wire-layer" aria-label="思维导图连线层"></div><div id="branchFoldLayer" class="branch-fold-layer" aria-label="收起与展开分支"></div></div>
+    <button type="button" id="outlineToggle" class="outline-toggle" aria-expanded="false" aria-controls="outlinePanel" aria-label="打开大纲目录" title="大纲目录">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10 6h10M10 12h10M10 18h10"/><path d="M3 6h2M3 12h2M3 18h2"/>
+      </svg>
+    </button>
 
     <div class="hud zoom-tools">
       <button id="zoomOut" aria-label="缩小">−</button>
@@ -978,6 +1084,10 @@ body{color:var(--app-ink,#f5f5f6);}
       <button id="fitBtn" class="fit" aria-label="适应窗口">居中</button>
     </div>
   </main>
+    <aside id="outlinePanel" class="outline-panel" aria-label="大纲目录" hidden>
+      <div class="outline-head"><button type="button" class="outline-close" id="outlineClose" aria-label="收起大纲">«</button><span class="outline-head-title">大纲</span></div>
+      <div class="outline-tree" id="outlineTree" role="tree" aria-label="当前画布的主题层级"></div>
+    </aside>
   <footer class="board-bar" id="boardBar" aria-label="画布列表">
     <div class="board-tabs" id="boardTabs"></div>
     <button type="button" class="board-add" id="boardAdd" title="添加新画布" aria-label="添加新画布">+</button>
@@ -999,11 +1109,15 @@ body{color:var(--app-ink,#f5f5f6);}
           <span>发散式</span><small>围绕中心双向展开</small>
         </button>
       </div>
+      <label class="map-free-switch" for="mapFreeMode">
+        <span class="map-free-label"><strong>自由模式</strong><small>拖动一个节点会带动整条下级分支；左右换边仍然保持整齐的层级括弧。</small></span>
+        <input type="checkbox" id="mapFreeMode" aria-label="切换自由模式">
+      </label>
       <div class="map-density-head"><label for="mapDensity">节点密集程度</label><span id="mapDensityValue">50%</span></div>
       <input type="range" id="mapDensity" min="0" max="100" step="1" value="50" aria-label="拖动调整节点密集程度">
       <div class="map-density-ends"><span>分散</span><span>聚集</span></div>
       <button type="button" class="map-fit-button" id="mapFitAll">适应全图 · 显示全部节点</button>
-      <p class="beauty-explain">默认使用「层级括弧」连接线，明确显示每个父节点分出几个子叉。普通滚轮上下移动；Shift + 滚轮横向移动；Ctrl + 滚轮缩放。</p>
+      <p class="beauty-explain">自动模式使用「层级括弧」。开启自由模式后，拖动一个节点会移动其整条子分支，跨越父节点时整支转向；连线始终保持整齐的层级括弧。关闭后恢复自动排列。普通滚轮上下移动；Shift + 滚轮横向移动；Ctrl + 滚轮缩放。</p>
     </section>
     <div class="beauty-section-title">配色</div>
     <div class="beauty-card">
@@ -1159,10 +1273,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==='x'?v:(v&3|8)).toString(16);});
   }
   function setCloudStatus(message,ok=false){
-    $('saveStatus').textContent=message;
-    $('cloudBtn').title=message;
-    $('cloudBtn').textContent=ok?'☁ 已同步':'☁ 云同步';
-    $('syncConflictChip').hidden=!(cloud.conflict||message.includes('同步冲突'));
+    // 只在云端真正确认了当前笔记与历史都同步时显示绿色。
+    // 本机保存不是云端同步成功，历史记录待上传也不能伪装为全绿色。
+    const clean=String(message||'');
+    const failure=!!cloud.conflict||/冲突|失败|中断|超时|错误|未登录|未连接|离线|无法|断开/.test(clean);
+    const fullySynced=ok===true && clean==='已同步到云端' && !!cloud.user && cloud.ready &&
+      !cloud.dirty && !cloud.conflict && cloud.pendingEntries.length===0;
+    const status=fullySynced?'synced':failure?'error':'pending';
+    $('saveStatus').textContent=clean;
+    $('saveStatus').dataset.syncState=status;
+    $('cloudBtn').title=clean;
+    $('cloudBtn').dataset.syncState=status;
+    $('cloudBtn').textContent=fullySynced?'☁ 已同步':'☁ 云同步';
+    $('syncConflictChip').hidden=!(cloud.conflict||clean.includes('同步冲突'));
   }
   function cloudMessage(message,error=false){$('cloudInfo').textContent=message;$('cloudInfo').classList.toggle('error',error);}
   function currentConfig(){try{return JSON.parse(localStorage.getItem(CLOUD_CONFIG_KEY)||'{}')||{};}catch{return {};}}
@@ -1313,6 +1436,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (!n || typeof n.id!=='string' || !n.id || ids.has(n.id) || typeof n.text!=='string') return null;
       ids.add(n.id);
       const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,MAX_TOPIC_TEXT) };
+      if(n.collapsed===true)node.collapsed=true;
+      if(n.foldSide===-1)node.foldSide=-1;
+      // v24：位置与路线属于各节点，不依赖数组顺序；保留在本地、导出和 Supabase JSON 中。
+      const fx=n.freeX,fy=n.freeY;
+      if(typeof fx==='number'&&typeof fy==='number'&&Number.isFinite(fx)&&Number.isFinite(fy)&&
+         Math.abs(fx)<=1000000&&Math.abs(fy)<=1000000){node.freeX=fx;node.freeY=fy;}
+      if(n.freeBend&&typeof n.freeBend==='object'&&
+         Number.isFinite(n.freeBend.dx)&&Number.isFinite(n.freeBend.dy)&&
+         Math.abs(n.freeBend.dx)<=100000&&Math.abs(n.freeBend.dy)<=100000){
+        node.freeBend={dx:n.freeBend.dx,dy:n.freeBend.dy};
+      }
+      if((n.id===ROOT_ID||n.boardRoot===true)&&n.freeMode===true)node.freeMode=true;
+      if((n.id===ROOT_ID||n.boardRoot===true)&&n.freeLayoutRev===2)node.freeLayoutRev=2;
+      // 旧版自由布局的坐标仅作为备份，防止迁移时意外覆盖用户旧的手动位置。
+      if(n.freeBeforeTidy&&Number.isFinite(n.freeBeforeTidy.x)&&Number.isFinite(n.freeBeforeTidy.y)){
+        node.freeBeforeTidy={x:n.freeBeforeTidy.x,y:n.freeBeforeTidy.y};
+      }
       if(n.kind!=='matrix'&&n.kind!=='plan'){
         const bw=Number(n.boxWidth), bh=Number(n.boxMinHeight);
         if(Number.isFinite(bw)&&bw>=100&&bw<=1800)node.boxWidth=Math.round(bw);
@@ -1592,6 +1732,316 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function ensureBoardValid(){const b=activeBoard();if(b&&state.activeBoardId!==b.id){state.activeBoardId=b.id;try{localStorage.setItem(ACTIVE_BOARD_KEY,b.id);}catch{}}}
   function boardMeta(){const root=topicById(ROOT_ID);if(!root.boards)root.boards=boards().map(b=>({...b}));return root.boards;}
   function children(id) { return data.topics.filter(t=>t.parentId===id && !(id===ROOT_ID && t.boardRoot)); }
+  // 折叠只隐藏下级的布局与显示，不删除节点/文字；大纲依然读取完整 children。
+  function visibleChildren(id){return topicById(id)?.collapsed?[]:children(id);}
+  function directBranchCount(id){return children(id).length;}
+  function countBranchDescendants(id){
+    let count=0,queue=children(id).map(t=>t.id),guard=0;
+    while(queue.length&&guard++<4000){const at=queue.pop();count++;
+      for(const c of children(at))queue.push(c.id);
+    }
+    return count;
+  }
+  function toggleBranchFold(id){
+    const t=topicById(id);if(!t||!directBranchCount(id))return;
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    // 防止收起后选中一个已隐藏节点，保留可见的父节点作为选中项。
+    t.collapsed=!t.collapsed;
+    if(t.collapsed){
+      const hidden=descendantsOf(id);
+      if(state.selected!==id&&hidden.has(state.selected))state.selected=id;
+    }
+    state.selected=id;
+    scheduleSave((t.collapsed?'收起':'展开')+'分支 · '+String(t.text||'主题').slice(0,24));
+    render();
+  }
+
+
+  // -------- 当前画布大纲：只维护 UI 展开状态，节点始终来自 data.topics --------
+  const outlineToggle=$('outlineToggle'), outlinePanel=$('outlinePanel');
+  const outlineTree=$('outlineTree');
+  let outlineExpanded=new Set(), outlineBoardRoot=null, outlineLastHighlighted=null;
+  let outlineDrag=null,outlineSkipClickUntil=0,outlineLastTap=null,outlineRenaming=null;
+
+  function outlineIsOpen(){return !outlinePanel.hidden;}
+  function positionOutlinePanel(){
+    const bounds=stage.getBoundingClientRect();
+    outlinePanel.style.top=Math.max(0,bounds.top)+'px';
+    outlinePanel.style.bottom=Math.max(0,innerHeight-bounds.bottom)+'px';
+  }
+  function setOutlineOpen(open){
+    if(open)positionOutlinePanel();
+    outlinePanel.hidden=!open;
+    outlineToggle.hidden=open;
+    outlineToggle.setAttribute('aria-expanded',String(open));
+    outlineToggle.setAttribute('aria-label',open?'收起大纲':'打开大纲目录');
+    if(open)renderOutlineTree(true,true);
+  }
+  // 只用真正的 parentId 组织层级。切换画布时，不混入其它画布中的主题。
+  function outlineGraph(){
+    const root=activeRootId(),lookup=new Map(data.topics.map(t=>[t.id,t]));
+    const byParent=new Map();
+    for(const t of data.topics){
+      if(t.parentId===null || (t.boardRoot&&t.id!==root))continue;
+      if(!byParent.has(t.parentId))byParent.set(t.parentId,[]);
+      byParent.get(t.parentId).push(t);
+    }
+    // 总节点数最多 4000；用于过滤跨画布节点（即使两画布根节点共用父级也不串）。
+    const reached=new Set([root]),queue=[root];
+    for(let i=0;i<queue.length;i++){
+      const id=queue[i];
+      for(const n of byParent.get(id)||[]){
+        if(n.boardRoot||reached.has(n.id))continue;
+        reached.add(n.id);queue.push(n.id);
+      }
+    }
+    const relevant=new Map();
+    for(const [id,items] of byParent)if(reached.has(id))relevant.set(id,items.filter(n=>reached.has(n.id)));
+    return {root,lookup,byParent:relevant,reached};
+  }
+  function outlineAncestorPath(id,graph){
+    if(!graph.reached.has(id))return [];
+    const chain=[];let at=id,guard=0;
+    while(at && guard++<4001){
+      chain.push(at);
+      if(at===graph.root)return chain.reverse();
+      at=graph.lookup.get(at)?.parentId;
+    }
+    return [];
+  }
+  function outlineTitle(t){
+    if(t.kind==='plan')return (t.text&&t.text!=='新主题'?t.text:(t.plan?.periodKind==='month'?'月计划':'周计划'));
+    if(t.kind==='matrix')return (t.text&&t.text!=='新主题'?t.text:'横纵表格');
+    return String(t.text||'新主题');
+  }
+  function renderOutlineTree(scrollSelected=false,revealSelection=false){
+    if(!outlineIsOpen()||outlineRenaming)return;
+    const graph=outlineGraph(),{root,lookup,byParent,reached}=graph;
+    if(outlineBoardRoot!==root){
+      outlineBoardRoot=root;outlineExpanded=new Set([root]);outlineLastHighlighted=null;
+    }
+    const selected=reached.has(state.selected)?state.selected:null;
+    // 从画布点击一个深层节点时自动展开祖先，不把同级的所有后代也打开。
+    if(selected&&revealSelection)for(const id of outlineAncestorPath(selected,graph).slice(0,-1))outlineExpanded.add(id);
+    const previousScroll=outlineTree.scrollTop;
+    const fragment=document.createDocumentFragment();
+    const stack=[{id:root,depth:0}];let visited=0;
+    while(stack.length && visited++<4001){
+      const {id,depth}=stack.pop(),t=lookup.get(id);if(!t)continue;
+      const childList=byParent.get(id)||[],hasChildren=childList.length>0;
+      const row=document.createElement('div');
+      row.className='outline-row'+(selected===id?' outline-selected':'');
+      row.dataset.nodeId=id;row.style.setProperty('--indent',Math.min(260,depth*17)+'px');
+      row.setAttribute('role','treeitem');row.setAttribute('aria-level',String(depth+1));
+      row.setAttribute('aria-selected',String(selected===id));
+      if(hasChildren)row.setAttribute('aria-expanded',String(outlineExpanded.has(id)));
+      if(hasChildren){
+        const triangle=document.createElement('button');triangle.type='button';triangle.className='outline-chevron';
+        triangle.setAttribute('aria-label',(outlineExpanded.has(id)?'收起':'展开')+outlineTitle(t).slice(0,30));
+        triangle.setAttribute('aria-expanded',String(outlineExpanded.has(id)));
+        triangle.innerHTML='<span class="outline-triangle" aria-hidden="true">▾</span>';
+        triangle.addEventListener('click',e=>{
+          e.stopPropagation();
+          if(outlineExpanded.has(id))outlineExpanded.delete(id);else outlineExpanded.add(id);
+          renderOutlineTree(false);
+        });
+        row.append(triangle);
+      }else{
+        const blank=document.createElement('span');blank.className='outline-placeholder';row.append(blank);
+      }
+      const text=document.createElement('button');text.type='button';text.className='outline-node-label';
+      const name=outlineTitle(t).replace(/\s+/g,' ').trim();
+      text.textContent=name;text.title=name;
+      text.addEventListener('pointerdown',e=>beginOutlineDrag(e,id,row,text));
+      text.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();startOutlineRename(id,row);});
+      text.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(Date.now()<outlineSkipClickUntil||outlineDrag?.active)return;
+        // 大纲重绘会替换按钮，浏览器原生 dblclick 不一定能到达第二个按钮。
+        // 用主题 ID + 时间判断双击，避免出现只能单击的编辑器。
+        const now=Date.now();
+        if(outlineLastTap?.id===id&&now-outlineLastTap.at<440){
+          outlineLastTap=null;startOutlineRename(id,row);return;
+        }
+        outlineLastTap={id,at:now};
+        // 只自动展开所点主题的直接子主题；不一键展开孙辈、曾孙辈。
+        const currentGraph=outlineGraph(),ancestors=outlineAncestorPath(id,currentGraph);
+        outlineExpanded=new Set([...ancestors]);
+        selectInteractive(id,null);
+        renderOutlineTree(true);
+        // 手机上的侧栏几乎占据整屏：跳转后收起，确保所选节点可见。
+        if(stage.clientWidth<=650)setOutlineOpen(false);
+        centerNodeFromOutline(id);
+      });
+      row.append(text);fragment.append(row);
+      if(hasChildren && outlineExpanded.has(id)){
+        for(let i=childList.length-1;i>=0;i--)stack.push({id:childList[i].id,depth:depth+1});
+      }
+    }
+    outlineTree.replaceChildren(fragment);outlineTree.scrollTop=previousScroll;
+    if(scrollSelected&&selected){
+      const target=[...outlineTree.children].find(el=>el.dataset.nodeId===selected);
+      if(target){const tr=target.getBoundingClientRect(),cr=outlineTree.getBoundingClientRect();
+        if(tr.top<cr.top || tr.bottom>cr.bottom)target.scrollIntoView({block:'nearest',inline:'nearest'});
+      }
+    }
+    outlineLastHighlighted=selected;
+  }
+  function syncOutlineSelection(){
+    if(!outlineIsOpen())return;
+    // 节点仍相同时无需重复让目录跳动；重新绘制保证名称编辑/云端修改可见。
+    const changed=state.selected!==outlineLastHighlighted;
+    renderOutlineTree(changed,changed);
+  }
+  function centerNodeFromOutline(id){
+    let p=state.positions.get(id);
+    if(!p){computeLayout();p=state.positions.get(id);}
+    if(!p)return;
+    const w=stage.clientWidth,h=stage.clientHeight;
+    // PC 的大纲盖住左边一部分画布，所以居中到剩下的可视区域。
+    const blocked=outlineIsOpen()?Math.min(outlinePanel.getBoundingClientRect().width,w-70):0;
+    const targetX=blocked+(w-blocked)/2;
+    state.panX=targetX-(p.x+p.w/2)*state.zoom;
+    state.panY=h/2-(p.y+p.h/2)*state.zoom;
+    applyTransform();
+  }
+  function commitOutlineRename(save){
+    const draft=outlineRenaming;if(!draft)return;
+    outlineRenaming=null;
+    const node=topicById(draft.id);
+    if(!node){renderOutlineTree(true,true);return;}
+    const value=draft.input.value.trim()||'新主题';
+    if(save&&value!==draft.original){
+      node.marks=updateMarksForEdit(node.marks||[],draft.original,value);
+      node.text=value.slice(0,MAX_TOPIC_TEXT);
+      scheduleSave('大纲重命名 · '+node.text.slice(0,28));
+      render();
+    }else renderOutlineTree(true,true);
+    settleRemoteAfterDrag();
+  }
+  function startOutlineRename(id,row){
+    if(outlineDrag?.active)return;
+    if(outlineRenaming){if(outlineRenaming.id===id){outlineRenaming.input.focus();return;}commitOutlineRename(true);}
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const node=topicById(id);if(!node)return;
+    const old=String(node.text||'新主题');
+    // 不复制新记录，只编辑同一节点的 text；导图和大纲天然同源。
+    const label=row.querySelector('.outline-node-label');if(!label)return;
+    const input=document.createElement('input');input.type='text';input.className='outline-node-editor';
+    input.value=old;input.maxLength=MAX_TOPIC_TEXT;input.setAttribute('aria-label','重命名大纲主题');
+    const draft={id,original:old,input};outlineRenaming=draft;
+    label.replaceWith(input);
+    input.addEventListener('pointerdown',e=>e.stopPropagation());
+    input.addEventListener('click',e=>e.stopPropagation());
+    input.addEventListener('keydown',e=>{
+      e.stopPropagation();if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Enter'){e.preventDefault();commitOutlineRename(true);}
+      else if(e.key==='Escape'){e.preventDefault();commitOutlineRename(false);}
+    });
+    input.addEventListener('blur',()=>{if(outlineRenaming===draft)commitOutlineRename(true);});
+    input.focus();input.select();
+  }
+  function clearOutlineDragVisual(){
+    outlineTree.querySelectorAll('.outline-drag-source,.outline-drop-before,.outline-drop-after,.outline-drop-child,.outline-longpress-ready')
+      .forEach(el=>el.classList.remove('outline-drag-source','outline-drop-before','outline-drop-after','outline-drop-child','outline-longpress-ready'));
+  }
+  function beginOutlineDrag(e,id,row,text){
+    if(outlineRenaming||outlineDrag||id===activeRootId()||e.button!==0)return;
+    const touch=e.pointerType==='touch';
+    const d={id,row,text,pointerId:e.pointerId,touch,startX:e.clientX,startY:e.clientY,
+      x:e.clientX,y:e.clientY,active:false,scrolling:false,lastY:e.clientY,drop:null,timer:null,ghost:null,done:false};
+    outlineDrag=d;
+    function arm(){
+      if(d.done||d.active||!row.isConnected)return;
+      d.active=true;row.classList.add('outline-drag-source','outline-longpress-ready');
+      outlineTree.classList.add('outline-dragging');
+      const ghost=document.createElement('div');ghost.className='outline-drag-ghost';ghost.textContent='移动：'+outlineTitle(topicById(id)).slice(0,35);
+      document.body.append(ghost);d.ghost=ghost;
+      moveGhost(d.x,d.y);
+      try{text.setPointerCapture(d.pointerId);}catch{}
+    }
+    function moveGhost(x,y){if(!d.ghost)return;d.ghost.style.left=Math.max(7,Math.min(x+13,innerWidth-185))+'px';d.ghost.style.top=Math.max(7,Math.min(y+12,innerHeight-40))+'px';}
+    function targetAt(x,y){
+      clearOutlineDragVisual();row.classList.add('outline-drag-source');
+      const targetEl=document.elementFromPoint(x,y)?.closest('.outline-row');
+      if(!targetEl||!outlineTree.contains(targetEl))return null;
+      const targetId=targetEl.dataset.nodeId;
+      if(!targetId||targetId===id)return null;
+      const target=topicById(targetId);if(!target)return null;
+      const family=descendantsOf(id);if(family.has(targetId))return null;
+      const rect=targetEl.getBoundingClientRect();
+      const yRatio=(y-rect.top)/Math.max(1,rect.height);
+      let mode=yRatio<.28?'before':yRatio>.72?'after':'child';
+      if(targetId===activeRootId())mode='child';
+      if(mode!=='child'&&(!target.parentId||family.has(target.parentId)))return null;
+      targetEl.classList.add('outline-drop-'+mode);
+      if(d.ghost)d.ghost.textContent='移动：'+outlineTitle(topicById(id)).slice(0,19)+' · '+({before:'插到前面（同级）',after:'插到后面（同级）',child:'放入内部（下级）'}[mode]);
+      return {id:targetId,mode};
+    }
+    function cleanup(){
+      if(d.done)return;d.done=true;clearTimeout(d.timer);
+      window.removeEventListener('pointermove',onMove);
+      window.removeEventListener('pointerup',onUp);
+      window.removeEventListener('pointercancel',onCancel);
+      d.ghost?.remove();outlineTree.classList.remove('outline-dragging');clearOutlineDragVisual();
+      try{text.releasePointerCapture(d.pointerId);}catch{}
+      outlineDrag=null;
+    }
+    const onMove=ev=>{
+      if(ev.pointerId!==d.pointerId||d.done)return;
+      d.x=ev.clientX;d.y=ev.clientY;
+      const travel=Math.hypot(d.x-d.startX,d.y-d.startY);
+      if(!d.active){
+        if(touch){
+          if(d.scrolling||travel>9){
+            d.scrolling=true;clearTimeout(d.timer);
+            if(ev.cancelable)ev.preventDefault();
+            // touch-action:none 防止系统中途取消长按拖动；普通快速滑动改为手动滚动大纲。
+            outlineTree.scrollTop-=ev.clientY-d.lastY;
+            d.lastY=ev.clientY;
+          }
+          return;
+        }
+        if(travel>5)arm();else return;
+      }
+      if(ev.cancelable)ev.preventDefault();
+      moveGhost(d.x,d.y);d.drop=targetAt(d.x,d.y);
+      // 拖动到侧栏上下边缘时自动滚动，方便移动较远的节点。
+      const r=outlineTree.getBoundingClientRect();
+      if(d.y<r.top+30)outlineTree.scrollTop-=13;
+      else if(d.y>r.bottom-30)outlineTree.scrollTop+=13;
+    };
+    const onUp=ev=>{
+      if(ev.pointerId!==d.pointerId||d.done)return;
+      const wasActive=d.active,drop=d.drop;cleanup();
+      if(!wasActive)return;
+      outlineSkipClickUntil=Date.now()+600;outlineLastTap=null;
+      if(!drop){notify('未选择放置位置，原大纲保持不变');return;}
+      if(!reorderTopicSubtree(id,drop)){notify('未改变位置，或不能把主题移入自身分支');return;}
+      const moved=topicById(id);
+      if(moved?.parentId)outlineExpanded.add(moved.parentId);
+      state.selected=id;state.matrixSelection=null;
+      scheduleSave('大纲移动分支 · '+outlineTitle(moved).slice(0,30));
+      render();centerNodeFromOutline(id);renderOutlineTree(true,true);
+      notify('大纲与思维导图已同步调整');settleRemoteAfterDrag();
+    };
+    const onCancel=ev=>{if(ev.pointerId===d.pointerId)cleanup();};
+    window.addEventListener('pointermove',onMove,{passive:false});
+    window.addEventListener('pointerup',onUp);window.addEventListener('pointercancel',onCancel);
+    if(touch){d.timer=setTimeout(arm,460);} // 手机长按后才能挪动，短滑继续滚动目录。
+  }
+  window.addEventListener('resize',()=>{if(outlineIsOpen())positionOutlinePanel();});
+  outlinePanel.addEventListener('pointerdown',e=>e.stopPropagation());
+  outlinePanel.addEventListener('click',e=>e.stopPropagation());
+  outlinePanel.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
+  outlineToggle.addEventListener('pointerdown',e=>e.stopPropagation());
+  outlineToggle.addEventListener('click',e=>{e.stopPropagation();setOutlineOpen(true);});
+  $('outlineClose').addEventListener('click',e=>{e.stopPropagation();setOutlineOpen(false);});
+  // -------- 大纲目录结束 --------
+
   let boardMenuId=null;
   function hideBoardPopup(){boardMenuId=null;$('boardPopup').hidden=true;}
   // 画布拖动排序（PC 直接拖动；手机长按标签后拖动）。只重排元数据，不动每张画布的 rootId。
@@ -1694,7 +2144,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function switchBoard(id){
     if(!boards().some(b=>b.id===id))return;
     if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();
-    if(topicDrag||axisDrag||columnResize||rowResize)return;
+    if(topicDrag||freeNodeDrag||freeWireDrag||axisDrag||columnResize||rowResize)return;
     if(expandedPlanId)closeExpandedPlan();
     hideBoardPopup();state.activeBoardId=id;
     try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
@@ -1899,6 +2349,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   // v19: 两种真正不同的树形布局。两者均以完整节点宽高测量，表格和长文本不裁剪。
   function currentMapLayout(){return topicById(ROOT_ID)?.mapLayout==='radial'?'radial':'logic';}
+  function currentFreeMode(){return topicById(activeRootId())?.freeMode===true;}
+  function captureFreePositions(){
+    // 使用当前自动布局的实际位置初始化；已有用户摆放的坐标绝不覆盖。
+    for(const [id,p] of state.positions){
+      const t=topicById(id);
+      if(!t)continue;
+      if(!Number.isFinite(t.freeX)||!Number.isFinite(t.freeY)){
+        t.freeX=Math.round(p.x*100)/100;t.freeY=Math.round(p.y*100)/100;
+      }
+    }
+  }
+
   function currentMapDensity(){
     const value=Number(topicById(ROOT_ID)?.mapDensity);
     return Number.isFinite(value)?Math.max(0,Math.min(100,Math.round(value))):50;
@@ -1914,10 +2376,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const rootId=activeRootId(),root=topicById(rootId),gap=layoutGaps();
     if(!root){state.positions=new Map();return;}
     const sizes=new Map(),subtree=new Map();
-    const rootChildren=children(rootId);
+    const rootChildren=visibleChildren(rootId);
     function measure(id){
       const t=topicById(id),s=getSize(t);sizes.set(id,s);
-      const cs=children(id);
+      const cs=visibleChildren(id);
       const total=cs.reduce((a,c,i)=>a+measure(c.id)+(i?gap.y:0),0);
       const h=Math.max(s.height,total);subtree.set(id,h);return h;
     }
@@ -1930,7 +2392,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       function place(id,x,top,depth){
         const s=sizes.get(id),h=subtree.get(id);
         pos.set(id,{x,y:top+(h-s.height)/2,w:s.width,h:s.height,depth,side:1});
-        const cs=children(id),total=cs.reduce((a,c,i)=>a+subtree.get(c.id)+(i?gap.y:0),0);
+        const cs=visibleChildren(id),total=cs.reduce((a,c,i)=>a+subtree.get(c.id)+(i?gap.y:0),0);
         let cy=top+(h-total)/2;
         for(const c of cs){
           place(c.id,x+s.width+gap.x,cy,depth+1);
@@ -1955,7 +2417,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           const s=sizes.get(id),h=subtree.get(id);
           const x=side===1?parentX+parentWidth+gap.x:parentX-gap.x-s.width;
           pos.set(id,{x,y:subtreeTop+(h-s.height)/2,w:s.width,h:s.height,depth,side});
-          const cs=children(id),total=cs.reduce((a,c,i)=>a+subtree.get(c.id)+(i?gap.y:0),0);
+          const cs=visibleChildren(id),total=cs.reduce((a,c,i)=>a+subtree.get(c.id)+(i?gap.y:0),0);
           let cy=subtreeTop+(h-total)/2;
           for(const c of cs){
             place(c.id,x,s.width,depth+1,cy);
@@ -1968,62 +2430,275 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       }
     }
-    state.positions=pos;
+    if(currentFreeMode()){
+      // v26：旧版自由模式以每条独立弧线+独立坐标绘图，容易散成斜线网。
+      // 仅首次升级时以当前规整的自动布局重新作为自由模式起点。
+      // 同时备份旧坐标，新版自己产生的坐标以后均不会覆盖。
+      const freeRoot=topicById(rootId);
+      if(freeRoot&&freeRoot.freeLayoutRev!==2){
+        for(const [id,auto] of pos){
+          const t=topicById(id);
+          if(!t)continue;
+          if(Number.isFinite(t.freeX)&&Number.isFinite(t.freeY)&&!t.freeBeforeTidy){
+            t.freeBeforeTidy={x:t.freeX,y:t.freeY};
+          }
+          t.freeX=Math.round(auto.x*100)/100;
+          t.freeY=Math.round(auto.y*100)/100;
+          delete t.freeBend;
+        }
+        freeRoot.freeLayoutRev=2;
+        // 数据迁移由加载后的正常本地保存/云同步管线写回。
+        queueMicrotask(()=>scheduleSave('将旧版自由布局整理为层级括弧'));
+      }
+      // 有已保存的自由坐标就直接使用；新插入节点则先继承自动相对位置，避免跳到远处。
+      const resolved=new Map();
+      for(const t of data.topics){
+        const p=pos.get(t.id);if(!p)continue;
+        const parentAuto=pos.get(t.parentId),parentFree=resolved.get(t.parentId);
+        const saved=Number.isFinite(t.freeX)&&Number.isFinite(t.freeY);
+        let x=saved?t.freeX:(parentAuto&&parentFree?p.x+parentFree.x-parentAuto.x:p.x);
+        const y=saved?t.freeY:(parentAuto&&parentFree?p.y+parentFree.y-parentAuto.y:p.y);
+        if(!saved&&parentAuto&&parentFree){
+          // 在已左右翻转的分支上新增节点时，沿父分支当前的朝向生长。
+          // 已存储的手动坐标始终优先，不会被此规则改动。
+          const grandId=topicById(t.parentId)?.parentId;
+          const grandFree=resolved.get(grandId);
+          const originalDX=(p.x+p.w/2)-(parentAuto.x+parentAuto.w/2);
+          let targetSide=originalDX>=0?1:-1;
+          if(grandFree){
+            const parentDX=(parentFree.x+parentFree.w/2)-(grandFree.x+grandFree.w/2);
+            if(Math.abs(parentDX)>12)targetSide=parentDX>=0?1:-1;
+          }
+          if((originalDX>=0?1:-1)!==targetSide){
+            x=parentFree.x+parentFree.w-(p.x-parentAuto.x)-p.w;
+          }
+        }
+        resolved.set(t.id,{...p,x,y});
+      }
+      state.positions=resolved;
+    }else state.positions=pos;
   }
-  // v21：层级括弧，父主题只有一条共享主干，每个子主题从括弧明确分叉。
-  // 按实际父子关系及左右方向分组，而非按全局纵线强制对齐。
+  // v26: 自动模式和自由模式共用完全相同的层级括弧绘制器。
+  // 所有导线保持水平/垂直主干、圆角转折；绝不画独立的斜向贝塞尔曲线。
+  let freeNodeDrag=null,freeWireDrag=null,freeIgnoreClickUntil=0;
+  // 每个含下级的可见节点，在分叉交点放一枚可操作的浮动控件。
+  // 展开时默认透明（鼠标移到交点显现），收起时显示数字徽标（直属子节点数）。
+  function renderBranchFoldControls(){
+    const layer=$('branchFoldLayer');if(!layer)return;
+    const frag=document.createDocumentFragment(),free=currentFreeMode();
+    const allChildren=new Map();
+    for(const node of data.topics){
+      if(!allChildren.has(node.parentId))allChildren.set(node.parentId,[]);
+      allChildren.get(node.parentId).push(node);
+    }
+    for(const t of data.topics){
+      const p=state.positions.get(t.id);if(!p)continue;
+      const direct=(allChildren.get(t.id)||[]).filter(n=>!(t.id===ROOT_ID&&n.boardRoot));if(!direct.length)continue;
+      let side=1;
+      if(t.collapsed){
+        side=t.foldSide===-1?-1:(p.side===-1?-1:1);
+      }else{
+        const positions=direct.map(c=>state.positions.get(c.id)).filter(Boolean);
+        const found=positions.find(c=>((c.x+c.w/2)>=(p.x+p.w/2)));
+        side=positions.length?(found?1:-1):(p.side===-1?-1:1);
+      }
+      const btn=document.createElement('button');btn.type='button';
+      btn.className='branch-fold-button'+(t.collapsed?' is-collapsed':'')+(state.selected===t.id?' node-selected':'');
+      btn.dataset.parentId=t.id;
+      // 刚好在父节点与括弧的交点，展开模式不会增加额外文字或圆圈；鼠标悬停才可见。
+      btn.style.left=(side===1?p.x+p.w+22:p.x-22)+'px';
+      btn.style.top=(p.y+p.h/2)+'px';
+      btn.textContent=t.collapsed?String(direct.length):'−';
+      btn.title=t.collapsed?`展开 ${direct.length} 个子主题及其下级`:`收起 ${direct.length} 个子主题及其下级`;
+      btn.setAttribute('aria-label',btn.title);
+      btn.setAttribute('aria-expanded',String(!t.collapsed));
+      btn.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+      btn.addEventListener('click',e=>{
+        e.preventDefault();e.stopPropagation();
+        const node=topicById(t.id);
+        if(node&&!node.collapsed)node.foldSide=side;
+        toggleBranchFold(t.id);
+      });
+      frag.append(btn);
+    }
+    layer.replaceChildren(frag);
+  }
   function drawConnections() {
+    $('freeWireLayer').replaceChildren(); // 移除旧版线上的所有圆形拖动控制点
     svg.replaceChildren();
+    const free=currentFreeMode();
     const NS='http://www.w3.org/2000/svg';
     const path=(d,className,childId)=>{
       const el=document.createElementNS(NS,'path');
       el.setAttribute('class','connection'+(className?' '+className:''));
       el.setAttribute('d',d);
       if(childId)el.dataset.childId=childId;
-      svg.append(el);
-      return el;
+      svg.append(el);return el;
     };
     for(const parent of data.topics){
-      const p=state.positions.get(parent.id);
-      if(!p)continue;
+      const p=state.positions.get(parent.id);if(!p)continue;
       const groups=new Map();
-      for(const t of children(parent.id)){
-        const c=state.positions.get(t.id);
-        if(!c)continue;
-        const side=c.side===-1?-1:1;
+      for(const t of visibleChildren(parent.id)){
+        const c=state.positions.get(t.id);if(!c)continue;
+        // 自动布局使用预设方向；自由模式按左右真实位置判断方向。
+        const side=free ? ((c.x+c.w/2)>=(p.x+p.w/2)?1:-1) : (c.side===-1?-1:1);
         if(!groups.has(side))groups.set(side,[]);
         groups.get(side).push({t,c,y:c.y+c.h/2,toX:side===1?c.x:c.x+c.w});
       }
       for(const [side,branch] of groups){
         const fromX=side===1?p.x+p.w:p.x,fromY=p.y+p.h/2;
+        branch.sort((a,b)=>a.y-b.y);
+        const nearest=side===1?Math.min(...branch.map(b=>b.toX)):Math.max(...branch.map(b=>b.toX));
+        const available=Math.max(0,side*(nearest-fromX));
+        const offset=Math.min(30,Math.max(3,available*.45));
+        const railX=fromX+side*offset;
         if(branch.length===1){
-          const {t,y,toX}=branch[0],mid=(fromX+toX)/2;
-          path(`M ${fromX} ${fromY} C ${mid} ${fromY}, ${mid} ${y}, ${toX} ${y}`,
-            state.selected===t.id?'selected-line':'',t.id);
+          const {t,y,toX}=branch[0];
+          if(Math.abs(y-fromY)<.3){
+            path(`M ${fromX} ${fromY} H ${toX}`,state.selected===t.id?'selected-line':'',t.id);
+          }else{
+            // 单子分支也是方正直角结构，不再是对角抛物线。
+            const radius=Math.min(7,Math.abs(y-fromY)/2,Math.max(0,available*.26));
+            const sign=y>fromY?1:-1;
+            const a=railX-side*radius,b=railX;
+            path(`M ${fromX} ${fromY} H ${a} Q ${b} ${fromY} ${b} ${fromY+sign*radius} V ${y-sign*radius} Q ${b} ${y} ${b+side*radius} ${y} H ${toX}`,
+              state.selected===t.id?'selected-line':'',t.id);
+          }
           continue;
         }
-        branch.sort((a,b)=>a.y-b.y);
         const first=branch[0],last=branch[branch.length-1];
-        const nearest=side===1?Math.min(...branch.map(b=>b.toX)):Math.max(...branch.map(b=>b.toX));
-        const available=Math.abs(nearest-fromX);
-        const offset=Math.max(4,Math.min(32,available*.46));
-        const railX=fromX+side*offset;
-        const radius=Math.max(1,Math.min(10,(last.y-first.y)/3,available*.28));
-        // 先画共享主干，再画括弧，每个同级分支都从该括弧独立延伸。
-        path(`M ${fromX} ${fromY} H ${railX}`,'fork-trunk',null);
+        const radius=Math.max(0,Math.min(8,(last.y-first.y)/3,available*.24));
         const endX=railX+side*radius;
-        path(`M ${endX} ${first.y} Q ${railX} ${first.y} ${railX} ${first.y+radius} V ${last.y-radius} Q ${railX} ${last.y} ${endX} ${last.y}`,
-          'fork-rail',null);
+        path(`M ${fromX} ${fromY} H ${railX}`,'fork-trunk',null);
+        path(`M ${endX} ${first.y} Q ${railX} ${first.y} ${railX} ${first.y+radius} V ${last.y-radius} Q ${railX} ${last.y} ${endX} ${last.y}`,'fork-rail',null);
         for(let i=0;i<branch.length;i++){
           const {t,y,toX}=branch[i];
           const x=(i===0||i===branch.length-1)?endX:railX;
           path(`M ${x} ${y} H ${toX}`,state.selected===t.id?'selected-line fork-arm':'fork-arm',t.id);
         }
       }
+      if(parent.collapsed && directBranchCount(parent.id)){
+        const side=free&&parent.foldSide===-1?-1:(p.side===-1?-1:1);
+        const x=side===1?p.x+p.w:p.x,y=p.y+p.h/2;
+        path(`M ${x} ${y} H ${x+side*21}`,'fork-trunk fold-stub',null);
+      }
+    }
+    renderBranchFoldControls();
+  }
+  // v25：自由布局的拖动单位是「整条子分支」：本节点、所有后代以及内部连线。
+  // 只遍历当前画布允许的真实子节点，避免拖动画布中心主题时误带走其他画布。
+  function freeBranchIds(id){
+    const result=[];const visited=new Set(),stack=[id];
+    while(stack.length){
+      const next=stack.pop();if(visited.has(next)||!state.positions.has(next))continue;
+      visited.add(next);result.push(next);
+      const direct=children(next);
+      for(let i=direct.length-1;i>=0;i--)stack.push(direct[i].id);
+    }
+    return result;
+  }
+  function startFreeNodeDrag(e,id,el){
+    if(!currentFreeMode()||(e.pointerType==='mouse'&&e.button!==0)||freeNodeDrag||freeWireDrag)return;
+    if(state.editing||state.matrixEditing||state.planEditing)return;
+    if(e.target.closest('input,textarea,[contenteditable],.topic-resize-handle,.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer'))return;
+    e.stopPropagation();
+    const p=state.positions.get(id);if(!p)return;
+    const ids=freeBranchIds(id),initial=new Map(),elements=new Map();
+    for(const nodeId of ids){
+      const position=state.positions.get(nodeId);if(!position)continue;
+      initial.set(nodeId,{x:position.x,y:position.y,w:position.w,h:position.h});
+      const nodeEl=[...topicLayer.children].find(n=>n.dataset.id===nodeId);
+      if(nodeEl)elements.set(nodeId,nodeEl);
+    }
+    const parent=state.positions.get(topicById(id)?.parentId),
+      parentCenter=parent?parent.x+parent.w/2:null,
+      rootCenter=p.x+p.w/2;
+    const sourceSide=parentCenter===null?0:(rootCenter>=parentCenter?1:-1);
+    freeNodeDrag={id,pointerId:e.pointerId,element:el,startX:e.clientX,startY:e.clientY,
+      initialX:p.x,initialY:p.y,initial,ids,elements,
+      parentCenter,sourceSide,mirror:false,moved:false};
+    try{el.setPointerCapture(e.pointerId);}catch{}
+  }
+  function moveFreeGesture(e){
+    if(freeNodeDrag?.pointerId===e.pointerId){
+      const d=freeNodeDrag,dx=(e.clientX-d.startX)/state.zoom,dy=(e.clientY-d.startY)/state.zoom;
+      if(!d.moved&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)<7)return;
+      if(!d.moved){
+        d.moved=true;
+        for(const member of d.elements.values())member.classList.add('free-moving','free-subtree-moving');
+      }
+      e.preventDefault();
+      // 当整支分支越过它的父节点、从右侧转到左侧（或反向）时，
+      // 镜像翻转整棵子树的相对坐标；文本和表格自身不会左右颠倒。
+      let mirror=d.mirror;
+      if(d.sourceSide&&d.parentCenter!==null){
+        const center=d.initialX+dx+(d.initial.get(d.id)?.w||0)/2;
+        const delta=center-d.parentCenter;
+        // 12 个画布像素的滞回区，避免在中线附近左右抖动。
+        if(delta>12)mirror=d.sourceSide!==1;
+        else if(delta< -12)mirror=d.sourceSide!==-1;
+      }
+      d.mirror=mirror;
+      const root=d.initial.get(d.id);if(!root)return;
+      const newRootX=root.x+dx;
+      for(const memberId of d.ids){
+        const base=d.initial.get(memberId),p=state.positions.get(memberId);
+        if(!base||!p)continue;
+        p.x=mirror?newRootX+root.w-(base.x-root.x)-base.w:base.x+dx;
+        p.y=base.y+dy;
+        const nodeEl=d.elements.get(memberId);
+        if(nodeEl){nodeEl.style.left=p.x+'px';nodeEl.style.top=p.y+'px';}
+      }
+      drawConnections();return;
     }
   }
+  function finishFreeGesture(e,commit){
+    if(freeNodeDrag?.pointerId===e.pointerId){
+      const d=freeNodeDrag;freeNodeDrag=null;
+      for(const member of d.elements.values())member.classList.remove('free-moving','free-subtree-moving');
+      if(d.moved){
+        freeIgnoreClickUntil=Date.now()+400;
+        if(commit){
+          // 一次操作将整棵子树的实际位置写回同一份导图数据，撤销和云端同步只记录一次。
+          for(const memberId of d.ids){
+            const p=state.positions.get(memberId),t=topicById(memberId);
+            if(!t||!p)continue;
+            t.freeX=Math.round(p.x*100)/100;t.freeY=Math.round(p.y*100)/100;
+          }
+          const t=topicById(d.id);
+          if(t){state.selected=d.id;scheduleSave('自由模式 · 移动整条分支 · '+t.text.slice(0,26));}
+        }
+        render();
+      }
+      settleRemoteAfterDrag();return true;
+    }
+    return false;
+  }
+  function addFreeGrabHandle(el,id){
+    if(!currentFreeMode())return;
+    const grip=document.createElement('button');grip.type='button';grip.className='free-node-grip';
+    grip.textContent='⠿';grip.title='自由模式：按住这里移动整张表格及它的所有下级分支';
+    grip.setAttribute('aria-label','拖动整条分支 '+(topicById(id)?.text||'表格'));
+    grip.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();});
+    grip.addEventListener('pointerdown',e=>{e.stopPropagation();startFreeNodeDrag(e,id,el);});
+    el.append(grip);
+  }
+
   // 选择时不销毁 DOM：保证两次连续点击能够触发原生 dblclick。
   function selectInteractive(id, matrixSelection=null){
+    // 大纲可选中尚处于隐藏分支的节点：先展开祖先，再定位真实可见节点。
+    if(!state.positions.has(id)&&topicById(id)){
+      let at=topicById(id),unfolded=false,guard=0;
+      while(at?.parentId!==null && guard++<4000){
+        const par=topicById(at.parentId);if(!par)break;
+        if(par.collapsed){par.collapsed=false;unfolded=true;}
+        at=par;
+      }
+      if(unfolded){
+        state.selected=id;state.matrixSelection=matrixSelection;
+        scheduleSave('大纲定位 · 展开隐藏分支');render();return;
+      }
+    }
     if(state.editing&&state.editing!==id)endEditing(true);
     if(state.matrixEditing)settleMatrixEditor(true);
     state.selected=id;
@@ -2056,6 +2731,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     }else topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
     drawConnections();
+    syncOutlineSelection();
   }
   function clearMatrixSelectionVisual(wrap){
     wrap.querySelectorAll('.cell-picked,.col-picked,.editing-cell').forEach(el=>el.classList.remove('cell-picked','col-picked','editing-cell'));
@@ -2116,7 +2792,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(commit&&updated!==ed.original){
       scheduleSave('编辑横纵表格 · '+(updated||'空白单元格').slice(0,18));
     }else persist();
-    if(cloud.externalRow&&!cloud.sending&&!topicDrag?.moved&&!axisDrag?.moved&&!columnResize&&!rowResize){
+    if(cloud.externalRow&&!cloud.sending&&!topicDrag?.moved&&!freeNodeDrag&&!freeWireDrag&&!axisDrag?.moved&&!columnResize&&!rowResize){
       const row=cloud.externalRow;cloud.externalRow=null;
       if(Number(row.revision)>Number(cloud.revision)){
         if(cloud.dirty)showCloudConflict(row,'另一台设备在你编辑表格时修改了导图。');
@@ -2297,6 +2973,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     if(state.selected===t.id)showMatrixControls(wrap,t);
     applyMatrixSelection(wrap);
+    addFreeGrabHandle(wrap,t.id);
     return wrap;
   }
   function startMatrixEditing(id,row,col){
@@ -3107,6 +3784,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       handle.addEventListener('pointerdown',e=>guardedResizeDown(e,handle,()=>startPlanDividerResize(e,t,'y',r,handle)));wrap.append(handle);
     }
     if(state.selected===t.id)showPlanControls(wrap,t);
+    addFreeGrabHandle(wrap,t.id);
     return wrap;
   }
 
@@ -3135,6 +3813,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function prepareTopicDrag(e,id,el){
     if((e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button,input,.topic-editor'))return;
     e.stopPropagation();
+    if(currentFreeMode()){startFreeNodeDrag(e,id,el);return;}
     if(id===activeRootId())return; // 当前画布中心主题固定；其余主题可重组。
     if(state.editing||state.matrixEditing||state.planEditing)return;
     try{el.setPointerCapture(e.pointerId);}catch{}
@@ -3248,7 +3927,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     data.topics=remaining;return true;
   }
   function settleRemoteAfterDrag(){
-    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||topicDrag||axisDrag||columnResize||rowResize)return;
+    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||freeNodeDrag||freeWireDrag||topicDrag||axisDrag||columnResize||rowResize)return;
     const row=cloud.externalRow;cloud.externalRow=null;
     if(Number(row.revision)>Number(cloud.revision)){
       if(cloud.dirty)showCloudConflict(row,'拖动期间另一台设备更新了导图，请选择要保留的版本。');
@@ -3495,6 +4174,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     render();settleRemoteAfterDrag();
   }
   window.addEventListener('pointermove',e=>{
+    if(freeNodeDrag?.pointerId===e.pointerId||freeWireDrag?.pointerId===e.pointerId){moveFreeGesture(e);return;}
     if(matrixTouchHold?.pointerId===e.pointerId&&
        Math.hypot(e.clientX-matrixTouchHold.x,e.clientY-matrixTouchHold.y)>9)cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId)updateColumnResize(columnResize,e);
@@ -3511,6 +4191,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   },{passive:false});
   window.addEventListener('pointerup',e=>{
+    if(finishFreeGesture(e,true))return;
     cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,true);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,true);}
@@ -3518,6 +4199,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,true);}
   });
   window.addEventListener('pointercancel',e=>{
+    if(finishFreeGesture(e,false))return;
     cancelMatrixTouchHold(e.pointerId);
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,false);}
@@ -3768,6 +4450,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   buildAppearancePicker();
   function refreshMapStyleControls(){
     const mode=currentMapLayout(),density=currentMapDensity();
+    $('mapFreeMode').checked=currentFreeMode();
     document.querySelectorAll('.map-style-choice').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mapLayout===mode)));
     $('mapDensity').value=String(density);
     $('mapDensityValue').textContent=density+'%';
@@ -3782,6 +4465,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     scheduleSave('切换导图样式 · '+(mode==='radial'?'发散式':'逻辑式'));
     refreshMapStyleControls();render();fitToView();
   }));
+  $('mapFreeMode').addEventListener('change',e=>{
+    const enable=!!e.target.checked,root=topicById(activeRootId());
+    if(!root||currentFreeMode()===enable)return;
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    if(freeNodeDrag||freeWireDrag){e.target.checked=currentFreeMode();return;}
+    if(enable){
+      // 首次开启必须从原自动布局复制当前位置；已保存的自由坐标不动。
+      computeLayout();captureFreePositions();
+    }
+    root.freeMode=enable;
+    scheduleSave(enable?'开启自由模式':'关闭自由模式 · 恢复自动布局');
+    render();
+    notify(enable?'自由模式：拖动节点即移动整条子分支；表格用抓手；连接线始终保持层级括弧':'已恢复自动布局；自由位置已保存');
+  });
   let lastDensity=50;
   $('mapDensity').addEventListener('pointerdown',()=>{lastDensity=currentMapDensity();});
   $('mapDensity').addEventListener('focus',()=>{lastDensity=currentMapDensity();});
@@ -3807,6 +4506,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function render() {
     refreshMapStyleControls();
     stage.classList.toggle('layout-logic',currentMapLayout()==='logic');
+    stage.classList.toggle('free-mode',currentFreeMode());
     stage.classList.toggle('matrix-touch-select-mode',
       !!(state.selected && topicById(state.selected)?.kind==='matrix' && mobileMatrixEditorAvailable()));
     applyAppearance();
@@ -3824,6 +4524,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         continue;
       }
       const el=document.createElement('div'); el.className='topic'; el.dataset.id=t.id;
+      if(children(t.id).length)el.classList.add('has-fold-children');
       el.tabIndex=0; el.setAttribute('role','button');
       el.setAttribute('aria-label',t.text||'新主题');
       el.style.left=p.x+'px';el.style.top=p.y+'px';el.style.width=p.w+'px';el.style.height=p.h+'px';
@@ -3833,6 +4534,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       el.append(title);
       el.addEventListener('pointerdown',e=>prepareTopicDrag(e,t.id,el));
       el.addEventListener('click',e=>{
+        if(Date.now()<freeIgnoreClickUntil){e.preventDefault();e.stopPropagation();return;}
         if(ignoreTopicClickId===t.id){ignoreTopicClickId=null;e.preventDefault();e.stopPropagation();return;}
         if(state.editing!==t.id)selectInteractive(t.id);
         e.stopPropagation();
@@ -3851,6 +4553,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     applyTransform();renderBoards();
     highlightCopySelection();
     redrawExpandedPlan();
+    syncOutlineSelection();
   }
   // 只更新现有 DOM 的位置和尺寸，不拆掉正在输入文字的 textarea。
   let nodeReflowPending=false;
@@ -3981,6 +4684,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(state.editing)endEditing(true);
     const parent=topicById(parentId);if(!parent)return;
     const t={id:makeId(),parentId,text:'新主题'};
+    if(parent.collapsed)parent.collapsed=false;
     data.topics.splice(subtreeLastIndex(parentId)+1,0,t); state.selected=t.id; scheduleSave('添加子主题');render();ensureVisible(t.id);startEditing(t.id,false,true);
   }
   function addSibling(id) {
@@ -4337,7 +5041,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           const sh=getShadow(id);
           if(sh&&sameTopics(sh.topics,row.topics))return;
         }
-        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag){
+        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming){
           // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
           if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
           return;
@@ -4353,7 +5057,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
   }
   function requestCloudPush(){
-    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag)return;
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming)return;
     clearTimeout(cloud.timer);
     cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
   }
@@ -4381,7 +5085,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   }
   async function flushCloud(){
-    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize||boardTabDrag)return;
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming)return;
     cloud.sending=true;clearTimeout(cloud.timer);
     const snapshot=cloneTopics();
     const entries=cloud.pendingEntries.splice(0);
@@ -4445,7 +5149,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   $('cloudUseLocal').addEventListener('click',()=>void useLocal());
   window.addEventListener('online',()=>{if(cloud.user){if(cloud.ready&&(cloud.dirty||cloud.pendingEntries.length))requestCloudPush();else if(!cloud.ready)void openCloudDocument();}});
   window.addEventListener('focus',()=>{if(cloud.ready&&cloud.user&&!cloud.conflict){
-    if(cloud.sending||boardTabDrag||topicDrag?.moved||axisDrag?.moved||columnResize||rowResize)return;
+    if(cloud.sending||boardTabDrag||freeNodeDrag||freeWireDrag||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize)return;
     void readCloudDocument().then(row=>{
       if(!row)return;
       if(Number(row.revision)>Number(cloud.revision)){
@@ -4513,6 +5217,54 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const pt=[...pointers.values()][0];gesture={type:'pan',x:pt.x,y:pt.y,panX:state.panX,panY:state.panY,moved:true};
     }
     if(wasClick){ if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);state.selected=null;state.matrixSelection=null;stage.classList.remove('matrix-touch-select-mode');hideDeleteContext();render(); }
+  }
+  // v23 双指缩放全区域入口：触摸起点即使在表格、可编辑单元格、节点上也要注册。
+  // 不拦截单指操作；仅在检测到两个手指时，才接管手势，保留普通编辑与拖动。
+  let anySurfacePinch=null;
+  function touchPair(touches){
+    const a=touches[0],b=touches[1];return {
+      cx:(a.clientX+b.clientX)/2,cy:(a.clientY+b.clientY)/2,
+      distance:Math.max(1,Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY))
+    };
+  }
+  stage.addEventListener('touchstart',e=>{
+    if(e.touches.length<2||anySurfacePinch)return;
+    if(e.cancelable)e.preventDefault();
+    cancelMatrixTouchHold();
+    // 禁止原有空白画布手势在同一轮触摸中重复缩放。
+    pointers.clear();gesture=null;stage.classList.remove('panning');
+    if(columnResize){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
+    if(rowResize){const d=rowResize;rowResize=null;finishRowResize(d,false);}
+    if(axisDrag){const d=axisDrag;axisDrag=null;finishAxisMove(d,false);}
+    if(topicDrag){const d=topicDrag;topicDrag=null;finishTopicMove(d,false);}
+    if(freeNodeDrag)finishFreeGesture({pointerId:freeNodeDrag.pointerId},false);
+    if(freeWireDrag)finishFreeGesture({pointerId:freeWireDrag.pointerId},false);
+    const g=touchPair(e.touches),r=stage.getBoundingClientRect();
+    anySurfacePinch={...g,startZoom:state.zoom,startPanX:state.panX,startPanY:state.panY,
+      anchorX:(g.cx-r.left-state.panX)/state.zoom,anchorY:(g.cy-r.top-state.panY)/state.zoom};
+  },{capture:true,passive:false});
+  stage.addEventListener('touchmove',e=>{
+    if(!anySurfacePinch)return;
+    if(e.touches.length<2)return;
+    if(e.cancelable)e.preventDefault();
+    e.stopPropagation();
+    const g=touchPair(e.touches),r=stage.getBoundingClientRect(),p=anySurfacePinch;
+    const next=Math.max(MIN_ZOOM,Math.min(MAX_ZOOM,p.startZoom*g.distance/p.distance));
+    state.zoom=next;
+    state.panX=g.cx-r.left-p.anchorX*next;
+    state.panY=g.cy-r.top-p.anchorY*next;
+    applyTransform();
+  },{capture:true,passive:false});
+  const finishAnyPinch=e=>{if(anySurfacePinch&&e.touches.length<2){anySurfacePinch=null;pointers.clear();gesture=null;stage.classList.remove('panning');}};
+  stage.addEventListener('touchend',finishAnyPinch,{capture:true,passive:false});
+  stage.addEventListener('touchcancel',finishAnyPinch,{capture:true,passive:false});
+  // 内部单元格的 pointermove 只在双指期间截断，防止误触行列拖动。
+  for(const type of ['pointerdown','pointermove','pointerup','pointercancel']){
+    stage.addEventListener(type,e=>{
+      if(anySurfacePinch&&e.pointerType==='touch'){
+        if(e.cancelable)e.preventDefault();e.stopImmediatePropagation();
+      }
+    },true);
   }
   stage.addEventListener('pointerdown',down);
   stage.addEventListener('pointermove',move);
@@ -5036,7 +5788,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.18.1";
+  const BUILD = "2026.11.18.7";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');
