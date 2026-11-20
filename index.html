@@ -384,6 +384,9 @@
 .rich-toolbar button:hover,.rich-toolbar button.active{background:#555c6e;}
 .rich-toolbar .rich-preview{font-weight:750;min-width:34px;border-bottom:3px solid #f6df77;}
 .rich-toolbar .rich-arrow{border-left:1px solid #666a75;border-radius:0 7px 7px 0;padding:7px 7px;}
+.rich-toolbar .rich-strike{font-size:17px;min-width:35px;font-weight:650;}
+.rich-toolbar .rich-strike span{text-decoration:line-through;text-decoration-thickness:2px;}
+.rich-toolbar .rich-strike.is-applied{background:#58677f;color:#fff;}
 .rich-popover{position:fixed;z-index:235;width:min(314px,calc(100vw - 20px));max-height:65vh;overflow-y:auto;
  padding:12px;color:#222934;background:#fff;border-radius:13px;border:1px solid #d9dfe9;box-shadow:0 14px 38px #0009;}
 .rich-popover .rich-head{display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700;margin:0 0 9px;}
@@ -528,6 +531,38 @@
 }
 .stage.layout-logic .topic .topic-editor {font-size:inherit;}
 
+
+/* v33：计划表单元格拆成小块，支持点击高亮关联与右键关联。 */
+.plan-node.plan-inline .plan-table-live tbody tr+tr th,
+.plan-node.plan-inline .plan-table-live tbody tr+tr td{border-top-width:2px!important;border-top-color:color-mix(in srgb,var(--matrix-grid,#bfc0c2) 75%,#5a6470)!important;}
+.plan-node.plan-inline .plan-note-wrap.plan-block-wrap{padding:8px;display:flex;align-items:stretch;justify-content:stretch;background:transparent;}
+.plan-node.plan-inline .plan-note-wrap.plan-block-wrap .plan-note,
+.plan-node.plan-inline .plan-note-wrap.plan-block-wrap .plan-note-visual{display:none!important;}
+.plan-block-board{position:relative;display:flex;flex-direction:column;gap:8px;width:100%;min-height:100%;box-sizing:border-box;}
+.plan-block-list{display:flex;flex-direction:column;gap:8px;min-height:0;}
+.plan-mini-block{display:flex;align-items:center;gap:8px;min-height:38px;padding:8px 10px;border-radius:10px;border:1px solid color-mix(in srgb,var(--matrix-grid,#bfc0c2) 88%,transparent);background:color-mix(in srgb,var(--matrix-top,#fff) 72%,transparent);box-shadow:0 1px 2px #00000010;cursor:pointer;transition:.15s border-color,.15s box-shadow,.15s transform,.15s background;}
+.plan-mini-block:hover{border-color:var(--blue,#20b9ff);box-shadow:0 3px 10px #20b9ff20;transform:translateY(-1px);}
+.plan-mini-block.is-active{border-color:var(--blue,#20b9ff);box-shadow:0 0 0 2px #20b9ff22,0 8px 18px #20b9ff18;background:color-mix(in srgb,var(--blue-fill,#2a9de5) 12%,var(--matrix-top,#fff));}
+.plan-mini-block.is-related{border-color:#5caeff;box-shadow:0 0 0 1px #5caeff33;background:color-mix(in srgb,var(--blue-fill,#2a9de5) 8%,var(--matrix-top,#fff));}
+.plan-mini-block.is-source{border-style:dashed;}
+.plan-mini-dot{width:8px;height:8px;border-radius:999px;flex:none;background:var(--matrix-muted,#8f96a3);opacity:.9;}
+.plan-mini-block.is-related .plan-mini-dot,.plan-mini-block.is-active .plan-mini-dot{background:var(--blue,#20b9ff);}
+.plan-mini-text{flex:1;min-width:0;overflow-wrap:anywhere;word-break:break-word;white-space:pre-wrap;font:600 14px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;color:var(--matrix-ink,#fff);}
+.plan-mini-tools{display:flex;align-items:center;gap:4px;opacity:0;pointer-events:none;transition:.15s opacity;}
+.plan-mini-block:hover .plan-mini-tools,.plan-mini-block.is-active .plan-mini-tools{opacity:1;pointer-events:auto;}
+.plan-mini-tools button{width:22px;height:22px;border-radius:6px;border:1px solid color-mix(in srgb,var(--matrix-grid,#bfc0c2) 88%,transparent);background:color-mix(in srgb,var(--matrix-bg,#fff) 78%,transparent);color:var(--matrix-ink,#fff);padding:0;display:grid;place-items:center;font-size:13px;cursor:pointer;}
+.plan-mini-tools button:hover{border-color:var(--blue,#20b9ff);color:var(--blue,#20b9ff);}
+.plan-block-add{display:flex;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:7px 10px;border-radius:9px;border:1px dashed color-mix(in srgb,var(--matrix-grid,#bfc0c2) 92%,transparent);background:transparent;color:var(--matrix-muted,#a3a9b3);font:600 13px/1.3 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;cursor:pointer;}
+.plan-block-add:hover{border-color:var(--blue,#20b9ff);color:var(--blue,#20b9ff);background:#20b9ff12;}
+.plan-block-empty{display:flex;align-items:center;justify-content:center;min-height:34px;padding:7px 10px;border-radius:9px;border:1px dashed transparent;color:var(--matrix-muted,#a3a9b3);font-size:13px;}
+.plan-block-input{width:100%;box-sizing:border-box;border:2px solid var(--blue,#20b9ff);border-radius:9px;background:color-mix(in srgb,var(--matrix-bg,#fff) 90%,transparent);color:var(--matrix-ink,#fff);padding:9px 10px;font:600 14px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;outline:none;}
+.plan-block-menu{min-width:248px;max-width:min(94vw,320px);}
+.plan-block-menu .plan-menu-subtitle{padding-top:3px;}
+.plan-block-menu .plan-menu-hint{padding:0 10px 8px;color:#667085;font-size:12px;line-height:1.5;white-space:normal;}
+.plan-block-menu button[disabled]{opacity:.45;cursor:not-allowed;}
+.plan-block-menu button[disabled]:hover{background:transparent;color:#222;}
+.plan-link-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:#20b9ff14;color:#1759a4;font-weight:700;font-size:12px;}
+
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -537,7 +572,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="2026.11.17.13">
+<meta name="app-build" content="2026.11.20.8">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -626,6 +661,62 @@
 .plan-node .plan-category-inline-actions button:last-child{background:#54585f;border-color:#82868c;font-size:16px;}
 .plan-node .plan-category-inline-actions button:hover{filter:brightness(1.2);}
 @media(pointer:coarse){.plan-node .plan-category-controls-host:focus-within>.plan-category-inline-actions{opacity:1;visibility:visible;pointer-events:auto;}}
+
+/* v29: 纯节点原位变换为大纲块。仅改变展示形式；行始终引用原 topic id。 */
+.inline-outline-node{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;
+  border:1px solid var(--matrix-grid,#838a96);border-radius:9px;background:var(--matrix-bg,#303136);
+  color:var(--matrix-ink,#f7f7f7);overflow:hidden;min-width:330px;
+  box-shadow:0 3px 13px #00000024;font:500 13px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;
+  touch-action:pan-y;user-select:none;-webkit-user-select:none;}
+.inline-outline-node.selected,.inline-outline-node:focus-within{box-shadow:0 0 0 2px #2aa9f5a0,0 5px 15px #0003;}
+.inline-outline-head{display:flex;align-items:center;gap:7px;min-height:42px;box-sizing:border-box;padding:5px 8px;
+  border-bottom:1px solid var(--matrix-grid,#888);flex-shrink:0;background:var(--matrix-top,#3e4148);}
+.inline-outline-head-title{flex:1;text-align:left;min-width:0;border:0;background:transparent;color:inherit;
+  font-weight:700;font-size:14px;line-height:1.4;font-family:inherit;white-space:pre-wrap;overflow-wrap:anywhere;padding:6px;cursor:text;}
+.inline-outline-head-title:hover{color:var(--matrix-ink,#fff);}
+.inline-outline-head-action{border:1px solid var(--matrix-grid,#5c6270);background:transparent;color:inherit;
+ border-radius:6px;padding:5px 7px;font-weight:500;font-size:11px;line-height:1.2;font-family:inherit;white-space:nowrap;}
+.inline-outline-head-action:hover{background:#539fd730;}
+.inline-outline-scroll{min-height:0;min-width:0;flex:1;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  touch-action:pan-y;scrollbar-width:thin;padding:3px 0;}
+.inline-outline-row{box-sizing:border-box;position:relative;display:flex;align-items:flex-start;gap:5px;min-height:34px;
+  padding:5px 10px 5px calc(9px + var(--inline-indent,0px));border-radius:5px;
+  border:1px solid transparent;color:inherit;transition:background .1s;}
+.inline-outline-row:hover{background:#74a5d010;}
+.inline-outline-row.inline-selected{background:#268bd428;box-shadow:inset 0 0 0 1px #278fe3;}
+.inline-outline-row.inline-drag-source{opacity:.42;background:#9198a333;outline:2px dashed #8c9299;}
+.inline-outline-row.inline-drop-before:before,.inline-outline-row.inline-drop-after:after{
+ content:'';position:absolute;left:8px;right:8px;height:3px;background:#26a9ff;
+ box-shadow:0 0 0 1px #d2ebff7a;z-index:3;pointer-events:none;}
+.inline-outline-row.inline-drop-before:before{top:-2px;}
+.inline-outline-row.inline-drop-after:after{bottom:-2px;}
+.inline-outline-row.inline-drop-child{background:#2187cd30;outline:2px dashed #29affc;outline-offset:-2px;}
+.inline-outline-grip{flex:0 0 19px;width:19px;height:23px;display:grid;place-items:center;align-self:flex-start;
+ padding:0;border:0;background:transparent;color:var(--matrix-muted,#a4a8ae);font-size:17px;cursor:grab;
+ touch-action:none;user-select:none;-webkit-user-select:none;}
+.inline-outline-grip:active{cursor:grabbing;}
+.inline-outline-chevron{flex:0 0 19px;width:19px;height:23px;background:transparent;border:0;color:inherit;
+ padding:0;font-size:12px;cursor:pointer;}
+.inline-outline-chevron:hover{color:#25adff;}
+.inline-outline-chevron-empty{flex:0 0 19px;width:19px;}
+.inline-outline-label{flex:1;min-width:0;align-self:center;box-sizing:border-box;display:block;text-align:left;
+ background:transparent;border:0;padding:2px 4px;margin:0;color:inherit;font:inherit;
+ white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;cursor:text;}
+.inline-outline-label .rich-fragment{border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;}
+.inline-outline-editor{flex:1;min-width:0;resize:none;overflow:hidden;min-height:28px;border:1px solid #22a3fa;
+ border-radius:5px;background:#ffffff12;color:inherit;padding:4px 6px;margin:0;font:inherit;line-height:1.5;
+ outline:1px solid #2aa9f4;user-select:text;-webkit-user-select:text;touch-action:manipulation;}
+.inline-outline-empty{padding:15px;text-align:center;color:var(--matrix-muted,#abb2bc);font-size:12px;}
+.inline-outline-empty button{border:0;color:#20a6f8;background:transparent;font:inherit;cursor:pointer;}
+.inline-outline-drag-ghost{position:fixed;z-index:11005;pointer-events:none;max-width:260px;white-space:nowrap;
+ overflow:hidden;text-overflow:ellipsis;color:#fff;background:#295e87ed;border:1px solid #27a9ff;
+ border-radius:7px;padding:7px 11px;font:600 12px system-ui;box-shadow:0 7px 19px #0007;}
+.inline-outline-node .free-node-grip{top:-15px;right:0;}
+#deleteContext{width:200px;}
+@media(pointer:coarse){.inline-outline-grip{font-size:19px;width:23px;flex-basis:23px;}
+ .inline-outline-row{min-height:39px;padding-top:7px;padding-bottom:7px;}
+ .inline-outline-chevron{width:23px;flex-basis:23px;}}
+
 </style>
 <style id="diy-ui-theme">
 /* DIY记录：紧凑导航与画布栏，最大化工作区域 */
@@ -1030,6 +1121,385 @@ body{color:var(--app-ink,#f5f5f6);}
 .outline-tree.outline-dragging{user-select:none;-webkit-user-select:none;}
 
 </style>
+<style id="diy-v30-outline-style">
+
+/* ===== 2026.11.19.4：大纲双栏。左：显著层级字重；右：简洁文档式编辑。 ===== */
+.outline-panel{background:#fafbfe;color:#252d3d;box-shadow:2px 0 14px #101c3418;border-right:1px solid #e0e5ee;max-width:none;}
+.outline-head{height:70px;padding-left:18px;padding-right:16px;border-bottom:1px solid #e1e6f0;background:#fff;}
+.outline-head-title{font-size:25px;font-weight:790;letter-spacing:-.025em;color:#2165c6;height:51px;padding-top:13px;padding-bottom:9px;border-bottom-width:3px;}
+.outline-close{font-size:27px;color:#68788e;}
+.outline-tree{padding:17px 16px 35px 13px;}
+.outline-row{min-height:38px;padding:3px 7px 3px calc(10px + var(--indent,0px));margin:1px 0;gap:4px;border-radius:8px;}
+.outline-row[data-depth="0"]{min-height:51px;margin:8px 0 3px;}
+.outline-row[data-depth="1"]{min-height:44px;margin:3px 0;}
+.outline-row[data-depth="2"]{min-height:41px;}
+.outline-row[data-depth="3"]{min-height:38px;}
+.outline-row[data-depth="0"] .outline-node-label{font-size:21px;font-weight:780;line-height:1.4;color:#1a2130;}
+.outline-row[data-depth="1"] .outline-node-label{font-size:18px;font-weight:700;line-height:1.45;color:#263041;}
+.outline-row[data-depth="2"] .outline-node-label{font-size:16px;font-weight:620;line-height:1.5;color:#364154;}
+.outline-row[data-depth="3"] .outline-node-label{font-size:14.6px;font-weight:550;line-height:1.55;color:#485367;}
+.outline-row[data-depth="4"] .outline-node-label,.outline-row[data-depth="5"] .outline-node-label{font-size:13.8px;font-weight:480;color:#6d7788;line-height:1.55;}
+.outline-node-label{padding:5px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.outline-row.outline-selected{background:#dce8ff!important;box-shadow:inset 3px 0 0 #2e79e1;}
+.outline-row.outline-selected .outline-node-label{color:#125bc4!important;font-weight:780!important;}
+.outline-row .outline-chevron{color:#65748b;font-size:16px;flex-shrink:0;}
+.outline-row[data-has-children="1"][data-depth="0"]{background:#f0f4fa;}
+.outline-child-count{margin:0 7px 0 5px;flex:none;color:#6e7887;background:#e9edf3;border-radius:15px;min-width:25px;max-width:38px;height:23px;display:grid;place-items:center;font:500 12px/1 system-ui;}
+.outline-row[data-depth="0"] .outline-child-count{background:#e1e6ef;}
+.outline-row.outline-selected .outline-child-count{background:#c3d8fc;color:#195db2;}
+.outline-row[data-depth]:not([data-depth="0"]):before{content:'';position:absolute;pointer-events:none;left:calc(var(--indent,0px) + 5px);top:0;bottom:0;border-left:1px solid #dbe2ed;opacity:.65;}
+/* 上面的树枝提示不得影响既有拖放的蓝色前/后插入线 */
+.outline-row.outline-drop-before::before,.outline-row.outline-drop-after::after{content:"";border-left:0;left:8px;right:4px;top:auto;bottom:auto;opacity:1;}
+.outline-row[data-depth].outline-drop-before::before{top:-2px;bottom:auto;left:8px;right:4px;height:3px;border-left:0;opacity:1;background:#2488ed;}
+.outline-row[data-depth].outline-drop-after::after{bottom:-2px;top:auto;left:8px;right:4px;height:3px;border-left:0;opacity:1;background:#2488ed;}
+.outline-node-editor{font-size:inherit;min-height:34px;}
+.outline-doc-pane{position:fixed;z-index:21;display:flex;flex-direction:column;background:#fff;color:#242936;overflow:hidden;
+ border-left:1px solid #e0e5ee;min-width:0;box-shadow:0 4px 24px #111d3410;touch-action:pan-y;}
+.outline-doc-pane[hidden]{display:none!important;}
+.outline-doc-head{height:64px;flex:none;display:flex;align-items:center;gap:13px;padding:0 24px;
+ border-bottom:1px solid #ecedf1;background:#fff;}
+.outline-doc-trail{flex:1;color:#687383;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.outline-doc-smallbtn{border:1px solid #e2e6ed;border-radius:7px;background:#fff;color:#46556b;font:600 12px system-ui;
+ min-height:32px;padding:5px 10px;cursor:pointer;white-space:nowrap;}
+.outline-doc-smallbtn:hover{background:#edf4ff;border-color:#afcdf4;color:#125abb;}
+.outline-doc-toolbar{min-height:52px;flex:none;display:flex;align-items:center;gap:7px;padding:8px 22px;
+ border-bottom:1px solid #eef0f5;flex-wrap:wrap;}
+.outline-doc-tool{border:0;border-radius:7px;background:transparent;min-width:33px;height:31px;padding:3px 7px;
+ font:600 15px system-ui;color:#425068;cursor:pointer;}
+.outline-doc-tool:hover{background:#eef3fc;}
+.outline-doc-toolbar .outline-doc-separator{width:1px;height:23px;background:#e1e5ed;margin:0 7px;}
+.outline-doc-note{color:#98a3b2;font-size:11px;white-space:nowrap;margin-left:auto;}
+.outline-doc-scroll{overflow:auto;overscroll-behavior:contain;flex:1;min-height:0;padding:29px clamp(20px,5vw,70px) 80px;
+ scroll-behavior:auto;touch-action:pan-y;}
+.outline-doc-content{max-width:1050px;margin:0 auto;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;--doc-font-scale:1;}
+.outline-doc-root{display:flex;align-items:flex-start;gap:9px;margin:0 0 29px;padding:0 0 9px;border-bottom:1px solid #e8ebf1;}
+.outline-doc-root-title{border:0;background:transparent;text-align:left;color:#202634;font-size:calc(30px * var(--doc-font-scale));
+ font-weight:800;line-height:1.38;white-space:pre-wrap;overflow-wrap:anywhere;flex:1;cursor:text;}
+.outline-doc-root-title.long-title{font-size:calc(21px * var(--doc-font-scale));line-height:1.5;}
+.outline-doc-row{box-sizing:border-box;position:relative;display:flex;align-items:flex-start;gap:9px;
+ min-height:34px;border-radius:7px;padding:6px 7px 6px calc(7px + var(--doc-indent,0px));margin:1px 0;}
+.outline-doc-row[data-depth="0"]{margin-top:16px;}
+.outline-doc-row[data-depth="1"]{margin-top:8px;}
+.outline-doc-row:hover{background:#f7f9fc;}
+.outline-doc-row.doc-selected{background:#eaf2ff;}
+.outline-doc-label{flex:1;min-width:0;border:0;background:transparent;text-align:left;color:#303849;white-space:pre-wrap;
+ word-break:break-word;overflow-wrap:anywhere;font-size:calc(15.5px * var(--doc-font-scale));line-height:1.72;cursor:text;padding:1px 2px;}
+.outline-doc-row[data-depth="0"] .outline-doc-label{font-weight:750;font-size:calc(21px * var(--doc-font-scale));line-height:1.48;color:#222a39;}
+.outline-doc-row[data-depth="1"] .outline-doc-label{font-weight:640;font-size:calc(17px * var(--doc-font-scale));line-height:1.58;color:#283447;}
+.outline-doc-row[data-depth="2"] .outline-doc-label{font-weight:530;font-size:calc(15.8px * var(--doc-font-scale));}
+.outline-doc-row[data-depth="3"] .outline-doc-label{font-weight:450;font-size:calc(15px * var(--doc-font-scale));color:#475267;}
+.outline-doc-row.doc-leaf .outline-doc-label{font-weight:450;color:#535e6e;}
+.outline-doc-row.doc-leaf[data-depth="0"] .outline-doc-label{font-size:calc(17px * var(--doc-font-scale));}
+.outline-doc-row.doc-leaf[data-depth="1"] .outline-doc-label{font-size:calc(15.5px * var(--doc-font-scale));}
+.outline-doc-grip{border:0;background:transparent;color:#9ba7b9;flex:0 0 21px;height:26px;display:grid;place-items:center;cursor:grab;
+ font-size:17px;padding:0;user-select:none;touch-action:none;}
+.outline-doc-grip:hover{color:#356eb3;}
+.outline-doc-chevron{border:0;background:transparent;color:#6c798d;flex:0 0 18px;height:26px;cursor:pointer;}
+.outline-doc-placeholder{width:18px;flex:0 0 18px;}
+.outline-doc-row.doc-drag-source{opacity:.35;background:#e4edfa;outline:1px dashed #5c8bd5;}
+.outline-doc-row.doc-drop-child{background:#dceafe!important;outline:2px dashed #2488ed;outline-offset:-2px;}
+.outline-doc-row.doc-drop-before::before,.outline-doc-row.doc-drop-after::after{content:"";position:absolute;left:3px;right:3px;height:3px;
+ background:#2188ed;border-radius:2px;z-index:4;}
+.outline-doc-row.doc-drop-before::before{top:-2px;}
+.outline-doc-row.doc-drop-after::after{bottom:-2px;}
+.outline-doc-textarea{flex:1;min-height:38px;border:2px solid #3185d7;border-radius:6px;resize:none;box-sizing:border-box;
+ font:500 15px/1.65 system-ui;color:#26354b;padding:5px 7px;background:#fff;outline:0;overflow:hidden;white-space:pre-wrap;}
+.outline-doc-ghost{position:fixed;z-index:210;pointer-events:none;padding:9px 13px;border-radius:7px;background:#e8f2ff;
+ border:1px solid #3a86df;box-shadow:0 8px 28px #2223;color:#154d9a;font:650 13px system-ui;max-width:340px;}
+.outline-doc-mobileback{display:none;}
+@media(max-width:800px){
+ .outline-panel{width:100vw!important;max-width:none;}
+ .outline-doc-pane{left:0!important;right:0!important;z-index:22;display:none;}
+ .outline-doc-pane.doc-mobile-visible{display:flex;}
+ .outline-doc-mobileback{display:inline-flex;}
+ .outline-doc-head{padding:0 11px;height:52px;gap:7px;}
+ .outline-doc-toolbar{padding:7px 11px;gap:4px;}
+ .outline-doc-scroll{padding:20px 14px 60px;}
+ .outline-tree{padding:9px 11px 24px;}
+ .outline-row{padding-left:calc(5px + var(--indent,0px));}
+ .outline-row[data-depth="0"] .outline-node-label{font-size:19px;}
+ .outline-row[data-depth="1"] .outline-node-label{font-size:16px;}
+ .outline-row[data-depth="2"] .outline-node-label{font-size:14.5px;}
+ .outline-doc-note{display:none;}
+}
+
+</style>
+<style id="diy-v32-outline-polish-style">
+/* V32：大纲正文的极简显示，仅改视觉，不改数据或拖拽事件。 */
+/* 拖拽把手保留原占位，鼠标进入该行开头把手区域时才出现；隐藏时不会引起文字位移。 */
+.outline-doc-grip,.inline-outline-grip{
+  opacity:0;transition:opacity .13s ease,color .13s ease;
+}
+.outline-doc-grip:hover,.outline-doc-grip:focus-visible,.outline-doc-grip:active,
+.outline-doc-row.doc-drag-source>.outline-doc-grip,
+.inline-outline-grip:hover,.inline-outline-grip:focus-visible,.inline-outline-grip:active,
+.inline-outline-row.inline-drag-source>.inline-outline-grip{
+  opacity:1;
+}
+/* 触屏没有稳定悬停状态：保留六点，确保手机用户仍可长按拖动。 */
+@media (hover:none), (pointer:coarse){
+  .outline-doc-grip,.inline-outline-grip{opacity:1;}
+}
+/* 箭头与文字靠近：缩小三角按钮占位和内间距，保留原来的缩进层级。 */
+.outline-doc-row{gap:3px;}
+.outline-doc-chevron{flex:0 0 13px;width:13px;padding:0;line-height:1;}
+.outline-doc-placeholder{flex:0 0 13px;width:13px;}
+.outline-doc-label{padding-left:0;}
+.inline-outline-row{gap:2px;}
+.inline-outline-chevron,.inline-outline-chevron-empty{flex:0 0 14px;width:14px;padding:0;}
+.inline-outline-label{padding-left:1px;}
+.outline-row{gap:1px;}
+.outline-row .outline-chevron,.outline-row .outline-placeholder{width:16px;min-width:16px;}
+.outline-node-label{padding-left:2px;}
+/* 右侧恢复朴素的正文标题区，不再渲染上级/同级导航卡片和下一级提示。 */
+.outline-doc-root{margin-bottom:23px;}
+@media(pointer:coarse){
+  .inline-outline-chevron,.inline-outline-chevron-empty{flex-basis:19px;width:19px;}
+}
+
+/* ========== V34 轻量小块：无前置圆点、无铅笔/三点、原位编辑、悬停加号 ========== */
+.plan-node.plan-inline .plan-table-live tbody td,
+.plan-node.plan-inline .plan-table-live tbody th.plan-category-summary-head,
+.plan-node.plan-inline .plan-table-live thead th.plan-category-summary-head{overflow:visible!important;}
+.plan-node.plan-inline .plan-note-wrap.plan-block-wrap{box-sizing:border-box;height:auto!important;min-height:0!important;display:block!important;padding:8px!important;overflow:visible!important;}
+.plan-node.plan-inline .plan-linked-week-memo{height:auto!important;min-height:0!important;overflow:visible!important;}
+.plan-node.plan-inline .plan-linked-week-memo .plan-note-wrap.plan-block-wrap{height:auto!important;min-height:0!important;padding:7px!important;}
+.plan-block-wrap .plan-block-board{display:block;position:relative;min-height:0!important;width:100%;height:auto!important;padding:0 0 23px;box-sizing:border-box;}
+.plan-block-wrap .plan-block-list{display:flex;flex-direction:column;gap:6px;min-height:0!important;}
+.plan-block-wrap .plan-mini-block{min-height:36px;box-sizing:border-box;display:flex;align-items:center;padding:6px 9px;border-radius:10px;border:1px solid color-mix(in srgb,var(--matrix-grid,#c7cbd3) 90%,transparent);background:color-mix(in srgb,var(--matrix-bg,#ffffff) 80%,#d6d8de 20%);box-shadow:0 1px 2px #0000000b;gap:0;cursor:pointer;}
+.plan-block-wrap .plan-mini-block .plan-mini-dot,.plan-block-wrap .plan-mini-block .plan-mini-tools{display:none!important;}
+.plan-block-wrap .plan-mini-block .plan-mini-text{margin:0;padding:0;font:500 14px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;flex:1;}
+.plan-block-wrap .plan-mini-block.is-active{border-color:#2992ef!important;background:color-mix(in srgb,var(--matrix-bg,#fff) 80%,#95c5ff 20%)!important;box-shadow:inset 3px 0 0 #3187ee,0 0 0 1px #71b4f955!important;}
+.plan-block-wrap .plan-mini-block.is-related{border-color:#63b0f9!important;background:color-mix(in srgb,var(--matrix-bg,#fff) 86%,#b9dbff 14%)!important;box-shadow:inset 3px 0 0 #55a5f5,0 0 0 1px #6cb5f944!important;}
+.plan-block-wrap .plan-mini-block.is-source{border-color:#2a87e3!important;border-style:solid!important;}
+.plan-block-wrap .plan-mini-block.is-editing{padding:0;outline:2px solid #3098ef;outline-offset:1px;}
+.plan-mini-editor{box-sizing:border-box;display:block;width:100%;min-width:0;min-height:35px;resize:none;padding:7px 9px;background:var(--matrix-bg,#fff);border:0;border-radius:9px;outline:0;color:var(--matrix-ink,#17191e);font:500 14px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;}
+.plan-block-wrap .plan-block-empty{display:none!important;}
+.plan-block-wrap .plan-block-add{position:absolute;right:0;bottom:0;z-index:3;min-height:22px!important;height:22px;width:22px;padding:0!important;border:1px solid #61a8ef;border-radius:50%;display:grid;place-items:center;background:var(--matrix-bg,#fff);color:#2786da;font:700 18px/1 system-ui;box-shadow:0 1px 5px #00000014;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .13s ease;}
+.plan-block-wrap:hover .plan-block-add,.plan-block-wrap:focus-within .plan-block-add,.plan-block-wrap .plan-block-add:focus-visible{opacity:1;visibility:visible;pointer-events:auto;}
+.plan-block-wrap .plan-block-board:not(:has(.plan-mini-block)) .plan-block-add{opacity:.85;visibility:visible;pointer-events:auto;}
+.plan-block-wrap .plan-block-add:hover{color:#fff;background:#288bf0;border-color:#288bf0;}
+.plan-node.plan-inline .plan-table-live tbody tr+tr th,.plan-node.plan-inline .plan-table-live tbody tr+tr td{border-top-width:2px!important;}
+@media(pointer:coarse){.plan-block-wrap .plan-block-add{opacity:.95;visibility:visible;pointer-events:auto;width:27px;height:27px;min-height:27px!important;}.plan-block-wrap .plan-block-board{padding-bottom:30px;}}
+
+
+/* 小加号跟着被悬停的事项出现，而不是常驻单元格底部。 */
+.plan-block-wrap .plan-mini-block{position:relative;padding-right:31px;text-align:left;}
+.plan-block-wrap .plan-mini-text{text-align:left!important;}
+.plan-block-wrap .plan-mini-plus{position:absolute;z-index:4;right:3px;top:50%;transform:translateY(-50%);width:22px;height:22px;box-sizing:border-box;min-width:0;border-radius:50%;padding:0;border:1px solid #6eb6ff;background:var(--matrix-bg,#fff);color:#2589e6;font:700 18px/1 system-ui;display:grid;place-items:center;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .12s ease;cursor:pointer;}
+.plan-block-wrap .plan-mini-block:hover>.plan-mini-plus,.plan-block-wrap .plan-mini-block:focus-within>.plan-mini-plus{opacity:1;visibility:visible;pointer-events:auto;}
+.plan-block-wrap .plan-mini-plus:hover{color:#fff;background:#248ce9;border-color:#248ce9;}
+@media(pointer:fine){.plan-block-wrap .plan-block-board:has(.plan-mini-block)>.plan-block-add{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}}
+@media(pointer:coarse){.plan-block-wrap .plan-mini-block.is-active>.plan-mini-plus{opacity:1;visibility:visible;pointer-events:auto;}}
+
+</style>
+
+<style id="v35-text-node-style">
+/* V35：只保留文档图标的文本节点；右侧为可拖宽度的独立编辑抽屉。 */
+.app.doc35-open .stage{margin-right:var(--doc35-width,38vw);transition:none;}
+.topic.topic-text-mode{display:flex;align-items:center;gap:7px;justify-content:center;}
+.topic.topic-text-mode .topic-text{min-width:0;flex:0 1 auto;overflow-wrap:anywhere;}
+.textnode-docicon{display:inline-block;vertical-align:middle;width:19px;height:19px;flex:none;color:#2589e9;pointer-events:none;}
+.topic.topic-text-mode .textnode-docicon{width:19px;height:19px;}
+.plan-block-wrap .plan-mini-block.plan-text-mode{display:flex;align-items:center;gap:4px;}
+.plan-block-wrap .plan-mini-block.plan-text-mode .textnode-docicon{height:18px;width:18px;margin-left:4px;margin-right:0;}
+.doc35-pane{position:fixed;right:0;z-index:23;display:flex;flex-direction:column;width:var(--doc35-width,38vw);min-width:0;background:#fff;color:#273244;border-left:1px solid #cdd6e3;box-shadow:-8px 0 22px #121b2b15;overflow:visible;cursor:default;touch-action:pan-y;}
+.doc35-pane[hidden]{display:none!important;}
+.doc35-resize{position:absolute;left:-7px;top:0;bottom:0;width:14px;z-index:7;cursor:col-resize;touch-action:none;display:flex;align-items:center;justify-content:center;}
+.doc35-resize:before{content:'';position:absolute;left:6px;top:0;bottom:0;width:2px;background:#c5d0df;}
+.doc35-resize:hover:before,.doc35-resize.is-resizing:before{background:#288cf5;width:3px;}
+.doc35-resize-grip{position:relative;z-index:1;width:23px;height:48px;flex:none;border:1px solid #b7d3f7;border-radius:12px;display:grid;place-items:center;background:#fff;box-shadow:0 2px 12px #0002;color:#1f7ee7;font-size:18px;line-height:1;user-select:none;}
+.doc35-head{flex:none;display:flex;align-items:center;gap:10px;padding:15px 18px 11px 23px;border-bottom:1px solid #e7ebf2;min-height:67px;}
+.doc35-title-wrap{flex:1;min-width:0;display:flex;align-items:center;gap:8px;}
+.doc35-title-wrap .textnode-docicon{width:21px;height:21px;}
+.doc35-title{min-width:0;width:100%;font-size:16px;font-weight:720;color:#243044;background:transparent;border:1px solid transparent;border-radius:5px;padding:6px 2px;outline:0;}
+.doc35-title:hover,.doc35-title:focus{border-color:#a8d1ff;background:#f8fbff;}
+.doc35-close{flex:none;border:0;background:transparent;color:#6e7a8d;font-size:26px;line-height:1;border-radius:7px;width:32px;height:32px;}
+.doc35-close:hover{background:#edf3fc;color:#1f5eaa;}
+.doc35-tabs{display:flex;flex:none;gap:17px;padding:0 20px;border-bottom:1px solid #e5eaf1;}
+.doc35-tab{border:0;border-bottom:3px solid transparent;padding:13px 6px 11px;color:#657085;background:transparent;font-size:14px;}
+.doc35-tab.active{border-bottom-color:#287df0;color:#1964bb;font-weight:700;}
+.doc35-tools{flex:none;display:flex;gap:4px;align-items:center;flex-wrap:wrap;padding:8px 13px;border-bottom:1px solid #e9ecf1;background:#fafcff;}
+.doc35-tool{min-width:31px;height:32px;border:1px solid transparent;border-radius:6px;background:transparent;color:#38475a;font-size:14px;padding:0 8px;}
+.doc35-tool:hover{background:#e9f2fe;border-color:#d3e1f4;}
+.doc35-tool.is-heading{font-weight:750;}
+.doc35-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:23px clamp(17px,3vw,35px) 70px;}
+.doc35-editor{min-height:100%;outline:0;font-size:15px;line-height:1.8;white-space:normal;overflow-wrap:anywhere;word-break:break-word;color:#253349;user-select:text;-webkit-user-select:text;touch-action:pan-y;}
+.doc35-editor:empty:before{content:'在这里输入正文…';color:#a3aebb;pointer-events:none;}
+.doc35-editor h1,.doc35-editor h2{line-height:1.45;color:#1c2a3d;margin:16px 0 10px;}
+.doc35-editor h2{font-size:19px;border-left:3px solid #278af0;padding-left:11px;}
+.doc35-editor p{margin:0 0 13px;}
+.doc35-editor ul,.doc35-editor ol{padding-left:27px;margin:9px 0 18px;}
+.doc35-editor blockquote{padding:6px 12px;margin:15px 0;border-left:3px solid #b8cee8;color:#68778d;background:#f8fafd;}
+.doc35-outline{display:flex;flex-direction:column;gap:5px;}
+.doc35-outline[hidden],.doc35-scroll[hidden],.doc35-tools[hidden]{display:none!important;}
+.doc35-outline button{padding:11px;text-align:left;background:#f7f9fd;color:#34445e;border:1px solid #e6eaf2;border-radius:8px;white-space:normal;line-height:1.5;}
+.doc35-outline button:hover{background:#e9f2ff;border-color:#9fc8fa;}
+.doc35-footer{flex:none;display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 17px;border-top:1px solid #e7ecf4;color:#7e8b9b;font-size:12px;}
+.doc35-save-state{color:#247b55;}
+@media(max-width:700px){
+ .app.doc35-open .stage{margin-right:0;}
+ .doc35-pane{width:100vw!important;max-width:none!important;}
+ .doc35-resize{display:none;}
+ .doc35-scroll{padding:19px 22px 55px;}
+}
+
+/* V36：以原有主题树为正文来源，确保点开不是空白附注。 */
+.doc36-source{display:flex;flex-direction:column;gap:8px;padding-bottom:18px;min-height:50px;}
+.doc36-source-caption{display:flex;align-items:center;justify-content:space-between;gap:7px;margin:0 0 6px;font-size:12px;color:#698096;}
+.doc36-source-caption strong{font-size:13px;color:#35577d;}
+.doc36-row{display:flex;align-items:flex-start;gap:6px;min-width:0;border-radius:7px;padding:5px 2px;}
+.doc36-row:hover{background:#f4f8fd;}
+.doc36-mark{flex:none;width:12px;margin-top:9px;color:#729bc8;font-size:12px;text-align:center;}
+.doc36-input{display:block;width:100%;min-width:0;min-height:29px;resize:none;overflow:hidden;box-sizing:border-box;background:transparent;color:#263344;border:1px solid transparent;border-radius:5px;padding:5px 6px;font:inherit;font-size:14px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;}
+.doc36-input:focus{background:#fff;border-color:#68a8f2;outline:2px solid #79b5f333;}
+.doc36-row[data-depth="0"] .doc36-input{font-weight:700;font-size:16px;}
+.doc36-row[data-depth="1"] .doc36-input{font-weight:650;font-size:15px;}
+.doc36-row[data-depth="2"] .doc36-input{font-weight:550;font-size:14px;}
+.doc36-extra-title{border-top:1px solid #e5eaf2;padding-top:16px;margin-top:3px;margin-bottom:8px;font-weight:650;font-size:13px;color:#56718e;}
+.doc36-extra-title small{font-weight:400;color:#91a0b1;}
+.doc36-empty{padding:12px 8px;color:#8c9aab;font-size:13px;}
+.doc36-add{align-self:flex-start;border:1px dashed #b6cce8;border-radius:7px;background:#f9fbff;color:#3574ac;padding:6px 12px;font-size:12px;cursor:pointer;}
+.doc36-add:hover{border-color:#4a9af2;background:#edf5ff;}
+.doc35-editor{min-height:110px!important;}
+.doc35-editor:empty:before{content:'点击此处补充新内容（上方为原节点内容）…';}
+
+/* V37 右栏：直接使用原有层级内容，保持截图1的简洁文本树，不再叠加空白大正文。 */
+.doc35-pane{box-shadow:-6px 0 18px #1b2b4212;}
+.doc35-head{padding:10px 16px 9px;min-height:49px;}
+.doc35-title{font-size:17px;}
+.doc35-tabs,.doc35-tools,.doc35-footer{display:none!important;}
+.doc35-scroll{padding:12px 17px 38px!important;}
+.doc36-source{display:block!important;min-height:0;padding:0!important;}
+.doc36-source-caption{display:none!important;}
+.doc36-row{display:flex;align-items:flex-start;position:relative;gap:4px;margin:0;padding:2px 4px 2px 0!important;border-radius:5px;min-height:28px;}
+.doc36-row:hover{background:#f5f8fc;}
+.doc36-row.doc37-active{background:#eaf3ff!important;box-shadow:inset 3px 0 0 #2486ee;}
+.doc36-row.doc37-active .doc36-input{color:#1756a4;}
+.doc36-row .doc36-mark{display:none!important;}
+.doc36-row .doc36-input{font-size:14px!important;line-height:1.6!important;font-weight:400!important;padding:2px 3px!important;min-height:27px;flex:1;min-width:0;caret-color:#256cbe;}
+.doc36-row[data-depth="0"] .doc36-input{font-size:15px!important;font-weight:500!important;}
+.doc36-row .doc36-input:focus{border-color:#8ec2fa;}
+.doc37-caret{display:flex;align-items:center;justify-content:center;flex:none;width:21px;height:24px;border:0;border-radius:4px;color:#5b6a7a;background:transparent;font-size:13px;padding:0;cursor:pointer;}
+.doc37-caret:hover{background:#e4eefe;color:#1d70c8;}
+.doc37-caret[aria-expanded="false"]{color:#6c87a4;}
+.doc37-leaf-mark{flex:none;width:21px;height:24px;display:flex;align-items:center;justify-content:center;color:#7b91a6;font-size:14px;user-select:none;}
+.doc37-self-hint{font-size:12px;color:#8695a8;padding:8px 6px 10px;}
+.doc37-extra-body{border-top:1px solid #ebeff6;margin-top:15px;padding-top:10px;}
+.doc37-extra-body .doc36-extra-title{border:0;margin:0 0 6px;padding:0;color:#587694;}
+.doc37-extra-body .doc35-editor{font-size:14px;line-height:1.65;min-height:80px!important;}
+.doc35-editor:empty:before{content:'在此补充正文…';}
+.topic.topic-text-mode .textnode-docicon,.plan-block-wrap .plan-text-mode .textnode-docicon{pointer-events:auto!important;cursor:pointer;z-index:4;position:relative;}
+.topic.topic-text-mode .textnode-docicon:hover,.plan-block-wrap .plan-text-mode .textnode-docicon:hover{filter:drop-shadow(0 0 3px #58a9ff);}
+.topic.topic-text-mode .textnode-docicon:focus-visible{outline:2px solid #2888ee;border-radius:3px;outline-offset:3px;}
+.topic.topic-text-mode{min-height:0;}
+/* 折叠文字节点的子级仍然有明确展开控制，不自动散开。 */
+.branch-fold-button.is-collapsed{opacity:1;}
+@media(max-width:700px){.doc35-scroll{padding:9px 10px 22px!important;}}
+/* V38：把原生内嵌大纲块的行组件原样复用到右侧面板；不再采用 V37 的扁平 textarea 列表。 */
+.doc35-pane{background:var(--matrix-bg,#fff);color:var(--matrix-ink,#273244);}
+.doc35-head{background:var(--matrix-top,#f7f8fa);border-bottom:1px solid var(--matrix-grid,#dce1e8);}
+.doc35-pane .doc35-title{color:var(--matrix-ink,#273244)!important;}
+.doc35-pane .doc35-title:focus,.doc35-pane .doc35-title:hover{background:var(--matrix-bg,#fff);}
+.doc35-scroll{padding:0!important;}
+.doc36-source.doc38-block{display:block!important;box-sizing:border-box;width:100%;min-width:0;padding:0!important;font:500 15px/1.55 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;user-select:none;-webkit-user-select:none;}
+.doc38-block .inline-outline-head{min-height:46px;border-bottom:1px solid var(--matrix-grid,#dce1e8);background:var(--matrix-top,#f7f8fa);padding:7px 14px;}
+.doc38-block .inline-outline-head-title{font-size:15px;font-weight:750;cursor:pointer;color:var(--matrix-ink,#273244);}
+.doc38-block .inline-outline-scroll{overflow:visible!important;padding:10px 8px 40px;touch-action:pan-y;scrollbar-width:thin;}
+.doc38-block .inline-outline-row{padding:7px 10px 7px calc(12px + var(--inline-indent,0px));gap:4px;min-height:41px;border:0;border-radius:6px;align-items:flex-start;position:relative;}
+.doc38-block .inline-outline-row[data-depth]:not([data-depth="0"]):before{content:'';position:absolute;left:calc(12px + var(--inline-indent,0px) - 12px);top:0;bottom:0;width:1px;background:color-mix(in srgb,var(--matrix-grid,#cdd6e3) 90%,transparent);pointer-events:none;}
+.doc38-block .inline-outline-row:hover{background:#8abaf714;}
+.doc38-block .inline-outline-row.inline-selected{background:#268bd426;box-shadow:inset 3px 0 0 #2588e7;}
+.doc38-block .inline-outline-chevron,.doc38-block .inline-outline-chevron-empty{flex:0 0 20px;width:20px;min-height:27px;line-height:27px;font-size:15px;color:var(--matrix-muted,#7c8998);}
+.doc38-block .inline-outline-label{padding:2px 3px;font-size:15px;line-height:1.58;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;min-height:29px;color:var(--matrix-ink,#273244);}
+.doc38-block .inline-outline-row[data-depth="0"] .inline-outline-label{font-size:16px;font-weight:700;}
+.doc38-block .inline-outline-row[data-depth="1"] .inline-outline-label{font-size:15.5px;font-weight:630;}
+.doc38-block .inline-outline-row[data-depth="2"] .inline-outline-label{font-size:15px;font-weight:540;}
+.doc38-block .inline-outline-row[data-depth="3"] .inline-outline-label{font-size:14.5px;font-weight:470;}
+.doc38-block .inline-outline-grip{width:18px;flex:0 0 18px;height:27px;line-height:27px;font-size:16px;}
+.doc38-block .inline-outline-editor{font-size:15px;line-height:1.55;min-height:31px;max-height:none;background:var(--matrix-bg,#fff);color:var(--matrix-ink,#273244);padding:4px 6px;}
+.doc38-block .doc38-add{flex:none;border:0;border-radius:5px;padding:0 5px;background:transparent;color:#277fd7;opacity:0;pointer-events:none;font-size:18px;line-height:26px;cursor:pointer;}
+.doc38-block .inline-outline-row:hover .doc38-add,.doc38-block .inline-outline-row:focus-within .doc38-add{opacity:1;pointer-events:auto;}
+.doc38-block .doc38-add:hover{background:#268bd422;}
+.doc38-block .doc38-drop-child{background:#2187cd20!important;outline:2px dashed #29affc;outline-offset:-2px;}
+.doc38-block .doc38-drop-before:before,.doc38-block .doc38-drop-after:after{content:'';position:absolute;left:10px;right:10px;height:3px;background:#1c96ec;z-index:4;pointer-events:none;}
+.doc38-block .doc38-drop-before:before{top:-2px;}
+.doc38-block .doc38-drop-after:after{bottom:-2px;}
+.doc38-empty{padding:16px 18px;color:var(--matrix-muted,#8795a6);font-size:14px;}
+.doc38-empty button{margin-left:8px;border:1px dashed #94b4d5;border-radius:6px;color:#1877cc;background:transparent;padding:6px 10px;cursor:pointer;}
+@media(pointer:coarse){.doc38-block .doc38-add{opacity:1;pointer-events:auto;}}
+@media(max-width:700px){.doc38-block .inline-outline-row{min-height:46px;padding-top:8px;padding-bottom:8px;}}
+
+/* ===== V40：右侧原生大纲块紧凑排版（不改数据或节点联动） ===== */
+/* 隐藏当前文本节点的标题和文件图标，右上角仅保留关闭按钮。 */
+#doc35Pane .doc35-head{
+  box-sizing:border-box;min-height:34px!important;height:34px!important;
+  padding:2px 9px!important;justify-content:flex-end;border-bottom:1px solid var(--matrix-grid,#e4e8ef);
+}
+#doc35Pane .doc35-title-wrap{display:none!important;}
+#doc35Pane .doc35-close{margin-left:auto;width:30px;height:30px;font-size:24px;line-height:1;}
+/* 取消大纲父子结构的竖向辅助线；拖拽排序时的蓝色目标线依旧保留。 */
+#doc36Source.doc38-block .inline-outline-row[data-depth]:not(.doc38-drop-before):not(.doc38-drop-after)::before{
+  display:none!important;content:none!important;background:transparent!important;
+}
+/* 紧凑层级：单级缩进 14px；减小左右空白、行与行的间距。 */
+#doc36Source.doc38-block .inline-outline-scroll{padding:4px 5px 18px!important;}
+#doc36Source.doc38-block .inline-outline-row{
+  box-sizing:border-box;padding:2px 5px 2px calc(5px + var(--inline-indent,0px))!important;
+  min-height:25px!important;gap:2px!important;align-items:flex-start;border-radius:4px;
+}
+#doc36Source.doc38-block .inline-outline-chevron,
+#doc36Source.doc38-block .inline-outline-chevron-empty{
+  width:15px!important;flex:0 0 15px!important;height:22px!important;min-height:22px!important;
+  line-height:22px!important;font-size:12px!important;padding:0!important;
+}
+#doc36Source.doc38-block .inline-outline-grip{
+  flex:0 0 13px!important;width:13px!important;height:22px!important;
+  line-height:22px!important;font-size:13px!important;
+}
+#doc36Source.doc38-block .inline-outline-label{
+  min-height:22px!important;padding:0 2px!important;line-height:1.43!important;
+  align-self:flex-start;white-space:pre-wrap;overflow-wrap:anywhere;
+}
+#doc36Source.doc38-block .inline-outline-editor{
+  min-height:24px!important;padding:2px 4px!important;line-height:1.43!important;
+}
+#doc36Source.doc38-block .doc38-add{line-height:22px!important;height:22px!important;padding:0 3px!important;}
+@media(max-width:700px){
+  #doc36Source.doc38-block .inline-outline-row{
+    min-height:29px!important;padding-top:3px!important;padding-bottom:3px!important;
+  }
+}
+
+
+/* ===== V41：按选定方案3，右侧大纲实行黑 / 灰 / 浅细灰的三级字体秩序。 =====
+   只作用于右侧文本节点抽屉 #doc36Source；不改变画布、大纲本页、数据结构或展开逻辑。
+   depth 0 一级：黑色，正常字号；depth 1 二级：灰色，字号不变；
+   depth >=2 三级及后代：明显偏小、细字重、浅灰；保留可读性。 */
+#doc36Source.doc38-block .inline-outline-row[data-depth="0"] .inline-outline-label{
+  font-size:16px!important;font-weight:550!important;color:#16181c!important;
+}
+#doc36Source.doc38-block .inline-outline-row[data-depth="1"] .inline-outline-label{
+  font-size:16px!important;font-weight:430!important;color:#767b82!important;
+}
+#doc36Source.doc38-block .inline-outline-row[data-depth]:not([data-depth="0"]):not([data-depth="1"]) .inline-outline-label{
+  font-size:13px!important;font-weight:350!important;color:#a0a4aa!important;
+}
+/* 编辑时匹配所处层级，避免双击时文字突然跳到另一种粗细/大小。 */
+#doc36Source.doc38-block .inline-outline-row[data-depth="0"] .inline-outline-editor{
+  font-size:16px!important;font-weight:550!important;color:#16181c!important;
+}
+#doc36Source.doc38-block .inline-outline-row[data-depth="1"] .inline-outline-editor{
+  font-size:16px!important;font-weight:430!important;color:#767b82!important;
+}
+#doc36Source.doc38-block .inline-outline-row[data-depth]:not([data-depth="0"]):not([data-depth="1"]) .inline-outline-editor{
+  font-size:13px!important;font-weight:350!important;color:#8d929a!important;
+}
+/* 已选中项目需要保持可辨识度；选中高亮沿用 V40，文字颜色不被蓝色全部覆盖。 */
+#doc36Source.doc38-block .inline-outline-row.inline-selected .inline-outline-label{
+  text-decoration:none;
+}
+</style>
 </head>
 <body>
 <div class="app">
@@ -1088,6 +1558,49 @@ body{color:var(--app-ink,#f5f5f6);}
       <div class="outline-head"><button type="button" class="outline-close" id="outlineClose" aria-label="收起大纲">«</button><span class="outline-head-title">大纲</span></div>
       <div class="outline-tree" id="outlineTree" role="tree" aria-label="当前画布的主题层级"></div>
     </aside>
+
+  <aside id="outlineDocPane" class="outline-doc-pane" aria-label="大纲文档编辑区" hidden>
+    <div class="outline-doc-head">
+      <button type="button" id="outlineDocBack" class="outline-doc-smallbtn outline-doc-mobileback" aria-label="返回大纲目录">‹ 目录</button>
+      <span id="outlineDocTrail" class="outline-doc-trail">当前画布</span>
+      <button type="button" id="outlineDocToMap" class="outline-doc-smallbtn" title="关闭双栏，回到原有思维导图">返回导图</button>
+    </div>
+    <div class="outline-doc-toolbar" aria-label="文档操作工具栏">
+      <button type="button" id="outlineDocUndo" class="outline-doc-tool" title="撤销">↶</button>
+      <button type="button" id="outlineDocRedo" class="outline-doc-tool" title="重做">↷</button>
+      <span class="outline-doc-separator" aria-hidden="true"></span>
+      <button type="button" id="outlineDocSmaller" class="outline-doc-tool" title="缩小大纲字号">A−</button>
+      <button type="button" id="outlineDocLarger" class="outline-doc-tool" title="放大大纲字号">A+</button>
+      <span class="outline-doc-separator" aria-hidden="true"></span>
+      <button type="button" id="outlineDocExpand" class="outline-doc-smallbtn" title="展开所选分支">展开全部</button>
+      <button type="button" id="outlineDocCollapse" class="outline-doc-smallbtn" title="收起所选分支">折叠全部</button>
+      <span class="outline-doc-note">双击编辑 · 拖动把手调整层级</span>
+    </div>
+    <div id="outlineDocScroll" class="outline-doc-scroll" tabindex="0" aria-label="所选节点的文档大纲">
+      <div id="outlineDocContent" class="outline-doc-content"></div>
+    </div>
+  </aside>
+
+<aside id="doc35Pane" class="doc35-pane" role="complementary" aria-label="文本节点正文编辑面板" hidden>
+  <div id="doc35Resize" class="doc35-resize" role="separator" aria-orientation="vertical" aria-label="左右拖动调整文本面板宽度"><span class="doc35-resize-grip">↔</span></div>
+  <div class="doc35-head">
+    <div class="doc35-title-wrap"><svg class="textnode-docicon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.75h8l4.5 4.5V20a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 20V4.25A1.5 1.5 0 0 1 6 2.75Z"/><path d="M14 2.75v5h4.5M8 12h8M8 15.5h8M8 19h5"/></svg><input id="doc35Title" class="doc35-title" maxlength="30000" aria-label="文本节点标题" title="单击修改标题"></div>
+    <button id="doc35Close" class="doc35-close" type="button" title="关闭文本面板" aria-label="关闭文本面板">×</button>
+  </div>
+  <div class="doc35-tabs" role="tablist" aria-label="文本面板视图"><button id="doc35TabDocument" class="doc35-tab active" role="tab" aria-selected="true" type="button">文档</button><button id="doc35TabOutline" class="doc35-tab" role="tab" aria-selected="false" type="button">大纲</button></div>
+  <div id="doc35Tools" class="doc35-tools" aria-label="正文格式工具">
+    <button class="doc35-tool is-heading" data-doc35-format="h2" title="二级标题" type="button">H2</button>
+    <button class="doc35-tool" data-doc35-command="bold" title="加粗" type="button"><strong>B</strong></button>
+    <button class="doc35-tool" data-doc35-command="italic" title="斜体" type="button"><em>I</em></button>
+    <button class="doc35-tool" data-doc35-command="underline" title="下划线" type="button"><u>U</u></button>
+    <button class="doc35-tool" data-doc35-command="insertUnorderedList" title="项目符号列表" type="button">☷</button>
+    <button class="doc35-tool" data-doc35-command="insertOrderedList" title="数字列表" type="button">1.</button>
+    <button class="doc35-tool" data-doc35-format="p" title="恢复正文" type="button">正文</button>
+  </div>
+  <div id="doc35Scroll" class="doc35-scroll"><div id="doc36Source" class="doc36-source" aria-label="当前节点及下级原有内容"></div><div id="doc37ExtraBody" class="doc37-extra-body" hidden><div id="doc36ExtraTitle" class="doc36-extra-title">补充正文</div><div id="doc35Editor" class="doc35-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="编辑额外补充正文" spellcheck="false"></div></div></div>
+  <div id="doc35Outline" class="doc35-scroll doc35-outline" hidden aria-label="文本标题大纲"></div>
+  <div class="doc35-footer"><span id="doc35Count">0 字</span><span id="doc35Status" class="doc35-save-state">已保存到本机</span></div>
+</aside>
   <footer class="board-bar" id="boardBar" aria-label="画布列表">
     <div class="board-tabs" id="boardTabs"></div>
     <button type="button" class="board-add" id="boardAdd" title="添加新画布" aria-label="添加新画布">+</button>
@@ -1141,6 +1654,8 @@ body{color:var(--app-ink,#f5f5f6);}
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
 <div class="delete-context" id="deleteContext" role="menu" aria-label="选中项目操作" hidden>
+  <button type="button" id="contextToggleOutline" role="menuitem">变换模式 · 切换为大纲块</button>
+  <button type="button" id="contextToggleText" role="menuitem">变换模式 · 切换为文本节点</button>
   <button type="button" id="contextDelete" role="menuitem">删除</button>
 </div>
 <!-- 云端账号弹窗：只有通过左上角 设置 手动打开；真实冲突展示非阻断状态 -->
@@ -1192,6 +1707,7 @@ body{color:var(--app-ink,#f5f5f6);}
 <!-- 按选中文字出现的悬浮标注工具及可复用颜色组合 -->
 <div id="richToolbar" class="rich-toolbar" hidden aria-label="选中文字颜色标注">
   <button type="button" id="richApply" class="rich-preview" title="直接使用最近一次颜色组合">Aa</button>
+  <button type="button" id="richStrike" class="rich-strike" title="为选中文字添加或取消删除线" aria-label="删除线"><span>S</span></button>
   <button type="button" id="richExpand" class="rich-arrow" title="选择文字颜色和背景色组合" aria-expanded="false">▾</button>
 </div>
 <button type="button" id="richMobileHelper" class="rich-mobile-helper" hidden title="长按选中几个字后，点这里设置颜色">🎨 文字标注</button>
@@ -1252,6 +1768,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   const svg = $('connections');
   const state = { selected: null, editing: null, editDraft: null, matrixEditing: null, matrixSelection: null, planEditing: null, panX: 250, panY: 260, zoom: 1, positions: new Map(), toastTimer: null, activeBoardId: null };
   let topicDrag=null, axisDrag=null, columnResize=null, rowResize=null, ignoreTopicClickId=null;
+  let doc35Active=null,doc35OriginalHTML='',doc35OriginalTitle='',doc35SaveTimer=null,doc35Width=0,doc35Saving=false;
   let data = readSaved() || freshData();
   try{state.activeBoardId=localStorage.getItem(ACTIVE_BOARD_KEY)||'main';}catch{state.activeBoardId='main';}
   let historyLimit = 40;
@@ -1300,15 +1817,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function validColor(x){return typeof x==='string'&&/^#[0-9a-fA-F]{6}$/.test(x)?x.toLowerCase():null;}
   function validMarks(value,text){
     if(!Array.isArray(value))return [];
-    return value.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=text.length&&(validColor(v.fg)||validColor(v.bg)))
-      .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg)}));
+    return value.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=text.length&&(validColor(v.fg)||validColor(v.bg)||v.strike===true))
+      .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg),strike:v.strike===true}));
   }
   function readRichMap(raw){
     const result={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return result;
     for(const [key,val] of Object.entries(raw).slice(0,720)){
       if(!/^(0|[1-9]\d?),(0|[1-9]\d?)$/.test(key))continue;
-      if(Array.isArray(val))result[key]=val.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=200000&&(validColor(v.fg)||validColor(v.bg)))
-        .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg)}));
+      if(Array.isArray(val))result[key]=val.slice(0,4000).filter(v=>v&&Number.isInteger(v.start)&&Number.isInteger(v.end)&&v.start>=0&&v.end>v.start&&v.end<=200000&&(validColor(v.fg)||validColor(v.bg)||v.strike===true))
+        .map(v=>({start:v.start,end:v.end,fg:validColor(v.fg),bg:validColor(v.bg),strike:v.strike===true}));
     }
     return result;
   }
@@ -1326,10 +1843,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const limits={};
     for(const cat of categories)limits[planAxisMarkKey('categories',cat.id)]=cat.name.length;
     for(const period of periods)limits[planAxisMarkKey('periods',period.id)]=period.name.length;
-    for(const cat of categories)for(const period of periods){
-      const cellKey=cat.id+'|'+period.id;
-      limits[planCellMarkKey(cellKey)]=(cells[cellKey]||'').length;
-    }
+    // 既保留普通日期事项，也保留周计划分类自身事项（__categoryMemo__）的局部标注。
+    for(const [cellKey,value] of Object.entries(cells))limits[planCellMarkKey(cellKey)]=value.length;
     for(const [key,marks] of Object.entries(raw).slice(0,1200)){
       if(!Object.hasOwn(limits,key))continue;
       const clean=validMarks(marks,' '.repeat(limits[key]));
@@ -1368,7 +1883,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const a=points[i],b=points[i+1];if(a===b)continue;
       const mark=marks.find(m=>m.start<=a&&m.end>=b);
       const span=document.createElement('span');span.textContent=text.slice(a,b);
-      if(mark){span.className='rich-fragment';if(validColor(mark.fg))span.style.color=mark.fg;if(validColor(mark.bg))span.style.backgroundColor=mark.bg;}
+      if(mark){span.className='rich-fragment';if(validColor(mark.fg))span.style.color=mark.fg;if(validColor(mark.bg))span.style.backgroundColor=mark.bg;if(mark.strike===true)span.style.textDecorationLine='line-through';}
       host.append(span);
     }
   }
@@ -1386,19 +1901,42 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       return out.filter(v=>v.end>v.start);
     });
   }
-  function assignMarks(marks,text,start,end,fg,bg){
-    const cuts=[0,start,end,text.length];
-    for(const m of validMarks(marks,text))cuts.push(m.start,m.end);
-    const pts=[...new Set(cuts)].sort((a,b)=>a-b),out=[];
-    for(let i=0;i<pts.length-1;i++){
-      const a=pts[i],b=pts[i+1];if(a===b)continue;
-      const mark=a>=start&&b<=end?{fg,bg}:marks.find(m=>m.start<=a&&m.end>=b);
-      if(!mark||(!validColor(mark.fg)&&!validColor(mark.bg)))continue;
-      const entry={start:a,end:b,fg:validColor(mark.fg),bg:validColor(mark.bg)};
-      const prev=out.at(-1);if(prev&&prev.end===a&&prev.fg===entry.fg&&prev.bg===entry.bg)prev.end=b;
+  // v28: 颜色与删除线为互不覆盖的独立属性；选区按真实字符偏移切分、合并。
+  function packRichSegments(segments){
+    const out=[];
+    for(const m of segments){
+      if(m.end<=m.start)continue;
+      const entry={start:m.start,end:m.end,fg:validColor(m.fg),bg:validColor(m.bg),strike:m.strike===true};
+      if(!entry.fg&&!entry.bg&&!entry.strike)continue;
+      const prev=out.at(-1);
+      if(prev&&prev.end===entry.start&&prev.fg===entry.fg&&prev.bg===entry.bg&&prev.strike===entry.strike)prev.end=entry.end;
       else out.push(entry);
     }
     return out;
+  }
+  function richSegments(marks,text,start,end,change){
+    const safe=validMarks(marks,text),cuts=[0,start,end,text.length];
+    for(const m of safe)cuts.push(m.start,m.end);
+    const pts=[...new Set(cuts)].sort((a,b)=>a-b),segments=[];
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i],b=pts[i+1];if(a===b)continue;
+      const existing=safe.find(m=>m.start<=a&&m.end>=b);
+      const values={fg:existing?.fg||null,bg:existing?.bg||null,strike:existing?.strike===true};
+      if(a>=start&&b<=end)Object.assign(values,change(values,a,b));
+      segments.push({start:a,end:b,...values});
+    }
+    return packRichSegments(segments);
+  }
+  function assignMarks(marks,text,start,end,fg,bg){
+    return richSegments(marks,text,start,end,()=>({fg:validColor(fg),bg:validColor(bg)}));
+  }
+  function toggleStrikeMarks(marks,text,start,end){
+    const safe=validMarks(marks,text);
+    // 全部已有删除线 => 取消；否则统一加上，保持原来的字体色与背景色。
+    const cuts=[start,end,...safe.flatMap(m=>[m.start,m.end])].filter(x=>x>=start&&x<=end);
+    const pts=[...new Set(cuts)].sort((a,b)=>a-b);
+    const allStruck=pts.length>1&&pts.slice(0,-1).every((a,i)=>safe.some(m=>m.strike===true&&m.start<=a&&m.end>=pts[i+1]));
+    return richSegments(safe,text,start,end,()=>({strike:!allStruck}));
   }
   // 行列拖动、删除时文字标注一起跟随原内容，不会只换文字而遗漏颜色。
   function shiftMatrixStyleAxis(t,canonicalAxis,from,target,remove=false){
@@ -1437,6 +1975,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       ids.add(n.id);
       const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,MAX_TOPIC_TEXT) };
       if(n.collapsed===true)node.collapsed=true;
+      // V35：每个普通节点独立存储文本模式和正文，切换模式不会改变原有父子关系。
+      if(n.textMode===true&&n.kind!=='plan'&&n.kind!=='matrix'){
+        node.textMode=true;node.textFoldInitialized=true;
+        if(n.textFoldInitialized!==true)node.collapsed=true;
+      }
+      if(n.textMode===true&&typeof n.textFoldPreviousCollapsed==='boolean')node.textFoldPreviousCollapsed=n.textFoldPreviousCollapsed;
+      if(typeof n.docHTML==='string'&&n.kind!=='plan'&&n.kind!=='matrix')node.docHTML=n.docHTML.slice(0,300000);
+      // v29: 大纲块只是同一棵节点树的显示模式，不复制或重写父子数据。
+      if(n.viewMode==='outline'&&n.kind!=='matrix'&&n.kind!=='plan')node.viewMode='outline';
+      if(n.inlineFolded===true)node.inlineFolded=true;
       if(n.foldSide===-1)node.foldSide=-1;
       // v24：位置与路线属于各节点，不依赖数组顺序；保留在本地、导出和 Supabase JSON 中。
       const fx=n.freeX,fy=n.freeY;
@@ -1484,9 +2032,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if(p.periodKind!=='month')for(const c of categories)validKeys.add(c.id+'|__categoryMemo__');
         const cells={};
         for(const [k,v] of Object.entries(p.cells))if(validKeys.has(k)&&typeof v==='string')cells[k]=v.slice(0,30000);
+        const blockCells={};
+        if(p.blockCells&&typeof p.blockCells==='object'&&!Array.isArray(p.blockCells)){
+          for(const [key,list] of Object.entries(p.blockCells)){
+            if(!validKeys.has(key)||!Array.isArray(list))continue;
+            blockCells[key]=list.slice(0,400).filter(x=>x&&typeof x==='object'&&typeof x.text==='string').map(x=>({
+              id:typeof x.id==='string'&&x.id.length<140?x.id:makeId(),
+              text:x.text.slice(0,30000),
+              linkId:typeof x.linkId==='string'&&x.linkId.length<=150?x.linkId:null,
+              ...(x.textMode===true?{textMode:true}:{}),
+              ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{})
+            }));
+          }
+        }
         node.kind='plan';node.plan={periodKind:p.periodKind==='month'?'month':'week',
           layout:p.layout==='cards'?'cards':'table',group:p.group==='category'?'category':'date',
-          categories,periods,cells,richMap:readPlanRichMap(p.richMap,categories,periods,cells),
+          categories,periods,cells,blockCells,richMap:readPlanRichMap(p.richMap,categories,periods,cells),
           // 行列宽高以 axisId 存储，排序切换后始终跟随原分类/日期。
           colSizes:{date:cleanPlanDims(p.colSizes?.date),category:cleanPlanDims(p.colSizes?.category)},
           rowSizes:{date:cleanPlanDims(p.rowSizes?.date),category:cleanPlanDims(p.rowSizes?.category)},
@@ -1733,7 +2294,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function boardMeta(){const root=topicById(ROOT_ID);if(!root.boards)root.boards=boards().map(b=>({...b}));return root.boards;}
   function children(id) { return data.topics.filter(t=>t.parentId===id && !(id===ROOT_ID && t.boardRoot)); }
   // 折叠只隐藏下级的布局与显示，不删除节点/文字；大纲依然读取完整 children。
-  function visibleChildren(id){return topicById(id)?.collapsed?[]:children(id);}
+  function visibleChildren(id){
+    const n=topicById(id);
+    if(doc35Active?.kind==='topic'&&!$('doc35Pane').hidden&&doc38FocusId){
+      if(doc38FocusHide.has(id))return [];
+      if(doc38FocusShow.has(id))return children(id);
+    }
+    return n?.collapsed||n?.viewMode==='outline'?[]:children(id);
+  }
   function directBranchCount(id){return children(id).length;}
   function countBranchDescendants(id){
     let count=0,queue=children(id).map(t=>t.id),guard=0;
@@ -1755,24 +2323,41 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     state.selected=id;
     scheduleSave((t.collapsed?'收起':'展开')+'分支 · '+String(t.text||'主题').slice(0,24));
     render();
+    if(doc35Active?.kind==='topic'&&doc37IsInsideRoot(state.selected)){
+      requestAnimationFrame(()=>doc37SyncPanelSelection(state.selected,true));
+    }
   }
 
 
   // -------- 当前画布大纲：只维护 UI 展开状态，节点始终来自 data.topics --------
   const outlineToggle=$('outlineToggle'), outlinePanel=$('outlinePanel');
   const outlineTree=$('outlineTree');
-  let outlineExpanded=new Set(), outlineBoardRoot=null, outlineLastHighlighted=null;
+  const outlineDocPane=$('outlineDocPane'),outlineDocContent=$('outlineDocContent'),outlineDocScroll=$('outlineDocScroll');
+  let outlineDocFocus=null,outlineDocEditing=null,outlineDocDragging=null,outlineDocTextScale=1,outlineDocSkipRepaint=false;
+  let outlineDocSkipClickUntil=0;
+
+  // v31: 自动显示当前节点的父级路径/同级/直属下级，与手动展开分开记录。
+  // 以下集合只管界面可见性，不写入 topics，也不干扰导图的 collapsed/inlineFolded。
+  let outlineAutoExpanded=new Set(),outlineManualExpanded=new Set(),outlineManualCollapsed=new Set();
+  let outlineAutoFocus=null,outlineBoardRoot=null,outlineLastHighlighted=null;
+  let outlineDocManualExpanded=new Set(),outlineDocPendingSelect=null;
   let outlineDrag=null,outlineSkipClickUntil=0,outlineLastTap=null,outlineRenaming=null;
 
   function outlineIsOpen(){return !outlinePanel.hidden;}
   function positionOutlinePanel(){
-    const bounds=stage.getBoundingClientRect();
-    outlinePanel.style.top=Math.max(0,bounds.top)+'px';
-    outlinePanel.style.bottom=Math.max(0,innerHeight-bounds.bottom)+'px';
+    const bounds=stage.getBoundingClientRect(),mobile=innerWidth<=800;
+    const left=Math.max(0,bounds.left),top=Math.max(0,bounds.top),bottom=Math.max(0,innerHeight-bounds.bottom);
+    const fullWidth=Math.max(250,bounds.width),treeWidth=mobile?fullWidth:Math.min(710,Math.max(340,Math.round(fullWidth*.46)));
+    outlinePanel.style.top=top+'px';outlinePanel.style.bottom=bottom+'px';outlinePanel.style.left=left+'px';outlinePanel.style.width=treeWidth+'px';
+    outlineDocPane.style.top=top+'px';outlineDocPane.style.bottom=bottom+'px';
+    outlineDocPane.style.left=(left+(mobile?0:treeWidth))+'px';outlineDocPane.style.right=Math.max(0,innerWidth-bounds.right)+'px';
   }
   function setOutlineOpen(open){
-    if(open)positionOutlinePanel();
-    outlinePanel.hidden=!open;
+    if(open&&doc35Active)closeDoc35();
+    if(open){positionOutlinePanel();outlineDocFocus=state.selected&&topicById(state.selected)?state.selected:activeRootId();}
+    if(!open&&outlineDocEditing)commitOutlineDocEditing(true);
+    outlinePanel.hidden=!open;outlineDocPane.hidden=!open;
+    if(!open)outlineDocPane.classList.remove('doc-mobile-visible');
     outlineToggle.hidden=open;
     outlineToggle.setAttribute('aria-expanded',String(open));
     outlineToggle.setAttribute('aria-label',open?'收起大纲':'打开大纲目录');
@@ -1810,6 +2395,36 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return [];
   }
+  function outlineIsExpanded(id){
+    if(outlineManualCollapsed.has(id))return false;
+    return outlineAutoExpanded.has(id)||outlineManualExpanded.has(id);
+  }
+  // 先保证从根到父级的路径可见，再展开选中节点的直属下级。
+  // 其余同级节点的后代一概不自动展开；手动打开过的分支则继续保留。
+  function outlineFocusThreeLevels(id,graph,reveal=false){
+    const path=outlineAncestorPath(id,graph);
+    const focus=path.length?id:graph.root;
+    const nextPath=path.length?path:[graph.root];
+    if(reveal||outlineAutoFocus!==focus){
+      for(const ancestorId of nextPath)outlineManualCollapsed.delete(ancestorId);
+    }
+    outlineAutoFocus=focus;
+    outlineAutoExpanded=new Set(nextPath);
+  }
+  function outlineToggleManually(id){
+    if(outlineIsExpanded(id)){
+      outlineManualExpanded.delete(id);
+      outlineManualCollapsed.add(id);
+    }else{
+      // 手动展开的分支还要保留通往它的祖先路径，切换选中项后才不会突然消失。
+      for(const ancestor of outlineAncestorPath(id,outlineGraph()).slice(0,-1)){
+        outlineManualExpanded.add(ancestor);
+        outlineManualCollapsed.delete(ancestor);
+      }
+      outlineManualCollapsed.delete(id);
+      outlineManualExpanded.add(id);
+    }
+  }
   function outlineTitle(t){
     if(t.kind==='plan')return (t.text&&t.text!=='新主题'?t.text:(t.plan?.periodKind==='month'?'月计划':'周计划'));
     if(t.kind==='matrix')return (t.text&&t.text!=='新主题'?t.text:'横纵表格');
@@ -1819,11 +2434,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(!outlineIsOpen()||outlineRenaming)return;
     const graph=outlineGraph(),{root,lookup,byParent,reached}=graph;
     if(outlineBoardRoot!==root){
-      outlineBoardRoot=root;outlineExpanded=new Set([root]);outlineLastHighlighted=null;
+      outlineBoardRoot=root;
+      outlineAutoExpanded=new Set([root]);outlineAutoFocus=null;
+      // 每张画布切换时恢复该画布的自动三层视图；不复用其它画布手动展开状态。
+      outlineManualExpanded.clear();outlineManualCollapsed.clear();outlineDocManualExpanded.clear();
+      outlineLastHighlighted=null;
     }
-    const selected=reached.has(state.selected)?state.selected:null;
-    // 从画布点击一个深层节点时自动展开祖先，不把同级的所有后代也打开。
-    if(selected&&revealSelection)for(const id of outlineAncestorPath(selected,graph).slice(0,-1))outlineExpanded.add(id);
+    const selected=reached.has(state.selected)?state.selected:root;
+    if(revealSelection || outlineAutoFocus===null){
+      outlineFocusThreeLevels(selected,graph,outlineAutoFocus!==selected);
+    }
     const previousScroll=outlineTree.scrollTop;
     const fragment=document.createDocumentFragment();
     const stack=[{id:root,depth:0}];let visited=0;
@@ -1832,18 +2452,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const childList=byParent.get(id)||[],hasChildren=childList.length>0;
       const row=document.createElement('div');
       row.className='outline-row'+(selected===id?' outline-selected':'');
-      row.dataset.nodeId=id;row.style.setProperty('--indent',Math.min(260,depth*17)+'px');
+      row.dataset.nodeId=id;row.dataset.depth=String(Math.min(depth,5));row.dataset.hasChildren=hasChildren?'1':'0';row.style.setProperty('--indent',Math.min(330,depth*24)+'px');
       row.setAttribute('role','treeitem');row.setAttribute('aria-level',String(depth+1));
       row.setAttribute('aria-selected',String(selected===id));
-      if(hasChildren)row.setAttribute('aria-expanded',String(outlineExpanded.has(id)));
+      if(hasChildren)row.setAttribute('aria-expanded',String(outlineIsExpanded(id)));
       if(hasChildren){
         const triangle=document.createElement('button');triangle.type='button';triangle.className='outline-chevron';
-        triangle.setAttribute('aria-label',(outlineExpanded.has(id)?'收起':'展开')+outlineTitle(t).slice(0,30));
-        triangle.setAttribute('aria-expanded',String(outlineExpanded.has(id)));
+        triangle.setAttribute('aria-label',(outlineIsExpanded(id)?'收起':'展开')+outlineTitle(t).slice(0,30));
+        triangle.setAttribute('aria-expanded',String(outlineIsExpanded(id)));
         triangle.innerHTML='<span class="outline-triangle" aria-hidden="true">▾</span>';
         triangle.addEventListener('click',e=>{
           e.stopPropagation();
-          if(outlineExpanded.has(id))outlineExpanded.delete(id);else outlineExpanded.add(id);
+          outlineToggleManually(id);
           renderOutlineTree(false);
         });
         row.append(triangle);
@@ -1866,16 +2486,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
         outlineLastTap={id,at:now};
         // 只自动展开所点主题的直接子主题；不一键展开孙辈、曾孙辈。
-        const currentGraph=outlineGraph(),ancestors=outlineAncestorPath(id,currentGraph);
-        outlineExpanded=new Set([...ancestors]);
+        const currentGraph=outlineGraph();
+        outlineFocusThreeLevels(id,currentGraph,true);
+        outlineDocFocus=id;
         selectInteractive(id,null);
         renderOutlineTree(true);
-        // 手机上的侧栏几乎占据整屏：跳转后收起，确保所选节点可见。
-        if(stage.clientWidth<=650)setOutlineOpen(false);
+        // 手机上切到右侧文档页，返回目录后仍可继续选取其他节点。
+        if(innerWidth<=800)outlineDocPane.classList.add('doc-mobile-visible');
         centerNodeFromOutline(id);
       });
-      row.append(text);fragment.append(row);
-      if(hasChildren && outlineExpanded.has(id)){
+      row.append(text);
+      if(hasChildren){const count=document.createElement('span');count.className='outline-child-count';
+        count.textContent=String(childList.length);count.title='直属下级 '+childList.length+' 个';row.append(count);}
+      fragment.append(row);
+      if(hasChildren && outlineIsExpanded(id)){
         for(let i=childList.length-1;i>=0;i--)stack.push({id:childList[i].id,depth:depth+1});
       }
     }
@@ -1887,17 +2511,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     }
     outlineLastHighlighted=selected;
+    if(!outlineDocSkipRepaint&&!outlineDocEditing)renderOutlineDoc();
   }
   function syncOutlineSelection(){
     if(!outlineIsOpen())return;
     // 节点仍相同时无需重复让目录跳动；重新绘制保证名称编辑/云端修改可见。
     const changed=state.selected!==outlineLastHighlighted;
+    if(changed && !outlineDocSkipRepaint && outlineGraph().reached.has(state.selected)){
+      outlineDocFocus=state.selected; // 从原导图点选时，右侧也跳到相同主题。
+    }
     renderOutlineTree(changed,changed);
   }
   function centerNodeFromOutline(id){
     let p=state.positions.get(id);
     if(!p){computeLayout();p=state.positions.get(id);}
+    const owner=!p?nearestInlineOwner(id):null;
+    if(!p&&owner)p=state.positions.get(owner);
     if(!p)return;
+    if(owner){
+      const box=[...topicLayer.querySelectorAll('.inline-outline-node')].find(el=>el.dataset.id===owner);
+      const row=[...(box?.querySelectorAll('.inline-outline-row')||[])].find(el=>el.dataset.nodeId===id);
+      if(row){row.scrollIntoView({block:'nearest',inline:'nearest'});selectInlineOutlineItem(id);}
+    }
     const w=stage.clientWidth,h=stage.clientHeight;
     // PC 的大纲盖住左边一部分画布，所以居中到剩下的可视区域。
     const blocked=outlineIsOpen()?Math.min(outlinePanel.getBoundingClientRect().width,w-70):0;
@@ -2022,7 +2657,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(!drop){notify('未选择放置位置，原大纲保持不变');return;}
       if(!reorderTopicSubtree(id,drop)){notify('未改变位置，或不能把主题移入自身分支');return;}
       const moved=topicById(id);
-      if(moved?.parentId)outlineExpanded.add(moved.parentId);
+      if(moved?.parentId){outlineManualExpanded.add(moved.parentId);outlineManualCollapsed.delete(moved.parentId);}
+      outlineFocusThreeLevels(id,outlineGraph(),true);
+      outlineDocFocus=id;
       state.selected=id;state.matrixSelection=null;
       scheduleSave('大纲移动分支 · '+outlineTitle(moved).slice(0,30));
       render();centerNodeFromOutline(id);renderOutlineTree(true,true);
@@ -2033,6 +2670,238 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     window.addEventListener('pointerup',onUp);window.addEventListener('pointercancel',onCancel);
     if(touch){d.timer=setTimeout(arm,460);} // 手机长按后才能挪动，短滑继续滚动目录。
   }
+
+  // -------- 双栏大纲右侧：复用 topics 的 id/parentId/text，不建立第二份内容 --------
+  function outlineDocCurrent(){
+    const graph=outlineGraph();
+    if(!graph.reached.has(outlineDocFocus))outlineDocFocus=graph.reached.has(state.selected)?state.selected:graph.root;
+    return {graph,focus:outlineDocFocus};
+  }
+  // 右栏单击：先高亮对应节点，短延迟后打开其三级上下文；双击仍可编辑原文字。
+  function scheduleOutlineDocNodeSelect(id){
+    if(outlineDocPendingSelect){clearTimeout(outlineDocPendingSelect);outlineDocPendingSelect=null;}
+    setOutlineDocSelected(id);
+    outlineDocPendingSelect=setTimeout(()=>{
+      outlineDocPendingSelect=null;
+      if(!outlineDocEditing&&!outlineDocDragging)outlineDocNavigate(id);
+    },300);
+  }
+  function cancelOutlineDocPendingSelect(){
+    if(outlineDocPendingSelect){clearTimeout(outlineDocPendingSelect);outlineDocPendingSelect=null;}
+  }
+  function setOutlineDocSelected(id){
+    if(outlineDocEditing&&outlineDocEditing.id!==id)commitOutlineDocEditing(true);
+    outlineFocusThreeLevels(id,outlineGraph(),true);
+    state.selected=id;state.matrixSelection=null;
+    outlineDocContent.querySelectorAll('.outline-doc-row').forEach(row=>row.classList.toggle('doc-selected',row.dataset.nodeId===id));
+    outlineDocSkipRepaint=true;
+    try{renderOutlineTree(true,true);}finally{outlineDocSkipRepaint=false;}
+    drawConnections();
+  }
+  // 右侧同样只自动展示当前主题的直属下级；更深分支需点三角或「展开全部」。
+  // 注意：不再修改 node.inlineFolded，避免连带改变画布中的大纲块状态。
+  function outlineDocToggleBranch(node){
+    if(outlineDocManualExpanded.has(node.id))outlineDocManualExpanded.delete(node.id);
+    else outlineDocManualExpanded.add(node.id);
+    renderOutlineDoc();
+  }
+  function outlineDocRows(graph,focus){
+    const rows=[],stack=(graph.byParent.get(focus)||[]).slice().reverse().map(n=>({node:n,depth:0}));
+    while(stack.length&&rows.length<4000){
+      const {node,depth}=stack.pop(),sub=graph.byParent.get(node.id)||[];
+      rows.push({node,depth,hasChildren:sub.length>0});
+      if(!outlineDocManualExpanded.has(node.id))continue;
+      for(let i=sub.length-1;i>=0;i--)stack.push({node:sub[i],depth:depth+1});
+    }
+    return rows;
+  }
+  function outlineDocNavigate(id){
+    cancelOutlineDocPendingSelect();
+    const graph=outlineGraph();if(!graph.reached.has(id))return;
+    if(outlineDocEditing)commitOutlineDocEditing(true);
+    outlineFocusThreeLevels(id,graph,true);
+    outlineDocFocus=id;
+    selectInteractive(id,null);
+    renderOutlineTree(true,true);
+    outlineDocScroll.scrollTop=0;
+    if(innerWidth<=800)outlineDocPane.classList.add('doc-mobile-visible');
+  }
+  function renderOutlineDoc(){
+    if(!outlineIsOpen()||outlineDocEditing||outlineDocDragging)return;
+    const {graph,focus}=outlineDocCurrent(),node=graph.lookup.get(focus);if(!node)return;
+    const previousScroll=outlineDocScroll.scrollTop;
+    const path=outlineAncestorPath(focus,graph).map(id=>outlineTitle(graph.lookup.get(id)).replace(/\s+/g,' ').slice(0,30));
+    $('outlineDocTrail').textContent=path.join('  ›  ');
+    const content=document.createDocumentFragment();
+    const heading=document.createElement('div');heading.className='outline-doc-root';
+    const title=document.createElement('button');title.type='button';title.className='outline-doc-root-title';
+    if(outlineTitle(node).length>55)title.classList.add('long-title');
+    renderMarkedText(title,outlineTitle(node),node.kind?[]:node.marks||[]);
+    title.title='双击编辑当前主题';
+    title.addEventListener('dblclick',()=>startOutlineDocEditing(focus,title));
+    heading.append(title);content.append(heading);
+    for(const {node:child,depth,hasChildren} of outlineDocRows(graph,focus)){
+      const row=document.createElement('div');row.className='outline-doc-row'+(child.id===state.selected?' doc-selected':'')+(!hasChildren?' doc-leaf':'');
+      row.dataset.nodeId=child.id;row.dataset.depth=String(Math.min(depth,5));
+      row.style.setProperty('--doc-indent',Math.min(260,depth*21)+'px');
+      const grip=document.createElement('button');grip.type='button';grip.className='outline-doc-grip';grip.textContent='⠿';
+      grip.title='拖动到目标中间＝下级；拖动到上、下边缘＝同级';
+      grip.setAttribute('aria-label','拖动调整层级：'+outlineTitle(child).slice(0,24));
+      grip.addEventListener('pointerdown',e=>startOutlineDocDrag(e,child.id,grip));
+      row.append(grip);
+      if(hasChildren){
+        const toggle=document.createElement('button');toggle.type='button';toggle.className='outline-doc-chevron';
+        toggle.textContent=outlineDocManualExpanded.has(child.id)?'▾':'▸';toggle.title=outlineDocManualExpanded.has(child.id)?'收起下级':'展开下级';
+        toggle.addEventListener('click',e=>{e.stopPropagation();outlineDocToggleBranch(child);});row.append(toggle);
+      }else{const blank=document.createElement('span');blank.className='outline-doc-placeholder';row.append(blank);}
+      const label=document.createElement('button');label.type='button';label.className='outline-doc-label';
+      renderMarkedText(label,outlineTitle(child),child.kind?[]:child.marks||[]);
+      label.title='单击选中，双击编辑；与左侧大纲和原导图共用一份文字';
+      label.addEventListener('click',e=>{e.stopPropagation();if(Date.now()<outlineDocSkipClickUntil)return;scheduleOutlineDocNodeSelect(child.id);});
+      label.addEventListener('dblclick',e=>{e.stopPropagation();cancelOutlineDocPendingSelect();startOutlineDocEditing(child.id,label);});
+      row.append(label);content.append(row);
+    }
+    outlineDocContent.replaceChildren(content);
+    outlineDocContent.style.setProperty('--doc-font-scale',String(outlineDocTextScale));
+    outlineDocScroll.scrollTop=previousScroll;
+  }
+  function commitOutlineDocEditing(save=true){
+    const draft=outlineDocEditing;if(!draft)return;
+    outlineDocEditing=null;
+    const node=topicById(draft.id);if(!node)return;
+    const value=draft.input.value.trim()?draft.input.value:'新主题';
+    if(save&&value!==draft.original){
+      node.marks=updateMarksForEdit(node.marks||[],draft.original,value);
+      node.text=value.slice(0,MAX_TOPIC_TEXT);
+      scheduleSave('文档大纲编辑文字 · '+value.slice(0,25));
+      render();
+    }
+    renderOutlineDoc();settleRemoteAfterDrag();
+  }
+  function startOutlineDocEditing(id,host){
+    if(outlineDocDragging||outlineDocEditing)return;
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const node=topicById(id);if(!node||!host?.isConnected)return;
+    const input=document.createElement('textarea');input.className='outline-doc-textarea';
+    input.value=node.text||'';input.maxLength=MAX_TOPIC_TEXT;input.setAttribute('aria-label','编辑大纲文字');
+    const draft={id,input,original:node.text||''};outlineDocEditing=draft;
+    host.replaceWith(input);
+    const resize=()=>{input.style.height='auto';input.style.height=Math.max(42,input.scrollHeight+4)+'px';};
+    input.addEventListener('input',resize);
+    input.addEventListener('keydown',e=>{
+      e.stopPropagation();if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Escape'){e.preventDefault();commitOutlineDocEditing(false);}
+      else if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();commitOutlineDocEditing(true);}
+    });
+    input.addEventListener('blur',()=>{if(outlineDocEditing===draft)commitOutlineDocEditing(true);});
+    input.addEventListener('pointerdown',e=>e.stopPropagation());
+    input.focus();resize();input.select();
+  }
+  function clearOutlineDocDragVisual(){
+    outlineDocContent.querySelectorAll('.doc-drag-source,.doc-drop-before,.doc-drop-after,.doc-drop-child')
+      .forEach(el=>el.classList.remove('doc-drag-source','doc-drop-before','doc-drop-after','doc-drop-child'));
+  }
+  function startOutlineDocDrag(e,id,handle){
+    if(outlineDocEditing||outlineDocDragging||e.button!==0)return;
+    e.preventDefault();e.stopPropagation();
+    const touch=e.pointerType==='touch',family=descendantsOf(id);
+    const d={id,pointerId:e.pointerId,active:false,done:false,startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,
+      timer:null,drop:null,ghost:null};outlineDocDragging=d;
+    function start(){
+      if(d.done||d.active)return;d.active=true;
+      d.ghost=document.createElement('div');d.ghost.className='outline-doc-ghost';document.body.append(d.ghost);
+      moveGhost(d.x,d.y);
+      try{handle.setPointerCapture(d.pointerId);}catch{}
+    }
+    function moveGhost(x,y){if(!d.ghost)return;
+      d.ghost.style.left=Math.max(6,Math.min(innerWidth-240,x+15))+'px';
+      d.ghost.style.top=Math.max(6,Math.min(innerHeight-45,y+10))+'px';
+      d.ghost.textContent='移动 '+outlineTitle(topicById(id)).slice(0,20)+(d.drop?' · '+({child:'放入内部',before:'同级前插',after:'同级后插'}[d.drop.mode]):'');
+    }
+    function getTarget(x,y){
+      clearOutlineDocDragVisual();
+      const own=[...outlineDocContent.querySelectorAll('.outline-doc-row')].find(r=>r.dataset.nodeId===id);
+      own?.classList.add('doc-drag-source');
+      const target=document.elementFromPoint(x,y)?.closest('.outline-doc-row');
+      if(!target||!outlineDocContent.contains(target))return null;
+      const targetId=target.dataset.nodeId;
+      if(!targetId||id===targetId||family.has(targetId))return null;
+      const bounds=target.getBoundingClientRect(),ratio=(y-bounds.top)/Math.max(1,bounds.height);
+      const mode=ratio<.27?'before':ratio>.73?'after':'child';
+      const n=topicById(targetId);
+      if(mode!=='child'&&(!n?.parentId||family.has(n.parentId)))return null;
+      target.classList.add('doc-drop-'+mode);return{id:targetId,mode};
+    }
+    function cleanup(){
+      if(d.done)return;d.done=true;clearTimeout(d.timer);
+      window.removeEventListener('pointermove',onMove);window.removeEventListener('pointerup',onUp);window.removeEventListener('pointercancel',onCancel);
+      clearOutlineDocDragVisual();d.ghost?.remove();try{handle.releasePointerCapture(d.pointerId);}catch{}
+      outlineDocDragging=null;
+    }
+    function onMove(ev){
+      if(d.done||ev.pointerId!==d.pointerId)return;
+      d.x=ev.clientX;d.y=ev.clientY;
+      if(!d.active){
+        if(touch){if(Math.hypot(d.x-d.startX,d.y-d.startY)>10)clearTimeout(d.timer);return;}
+        if(Math.hypot(d.x-d.startX,d.y-d.startY)>5)start();else return;
+      }
+      if(ev.cancelable)ev.preventDefault();
+      d.drop=getTarget(d.x,d.y);moveGhost(d.x,d.y);
+      const r=outlineDocScroll.getBoundingClientRect();
+      if(d.y<r.top+30)outlineDocScroll.scrollTop-=12;
+      else if(d.y>r.bottom-30)outlineDocScroll.scrollTop+=12;
+    }
+    function onUp(ev){
+      if(ev.pointerId!==d.pointerId||d.done)return;
+      const wasActive=d.active,drop=d.drop;cleanup();
+      if(!wasActive||!drop)return;
+      outlineDocSkipClickUntil=Date.now()+550;
+      if(reorderTopicSubtree(id,drop)){
+        const parent=topicById(topicById(id)?.parentId);
+        if(parent){outlineDocManualExpanded.add(parent.id);outlineManualExpanded.add(parent.id);outlineManualCollapsed.delete(parent.id);}
+        outlineFocusThreeLevels(id,outlineGraph(),true);
+        outlineDocFocus=id;
+        state.selected=id;scheduleSave('文档大纲拖动分支 · '+outlineTitle(topicById(id)).slice(0,26));
+        render();renderOutlineDoc();notify(drop.mode==='child'?'已插入目标内部':'已调整同级顺序');
+      }
+      settleRemoteAfterDrag();
+    }
+    function onCancel(ev){if(ev.pointerId===d.pointerId)cleanup();}
+    window.addEventListener('pointermove',onMove,{passive:false});window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onCancel);
+    if(touch)d.timer=setTimeout(start,460);
+  }
+  function outlineDocFoldAll(fold){
+    const {graph,focus}=outlineDocCurrent();
+    const queue=[focus];let changed=false;
+    while(queue.length){
+      const id=queue.pop();for(const node of graph.byParent.get(id)||[]){
+        queue.push(node.id);
+        if(!graph.byParent.get(node.id)?.length)continue;
+        if(fold){if(outlineDocManualExpanded.delete(node.id))changed=true;}
+        else if(!outlineDocManualExpanded.has(node.id)){outlineDocManualExpanded.add(node.id);changed=true;}
+      }
+    }
+    if(changed)renderOutlineDoc();
+  }
+  $('outlineDocBack').addEventListener('click',()=>outlineDocPane.classList.remove('doc-mobile-visible'));
+  $('outlineDocToMap').addEventListener('click',()=>{
+    const selected=state.selected;setOutlineOpen(false);
+    if(selected)centerNodeFromOutline(selected);
+  });
+  $('outlineDocUndo').addEventListener('click',()=>applyUndoRedo('undo'));
+  $('outlineDocRedo').addEventListener('click',()=>applyUndoRedo('redo'));
+  $('outlineDocSmaller').addEventListener('click',()=>{outlineDocTextScale=Math.max(.75,Math.round((outlineDocTextScale-.1)*10)/10);renderOutlineDoc();});
+  $('outlineDocLarger').addEventListener('click',()=>{outlineDocTextScale=Math.min(1.6,Math.round((outlineDocTextScale+.1)*10)/10);renderOutlineDoc();});
+  $('outlineDocExpand').addEventListener('click',()=>outlineDocFoldAll(false));
+  $('outlineDocCollapse').addEventListener('click',()=>outlineDocFoldAll(true));
+  outlineDocPane.addEventListener('pointerdown',e=>e.stopPropagation());
+  outlineDocPane.addEventListener('click',e=>e.stopPropagation());
+  outlineDocPane.addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
+  // -------- 双栏大纲结束 --------
+
   window.addEventListener('resize',()=>{if(outlineIsOpen())positionOutlinePanel();});
   outlinePanel.addEventListener('pointerdown',e=>e.stopPropagation());
   outlinePanel.addEventListener('click',e=>e.stopPropagation());
@@ -2249,6 +3118,30 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     matrixMeasureCache.set(t.id,metrics);
     return metrics;
   }
+  let planMiniMeasureProbe=null;
+  function planBlockAutoHeight(owner,key,width,header=false){
+    const blocks=planBlockList(owner,key);
+    if(!planMiniMeasureProbe){
+      planMiniMeasureProbe=document.createElement('div');
+      Object.assign(planMiniMeasureProbe.style,{
+        position:'absolute',left:'-100000px',top:'-100000px',visibility:'hidden',
+        pointerEvents:'none',whiteSpace:'pre-wrap',overflowWrap:'anywhere',wordBreak:'break-word',
+        boxSizing:'border-box',font:'500 14px/1.45 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif'
+      });
+      document.body.append(planMiniMeasureProbe);
+    }
+    // 两侧格子内边距 + 卡片内部边距，按真实可用宽度测量换行。
+    planMiniMeasureProbe.style.width=Math.max(54,width-65)+'px';
+    let content=16+23;
+    if(!blocks.length)return header?Math.max(52,content+10):Math.max(64,content+10);
+    for(const block of blocks){
+      planMiniMeasureProbe.textContent=String(block.text||' ')+'\u200b';
+      const textHeight=Math.ceil(planMiniMeasureProbe.getBoundingClientRect().height);
+      content+=Math.max(36,textHeight+14);
+    }
+    content+=Math.max(0,blocks.length-1)*6;
+    return Math.ceil(content+4);
+  }
   // v11: 行列尺寸与普通横纵表格使用同一种自动测量；保存原计划的稳定日期/分类 ID。
   function getPlanMetrics(t){
     planStableFields(t);
@@ -2262,7 +3155,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if(t.plan.periodKind==='week'&&axes.colAxis==='categories'){
           // 周计划表头只显示分类事项，不再额外叠加分类名称。
           const slot=weekCategorySlot(t,col);
-          return Math.max(52,measureCellHeight(planValue(slot.owner,planCellKey(slot.cat,slot.period)),widths[j+1],false));
+          return Math.max(52,planBlockAutoHeight(slot.owner,planCellKey(slot.cat,slot.period),widths[j+1],true));
         }
         return measureCellHeight(col.name,widths[j+1],true);
       }))];
@@ -2271,14 +3164,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(t.plan.periodKind==='week'&&axes.rowAxis==='categories'){
         // 横纵切换后，分类表头也只保留同一份分类事项。
         const slot=weekCategorySlot(t,row);
-        labelHeight=Math.max(52,measureCellHeight(planValue(slot.owner,planCellKey(slot.cat,slot.period)),widths[0],false));
+        labelHeight=Math.max(52,planBlockAutoHeight(slot.owner,planCellKey(slot.cat,slot.period),widths[0],true));
       }
       let h=Math.max(MATRIX_MIN_ROW_HEIGHT,Number(heightMap[row.id])||0,labelHeight);
       for(let c=0;c<axes.cols.length;c++){
         const col=axes.cols[c];
         const cat=group==='date'?row:col,period=group==='date'?col:row;
         // 月计划该格只显示自己的一条分类事项，不再嵌套周计划的每日内容。
-        h=Math.max(h,measureCellHeight(planValue(t,planCellKey(cat,period)),widths[c+1],false));
+        h=Math.max(h,planBlockAutoHeight(t,planCellKey(cat,period),widths[c+1],false));
       }
       heights.push(h);
     }
@@ -2301,7 +3194,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         el.querySelectorAll('.plan-table-live tr').forEach((tr,i)=>{
           tr.style.height=d.heights[i]+'px';
           tr.querySelectorAll('.plan-note-wrap,.plan-note,.plan-note-visual').forEach(n=>{
-            if(n.closest('.plan-linked-month,.plan-linked-week-memo'))return;
+            if(n.closest('.plan-block-wrap,.plan-linked-month,.plan-linked-week-memo') || n.classList.contains('plan-block-wrap'))return;
             n.style.height=Math.max(0,d.heights[i]-1)+'px';
           });
         });
@@ -2315,6 +3208,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
   function getSize(t) {
+    if(t.viewMode==='outline'&&t.kind!=='matrix'&&t.kind!=='plan')return getInlineOutlineMetrics(t);
     if(t.kind==='plan'&&t.plan){const d=getPlanMetrics(t);return {width:d.width,height:d.height};}
     if(t.kind==='matrix'&&t.matrix){
       const size=getMatrixMetrics(t);
@@ -2328,7 +3222,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const lines=text.split('\n');
     const measuredWidth=Math.max(0,...lines.slice(0,400).map(line=>ctx.measureText(line.slice(0,240)).width));
     const paddingX=compact?9:15;
-    const naturalWidth=Math.ceil(Math.max(compact?64:108,Math.min(compact?430:460,measuredWidth+paddingX*2+4)));
+    const naturalWidth=Math.ceil(Math.max(compact?64:108,Math.min(compact?430:460,measuredWidth+paddingX*2+4+(t.textMode?27:0))));
     const userWidth=Number(t.boxWidth);
     const width=Math.round(Number.isFinite(userWidth)&&userWidth>0?userWidth:naturalWidth);
     if(!getSize.probe){
@@ -2342,7 +3236,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     probe.style.fontSize=compact?'14px':'15px';
     probe.style.fontWeight='640';probe.style.lineHeight='1.35';
     probe.style.padding=compact?'5px 9px':'10px 15px';
-    probe.style.width=width+'px';probe.textContent=text+'\u200b';
+    probe.style.width=Math.max(50,width-(t.textMode?24:0))+'px';probe.textContent=text+'\u200b';
     const minHeight=compact?33:46;
     const naturalHeight=Math.max(minHeight,Math.ceil(probe.getBoundingClientRect().height)+4);
     return {width,height:Math.max(naturalHeight,Number(t.boxMinHeight)||minHeight)};
@@ -2492,7 +3386,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       allChildren.get(node.parentId).push(node);
     }
     for(const t of data.topics){
-      const p=state.positions.get(t.id);if(!p)continue;
+      const p=state.positions.get(t.id);if(!p||t.viewMode==='outline')continue;
       const direct=(allChildren.get(t.id)||[]).filter(n=>!(t.id===ROOT_ID&&n.boardRoot));if(!direct.length)continue;
       let side=1;
       if(t.collapsed){
@@ -2506,7 +3400,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       btn.className='branch-fold-button'+(t.collapsed?' is-collapsed':'')+(state.selected===t.id?' node-selected':'');
       btn.dataset.parentId=t.id;
       // 刚好在父节点与括弧的交点，展开模式不会增加额外文字或圆圈；鼠标悬停才可见。
-      btn.style.left=(side===1?p.x+p.w+22:p.x-22)+'px';
+      btn.style.left=(side===1?p.x+p.w+(t.textMode?38:22):p.x-(t.textMode?38:22))+'px';
       btn.style.top=(p.y+p.h/2)+'px';
       btn.textContent=t.collapsed?String(direct.length):'−';
       btn.title=t.collapsed?`展开 ${direct.length} 个子主题及其下级`:`收起 ${direct.length} 个子主题及其下级`;
@@ -2722,7 +3616,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }else if(el&&t?.kind==='matrix'){
       applyMatrixSelection(el);
       showMatrixControls(el,t);
-    }else if(el&&t){
+    }else if(el&&t&&!el.classList.contains('inline-outline-node')){
       topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
       if(state.editing!==id){
         el.append(createButton('child','添加子主题（Tab）',()=>addChild(id)));
@@ -2730,8 +3624,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         attachTopicResizeHandles(el,id);
       }
     }else topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
+    topicLayer.querySelectorAll('.inline-outline-node').forEach(box=>{
+      box.classList.toggle('selected',box.dataset.id===nearestInlineOwner(id));
+      box.querySelectorAll('.inline-outline-row').forEach(row=>row.classList.toggle('inline-selected',row.dataset.nodeId===id));
+    });
     drawConnections();
     syncOutlineSelection();
+    if(doc35Active?.kind==='topic'&&doc37IsInsideRoot(id)){
+      doc37SyncPanelSelection(id,true);
+    }else if(doc35Active?.kind==='topic'){
+      closeDoc35();
+    }
   }
   function clearMatrixSelectionVisual(wrap){
     wrap.querySelectorAll('.cell-picked,.col-picked,.editing-cell').forEach(el=>el.classList.remove('cell-picked','col-picked','editing-cell'));
@@ -2749,7 +3652,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function matrixTarget(id,row,col){return {id,row,col,kind:row>0&&col===0?'row':row===0&&col>0?'col':'cell'};}
   function showDeleteContext(x,y){
     const menu=$('deleteContext'); menu.hidden=false;
-    const width=156,height=57;
+    const modeButton=$('contextToggleOutline'),textButton=$('contextToggleText'),node=topicById(state.selected);
+    modeButton.hidden=!(node&&!node.kind&&nearestInlineOwner(node.id)===null||node?.viewMode==='outline');
+    modeButton.textContent=node?.viewMode==='outline'?'变换模式 · 恢复节点':'变换模式 · 切换为大纲块';
+    textButton.hidden=!(node&&!node.kind&&nearestInlineOwner(node.id)===null);
+    textButton.textContent=node?.textMode?'变换模式 · 恢复普通节点':'变换模式 · 切换为文本节点';
+    const width=menu.offsetWidth||240,height=menu.offsetHeight||138;
     menu.style.left=Math.max(6,Math.min(x+10,innerWidth-width-7))+'px';
     menu.style.top=Math.max(6,Math.min(y+2,innerHeight-height-7))+'px';
   }
@@ -3050,6 +3958,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 内部永远只存一份 categories、periods 和 keyed cells；切换视图不复制数据。
   let expandedPlanId=null;
   let planViewMenu=null, planAxisDrag=null, planSizeDrag=null, ignorePlanClickUntil=0, selectedPlanAxis=null;
+  let activePlanLinkId=null, stagedPlanBlockSource=null, planBlockMenu=null, selectedPlanFocus=null;
   const PLAN_MIN_COL=115,PLAN_MAX_COL=950,PLAN_MIN_ROW=64,PLAN_MAX_ROW=1500;
   function redrawExpandedPlan(){
     if(!expandedPlanId)return;
@@ -3146,6 +4055,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function copyPlanCell(from,fromKey,to,toKey){
     const value=planValue(from,fromKey);
     to.plan.cells[toKey]=value;
+    planStableFields(from);planStableFields(to);
+    if(Array.isArray(from.plan.blockCells[fromKey]))to.plan.blockCells[toKey]=from.plan.blockCells[fromKey].map(x=>({...x,id:makeId()}));
+    else delete to.plan.blockCells[toKey];
     const marks=planMarks(from,planCellMarkKey(fromKey));
     putPlanMarks(to,planCellMarkKey(toKey),JSON.parse(JSON.stringify(marks)));
   }
@@ -3244,8 +4156,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 周计划的分类名不再占据可见表头，新分类直接聚焦它唯一的事项格。
       const header=[...box?.querySelectorAll('.plan-linked-week-memo')||[]]
         .find(x=>x.dataset.weekCategoryId===next.id);
-      const area=header?.querySelector('textarea.plan-note');
-      if(area){area.focus();area.setSelectionRange(area.value.length,area.value.length);}
+      const btn=header?.querySelector('.plan-block-add');
+      if(btn)openPlanMiniEditor(t,planCellKey(next,WEEK_CATEGORY_PERIOD),null,btn);
     }
   }
   function planDeleteAxis(t,axis,id){
@@ -3269,7 +4181,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(selectedPlanAxis?.planId===t.id&&selectedPlanAxis.id===id)selectedPlanAxis=null;
     for(const key of Object.keys(t.plan.cells)){
       const [c,p]=key.split('|');if(axis==='categories'?c===dead.id:p===dead.id){
-        delete t.plan.cells[key];delete t.plan.richMap?.[planCellMarkKey(key)];
+        delete t.plan.cells[key];delete t.plan.blockCells?.[key];delete t.plan.richMap?.[planCellMarkKey(key)];
       }
     }
     if(t.plan.richMap)delete t.plan.richMap[planAxisMarkKey(axis,dead.id)];
@@ -3283,6 +4195,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     t.plan.rowSizes ||= {date:{},category:{}};
     t.plan.colSizes.date ||= {};t.plan.colSizes.category ||= {};
     t.plan.rowSizes.date ||= {};t.plan.rowSizes.category ||= {};
+    t.plan.blockCells ||= {};
   }
   function settlePlanEditor(commit=true){
     const ed=state.planEditing;if(!ed)return;
@@ -3354,68 +4267,767 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     input.focus();input.select();
   }
-  function planNote(t,cat,period){
-    const key=planCellKey(cat,period),markKey=planCellMarkKey(key);
-    const wrap=document.createElement('div');wrap.className='plan-note-wrap';wrap.dataset.planKey=key;
-    wrap.dataset.planOwnerId=t.id;
-    const area=document.createElement('textarea');
-    area.className='plan-note';area.rows=2;area.maxLength=30000;area.spellcheck=false;
-    area.dataset.planKey=key;area.dataset.planOwnerId=t.id;
-    area.placeholder='输入事项';area.value=planValue(t,key);
-    area.setAttribute('aria-label',period.name+' · '+cat.name+' 事项');
-    const visual=document.createElement('div');visual.className='plan-note-visual';visual.setAttribute('aria-hidden','true');
-    const refresh=()=>renderMarkedText(visual,area.value,planMarks(t,markKey),'输入事项');
-    refresh();
+
+  function planBlockList(t,key){
+    planStableFields(t);
+    let list=t.plan.blockCells[key];
+    if(!Array.isArray(list)){
+      const raw=String(planValue(t,key)||'');
+      list=raw.split(/\n+/).map(v=>v.trim()).filter(Boolean).map(text=>({id:makeId(),text,linkId:null}));
+      t.plan.blockCells[key]=list;
+    }else{
+      // 只在旧数据不规范时就地纠正，不能每次读取都创建新对象：
+      // 否则关联编辑持有的 block 引用会失效，出现“点亮但没有保存关联”。
+      for(let i=0;i<list.length;i++){
+        let item=list[i];
+        if(typeof item==='string'){item={id:makeId(),text:item.trim(),linkId:null};list[i]=item;}
+        else if(item&&typeof item==='object'){
+          if(!item.id)item.id=makeId();
+          if(typeof item.text!=='string')item.text=String(item.text||'');
+          if(item.linkId===undefined)item.linkId=null;
+        }
+      }
+      t.plan.blockCells[key]=list=list.filter(item=>item&&typeof item.text==='string'&&item.text.trim());
+    }
+    planSyncCellTextFromBlocks(t,key,false);
+    return list;
+  }
+  function planSyncCellTextFromBlocks(t,key,shouldPersist=true){
+    planStableFields(t);
+    const list=t.plan.blockCells[key]||[];
+    // 原地清理，保留已连接的卡片对象引用。
+    for(let i=list.length-1;i>=0;i--)if(!list[i]||!String(list[i].text||'').trim())list.splice(i,1);
+    const joined=list.map(item=>item.text).join('\n');
+    if(joined)t.plan.cells[key]=joined; else delete t.plan.cells[key];
+    if(shouldPersist)persist();
+    return joined;
+  }
+  function findPlanBlock(t,key,blockId){return planBlockList(t,key).find(item=>item.id===blockId)||null;}
+  function eachPlanBlock(callback){
+    for(const topic of data.topics){
+      if(topic.kind!=='plan'||!topic.plan)continue;
+      planStableFields(topic);
+      for(const key of Object.keys(topic.plan.blockCells||{})){
+        const list=planBlockList(topic,key);
+        for(const item of list)callback(topic,key,item);
+      }
+    }
+  }
+  function planBlockByRef(ref){
+    if(!ref)return null;
+    const owner=topicById(ref.ownerId);
+    if(!owner||owner.kind!=='plan')return null;
+    const block=findPlanBlock(owner,ref.key,ref.blockId);
+    return block?{owner,key:ref.key,block}:null;
+  }
+
+// V35：正文是附属于原节点的数据，画布仅以一个文档图标提示；不创建额外主题。
+const DOC35_STORAGE_WIDTH='diy_v35_text_drawer_width';
+let doc37PanelCollapsed=new Set();
+let doc37CurrentRoot=null;
+let doc37PanelSyncLock=false;
+// 右侧大纲选中时临时聚焦导图的同级 + 当前节点整棵子树，不改动原始 collapsed 数据。
+let doc38FocusId=null,doc38FocusShow=new Set(),doc38FocusHide=new Set();
+let doc38Editing=null,doc38Dragging=null;
+function doc38ResetFocus(){doc38FocusId=null;doc38FocusShow.clear();doc38FocusHide.clear();}
+function doc38ApplyFocus(id){
+  const target=topicById(id);if(!target||!doc35Active||doc35Active.kind!=='topic')return;
+  doc38ResetFocus();doc38FocusId=id;
+  const path=[];let walker=target,guard=0;
+  while(walker&&guard++<4000){path.push(walker);if(walker.id===activeRootId())break;walker=topicById(walker.parentId);}
+  path.reverse();
+  for(let i=0;i<path.length;i++){
+    const n=path[i];doc38FocusShow.add(n.id);
+    const next=path[i+1]?.id;
+    for(const kid of children(n.id))if(kid.id!==next&&kid.id!==id)doc38FocusHide.add(kid.id);
+  }
+  const stack=[target],seen=new Set();
+  while(stack.length&&seen.size<5000){const n=stack.pop();if(!n||seen.has(n.id))continue;seen.add(n.id);
+    doc38FocusShow.add(n.id);doc38FocusHide.delete(n.id);
+    for(const kid of children(n.id))stack.push(kid);
+  }
+}
+
+
+function makeDoc35Icon(){
+  const ns='http://www.w3.org/2000/svg';
+  const icon=document.createElementNS(ns,'svg');icon.setAttribute('class','textnode-docicon');
+  icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('fill','none');
+  icon.setAttribute('stroke','currentColor');icon.setAttribute('stroke-width','1.9');
+  icon.setAttribute('stroke-linecap','round');icon.setAttribute('stroke-linejoin','round');
+  const a=document.createElementNS(ns,'path');a.setAttribute('d','M6 2.75h8l4.5 4.5V20a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 20V4.25A1.5 1.5 0 0 1 6 2.75Z');
+  const b=document.createElementNS(ns,'path');b.setAttribute('d','M14 2.75v5h4.5M8 12h8M8 15.5h8M8 19h5');
+  icon.append(a,b);return icon;
+}
+function doc37EnableIcon(icon,onActivate){
+  icon.setAttribute('role','button');icon.setAttribute('tabindex','0');
+  icon.setAttribute('aria-label','打开对应节点的正文');icon.setAttribute('title','点击打开右侧正文');
+  icon.addEventListener('pointerdown',e=>e.stopPropagation());
+  icon.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();onActivate();});
+  icon.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();e.stopPropagation();onActivate();}});
+  return icon;
+}
+function doc37IsInsideRoot(id){
+  if(!doc35Active||doc35Active.kind!=='topic')return false;
+  let t=topicById(id),safety=0;
+  while(t&&safety++<1500){
+    if(t.id===doc35Active.id)return true;
+    t=topicById(t.parentId);
+  }
+  return false;
+}
+function doc37ExposePanelPath(id){
+  if(!doc37IsInsideRoot(id))return;
+  let t=topicById(id),adjusted=false,guard=0;
+  while(t?.parentId&&guard++<4000&&t.id!==doc35Active.id){
+    if(doc37PanelCollapsed.delete(t.parentId))adjusted=true;
+    t=topicById(t.parentId);
+  }
+  if(adjusted&&!doc38Editing)doc36RenderSource();
+}
+function doc37SyncPanelSelection(id,shouldScroll=true){
+  if(!doc35Active||$('doc35Pane').hidden||doc35Active.kind!=='topic'||!doc37IsInsideRoot(id))return;
+  doc37ExposePanelPath(id);
+  for(const el of $('doc36Source').querySelectorAll('.inline-outline-row'))
+    el.classList.toggle('inline-selected',el.dataset.nodeId===id);
+  if(!shouldScroll)return;
+  const row=[...$('doc36Source').querySelectorAll('.inline-outline-row')].find(el=>el.dataset.nodeId===id);
+  if(row){const scroll=$('doc35Scroll'),position=row.getBoundingClientRect(),viewport=scroll.getBoundingClientRect();
+    scroll.scrollTop+=position.top-viewport.top-(viewport.height-position.height)/2;}
+  else if(id===doc35Active.id)$('doc35Scroll').scrollTop=0;
+}
+function doc37NavigateToNode(id){
+  if(!topicById(id))return;
+  // 复用左侧「大纲三层聚焦」思路：祖先路径、同级、被选中节点完整子树；不写回折叠数据。
+  doc38ApplyFocus(id);
+  state.selected=id;state.matrixSelection=null;
+  render();
+  centerNodeFromOutline(id);
+  doc37SyncPanelSelection(id,false);
+}
+
+function doc35Entity(ref=doc35Active){
+  if(!ref)return null;
+  if(ref.kind==='topic'){
+    const topic=topicById(ref.id);
+    return topic&&!topic.kind?topic:null;
+  }
+  if(ref.kind==='plan'){
+    const owner=topicById(ref.ownerId);
+    return owner?.kind==='plan'?findPlanBlock(owner,ref.key,ref.blockId):null;
+  }
+  return null;
+}
+function doc35IsSame(a,b){
+  return a?.kind===b?.kind && (a?.kind==='topic'?a?.id===b?.id:a?.kind==='plan'&&a.ownerId===b.ownerId&&a.key===b.key&&a.blockId===b.blockId);
+}
+function doc35CleanHTML(html){
+  const allowed=new Set(['DIV','P','BR','B','STRONG','I','EM','U','S','UL','OL','LI','H1','H2','H3','BLOCKQUOTE']);
+  const template=document.createElement('template');
+  template.innerHTML=String(html||'').slice(0,300000);
+  const frag=document.createDocumentFragment();
+  const visit=(from,to)=>{
+    for(const n of from.childNodes){
+      if(n.nodeType===3){to.append(document.createTextNode(n.nodeValue));continue;}
+      if(n.nodeType!==1)continue;
+      const tag=n.tagName;
+      if(['SCRIPT','STYLE','IFRAME','OBJECT','SVG','MATH','FORM','IMG'].includes(tag))continue;
+      if(!allowed.has(tag)){visit(n,to);continue;}
+      const el=document.createElement(tag.toLowerCase());to.append(el);visit(n,el);
+    }
+  };
+  visit(template.content,frag);
+  const container=document.createElement('div');container.append(frag);
+  return container.innerHTML.slice(0,300000);
+}
+function doc35MeasureWidth(){
+  const avail=Math.max(280,window.innerWidth);
+  if(avail<=700)return avail;
+  const def=Math.max(Math.ceil(avail*.36),440);
+  let stored=0;try{stored=Number(localStorage.getItem(DOC35_STORAGE_WIDTH))||0;}catch{}
+  const saved=doc35Width||stored||def;
+  return Math.max(Math.ceil(avail/3),Math.min(Math.round(saved),avail-290));
+}
+function doc35Position(){
+  if(!doc35Active)return;
+  const width=doc35MeasureWidth();
+  const app=document.querySelector('.app');
+  const pane=$('doc35Pane');
+  app.style.setProperty('--doc35-width',width+'px');
+  pane.style.width=width+'px';
+  const rect=stage.getBoundingClientRect();
+  pane.style.top=rect.top+'px';
+  pane.style.bottom=Math.max(0,innerHeight-rect.bottom)+'px';
+}
+function doc35Flush(){
+  if(doc35SaveTimer){clearTimeout(doc35SaveTimer);doc35SaveTimer=null;}
+  if(!doc35Active)return;
+  const node=doc35Entity();if(!node)return;
+  const content=String(node.docHTML||'');
+  const title=String(node.text||'');
+  if(content!==doc35OriginalHTML||title!==doc35OriginalTitle){
+    doc35OriginalHTML=content;doc35OriginalTitle=title;
+    scheduleSave('文本节点 · 编辑 · '+title.slice(0,22));
+  }
+  $('doc35Status').textContent='已保存到本机';
+}
+function doc35Snapshot(){
+  if(!doc35Active)return;
+  const target=doc35Entity();if(!target)return;
+  target.docHTML=doc35CleanHTML($('doc35Editor').innerHTML);
+  persist();
+  $('doc35Count').textContent=($('doc35Editor').innerText||'').length+' 字';
+  $('doc35Status').textContent='正在保存…';
+  if(doc35SaveTimer)clearTimeout(doc35SaveTimer);
+  doc35SaveTimer=setTimeout(doc35Flush,1100);
+}
+// V36：把现有导图子树作为可编辑正文，而不是新建空文档。
+function doc36SourceRows(ref=doc35Active){
+  const owner=doc35Entity(ref);if(!owner)return [];
+  if(ref.kind==='plan')return [{item:owner,depth:0,kind:'plan',owner:topicById(ref.ownerId),key:ref.key}];
+  const rows=[];const initial=children(ref.id);
+  const stack=initial.slice().reverse().map(item=>({item,depth:0}));
+  const seen=new Set([ref.id]);
+  while(stack.length&&rows.length<1500){
+    const entry=stack.pop(),item=entry.item;
+    if(seen.has(item.id))continue;seen.add(item.id);
+    rows.push({item,depth:entry.depth,kind:'topic'});
+    const descendants=children(item.id);
+    for(let i=descendants.length-1;i>=0;i--)stack.push({item:descendants[i],depth:entry.depth+1});
+  }
+  if(!rows.length)rows.push({item:owner,depth:0,kind:'self'});
+  return rows;
+}
+function doc36ResizeField(field){
+  field.style.height='auto';field.style.height=Math.max(30,field.scrollHeight+2)+'px';
+}
+function doc36SaveSourceRow(row,text){
+  const original=String(row.item.text||'');
+  if(original===text)return;
+  if(row.kind==='plan'){
+    row.item.text=text;
+    planSyncCellTextFromBlocks(row.owner,row.key,false);
+  }else row.item.text=text;
+  if(row.kind==='self'){
+    $('doc35Title').value=text;
+    doc35OriginalTitle=text;
+  }
+  persist();scheduleSave('文本视图 · 修改原节点 · '+text.slice(0,22));
+  render();
+}
+// V38：在右侧直接复用「内嵌大纲块」的树形行结构与编辑方式。
+// 每一行均指向原 topic.id，只有 DOM 被复用，没有复制一份文字或节点数据。
+function doc38BeginRename(nodeId,host){
+  if(doc38Editing)return;
+  const node=topicById(nodeId);if(!node||!host)return;
+  const area=document.createElement('textarea');area.className='inline-outline-editor';area.rows=1;
+  area.spellcheck=false;area.maxLength=MAX_TOPIC_TEXT;area.value=node.text||'';
+  const original=node.text||'';let cancelled=false,done=false;
+  const resize=()=>{area.style.height='auto';area.style.height=Math.max(34,area.scrollHeight+3)+'px';};
+  const finish=save=>{
+    if(done)return;done=true;doc38Editing=null;
+    if(save&&!cancelled&&area.value!==original){
+      node.marks=updateMarksForEdit(node.marks||[],original,area.value);
+      node.text=area.value.slice(0,MAX_TOPIC_TEXT)||'新主题';
+      if(doc35Active?.kind==='topic'&&nodeId===doc35Active.id)$('doc35Title').value=node.text;
+      scheduleSave('右侧大纲块 · 编辑节点 · '+node.text.slice(0,24));render();
+    }
+    const pos=$('doc35Scroll').scrollTop;doc36RenderSource();$('doc35Scroll').scrollTop=pos;
+    doc37SyncPanelSelection(nodeId,false);
+  };
+  host.replaceWith(area);doc38Editing={id:nodeId,field:area};
+  area.addEventListener('pointerdown',e=>e.stopPropagation());
+  area.addEventListener('click',e=>e.stopPropagation());
+  area.addEventListener('input',resize);
+  area.addEventListener('keydown',e=>{e.stopPropagation();if(e.isComposing||e.keyCode===229)return;
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();area.blur();}
+    else if(e.key==='Escape'){e.preventDefault();cancelled=true;area.blur();}
+  });
+  area.addEventListener('blur',()=>finish(true));
+  area.focus();area.select();resize();
+}
+function doc38AddItem(id,mode){
+  const parent=topicById(mode==='sibling'?topicById(id)?.parentId:id);
+  if(!parent)return;
+  const item={id:makeId(),parentId:parent.id,text:'新主题'};
+  if(mode==='sibling')data.topics.splice(subtreeLastIndex(id)+1,0,item);
+  else data.topics.splice(subtreeLastIndex(id)+1,0,item);
+  doc37PanelCollapsed.delete(parent.id);
+  state.selected=item.id;
+  scheduleSave('右侧大纲块 · 添加'+(mode==='child'?'下级':'同级'));
+  doc38ApplyFocus(item.id);render();doc36RenderSource();doc37SyncPanelSelection(item.id,true);
+  const host=$('doc36Source').querySelector('.inline-outline-row[data-node-id="'+item.id+'"] .inline-outline-label');
+  if(host)doc38BeginRename(item.id,host);
+}
+function doc38StartDrag(e,id,handle){
+  if(doc38Dragging||doc38Editing||e.button!==0||id===activeRootId())return;
+  const startX=e.clientX,startY=e.clientY,pointerId=e.pointerId;
+  const d={id,pointerId,moving:false,target:null,ghost:null};doc38Dragging=d;
+  let holdTimer=null;
+  const moveGhost=(x,y)=>{if(d.ghost){d.ghost.style.left=Math.min(innerWidth-190,x+15)+'px';d.ghost.style.top=Math.max(5,y+9)+'px';}};
+  const begin=()=>{if(d.moving)return;d.moving=true;
+    const ghost=document.createElement('div');ghost.className='inline-outline-drag-ghost';ghost.textContent=outlineTitle(topicById(id)).slice(0,40);
+    document.body.append(ghost);d.ghost=ghost;moveGhost(startX,startY);
+  };
+  if(e.pointerType==='touch')holdTimer=setTimeout(begin,450);
+  const clear=()=>{clearTimeout(holdTimer);window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',end);
+    window.removeEventListener('pointercancel',cancel);d.ghost?.remove();doc38Dragging=null;
+    $('doc36Source').querySelectorAll('.doc38-drop-before,.doc38-drop-after,.doc38-drop-child').forEach(el=>el.classList.remove('doc38-drop-before','doc38-drop-after','doc38-drop-child'));
+  };
+  const move=ev=>{if(ev.pointerId!==pointerId)return;
+    if(!d.moving){if(Math.hypot(ev.clientX-startX,ev.clientY-startY)<8)return;
+      if(e.pointerType==='touch'){clearTimeout(holdTimer);return;}begin();}
+    if(ev.cancelable)ev.preventDefault();moveGhost(ev.clientX,ev.clientY);
+    $('doc36Source').querySelectorAll('.doc38-drop-before,.doc38-drop-after,.doc38-drop-child').forEach(el=>el.classList.remove('doc38-drop-before','doc38-drop-after','doc38-drop-child'));
+    const row=document.elementFromPoint(ev.clientX,ev.clientY)?.closest('.inline-outline-row');d.target=null;
+    if(!row||!$('doc36Source').contains(row))return;
+    const other=row.dataset.nodeId;
+    if(!other||other===id||descendantsOf(id).has(other))return;
+    const rect=row.getBoundingClientRect(),ratio=(ev.clientY-rect.top)/Math.max(1,rect.height);
+    const mode=ratio<.25?'before':ratio>.75?'after':'child';
+    if(mode!=='child'&&!topicById(other)?.parentId)return;
+    d.target={id:other,mode};row.classList.add('doc38-drop-'+mode);
+  };
+  const end=ev=>{if(ev.pointerId!==pointerId)return;const target=d.target,dragged=d.moving;clear();
+    if(!dragged||!target)return;
+    if(reorderTopicSubtree(id,target)){
+      state.selected=id;scheduleSave('右侧大纲块 · 调整节点顺序');
+      doc38ApplyFocus(id);render();doc36RenderSource();doc37SyncPanelSelection(id,true);
+    }
+  };
+  const cancel=ev=>{if(ev.pointerId===pointerId)clear();};
+  window.addEventListener('pointermove',move,{passive:false});window.addEventListener('pointerup',end);
+  window.addEventListener('pointercancel',cancel);
+  e.stopPropagation();
+}
+function doc36RenderSource(){
+  const host=$('doc36Source');host.replaceChildren();host.className='doc36-source doc38-block';
+  if(!doc35Active)return;
+  const rows=doc36SourceRows();
+  $('doc37ExtraBody').hidden=!String(doc35Entity()?.docHTML||'').trim();
+  const scroll=document.createElement('div');scroll.className='inline-outline-scroll';
+  scroll.setAttribute('role','tree');scroll.setAttribute('aria-label','原节点内容 · 层级编辑');
+  host.append(scroll);
+  // 计划小块不是 topic.id：保留它原有的单独编辑能力，不误当作导图分支。
+  if(doc35Active.kind==='plan'){
+    const block=doc35Entity();if(!block)return;
+    const row=document.createElement('div');row.className='inline-outline-row';row.style.setProperty('--inline-indent','0px');
+    const area=document.createElement('textarea');area.className='inline-outline-editor';area.rows=3;
+    area.maxLength=30000;area.value=String(block.text||'');area.setAttribute('aria-label','编辑计划小块内容');
+    area.style.cssText='width:100%;min-height:92px;resize:vertical;';
     area.addEventListener('pointerdown',e=>e.stopPropagation());
     area.addEventListener('click',e=>e.stopPropagation());
-    const grow=()=>{area.style.height='auto';area.style.height=Math.max(58,area.scrollHeight+3)+'px';};
-    area.addEventListener('focus',()=>{
-      selectedPlanAxis=null;
-      if(state.planEditing&&(state.planEditing.key!==key||state.planEditing.id!==t.id))settlePlanEditor();
-      if(!state.planEditing||state.planEditing.key!==key||state.planEditing.id!==t.id)
-        state.planEditing={id:t.id,key,original:planValue(t,key),
-          originalMarks:JSON.parse(JSON.stringify(planMarks(t,markKey)))};
-      state.selected=t.id;
+    area.addEventListener('blur',()=>{if(area.value===block.text)return;
+      block.text=area.value;const owner=topicById(doc35Active.ownerId);
+      if(owner)planSyncCellTextFromBlocks(owner,doc35Active.key,false);
+      scheduleSave('计划文本小块 · 编辑');render();
     });
-    area.addEventListener('input',()=>{
-      const before=planValue(t,key);
-      putPlanMarks(t,markKey,updateMarksForEdit(planMarks(t,markKey),before,area.value));
-      t.plan.cells[key]=area.value;persist();grow();refresh();
-      const linkedSection=area.closest('.plan-linked-section');
-      if(linkedSection){
-        const width=linkedSection.getBoundingClientRect().width/Math.max(.3,state.zoom);
-        const required=Math.max(48,measureCellHeight(area.value,Math.max(110,width-62),false));
-        linkedSection.style.minHeight=required+'px';wrap.style.height=required+'px';
-      }
-      schedulePlanGeometry();
+    row.append(area);scroll.append(row);return;
+  }
+  const ids=new Set(rows.map(r=>r.item.id));
+  const hasChildren=new Set(rows.filter(r=>ids.has(r.item.parentId)).map(r=>r.item.parentId));
+  if(rows.length===1&&rows[0].kind==='self'){
+    const msg=document.createElement('div');msg.className='doc38-empty';msg.textContent='当前节点暂无下级内容。';
+    const button=document.createElement('button');button.textContent='＋ 添加下级';
+    button.addEventListener('click',()=>doc38AddItem(doc35Active.id,'child'));msg.append(button);scroll.append(msg);
+    return;
+  }
+  let hiddenDepth=null;
+  for(const entry of rows){
+    if(hiddenDepth!==null){if(entry.depth>hiddenDepth)continue;hiddenDepth=null;}
+    const node=entry.item,depth=Math.min(18,entry.depth),subtree=hasChildren.has(node.id);
+    const row=document.createElement('div');row.className='inline-outline-row';row.dataset.nodeId=node.id;
+    row.dataset.depth=String(depth);row.style.setProperty('--inline-indent',Math.min(220,depth*14)+'px');
+    row.setAttribute('role','treeitem');row.setAttribute('aria-level',String(depth+1));
+    const grip=document.createElement('button');grip.type='button';grip.className='inline-outline-grip';grip.textContent='⠿';
+    grip.setAttribute('aria-label','拖动调整主题层级');grip.title='拖动：上/下侧插入同级，中部成为下级';
+    grip.addEventListener('pointerdown',e=>doc38StartDrag(e,node.id,grip));
+    grip.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});row.append(grip);
+    const caret=document.createElement(subtree?'button':'span');
+    if(subtree){
+      caret.className='inline-outline-chevron';caret.type='button';
+      caret.textContent=doc37PanelCollapsed.has(node.id)?'▸':'▾';
+      caret.title=doc37PanelCollapsed.has(node.id)?'展开下级':'收起下级';
+      caret.setAttribute('aria-expanded',String(!doc37PanelCollapsed.has(node.id)));
+      caret.addEventListener('pointerdown',e=>e.stopPropagation());
+      caret.addEventListener('click',e=>{e.stopPropagation();
+        if(doc37PanelCollapsed.has(node.id))doc37PanelCollapsed.delete(node.id);else doc37PanelCollapsed.add(node.id);
+        const top=$('doc35Scroll').scrollTop;doc36RenderSource();$('doc35Scroll').scrollTop=top;
+      });
+    }else caret.className='inline-outline-chevron-empty';
+    row.append(caret);
+    const label=document.createElement('button');label.type='button';label.className='inline-outline-label';
+    renderMarkedText(label,outlineTitle(node),node.kind?[]:node.marks||[]);
+    label.title='单击定位到左侧导图，双击直接编辑这条内容';
+    label.addEventListener('pointerdown',e=>e.stopPropagation());
+    label.addEventListener('click',e=>{e.stopPropagation();if(doc38Dragging)return;doc37NavigateToNode(node.id);});
+    label.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();doc38BeginRename(node.id,label);});
+    row.append(label);
+    const plus=document.createElement('button');plus.className='doc38-add';plus.type='button';plus.textContent='＋';
+    plus.title='点击添加下级；右键此按钮添加同级';
+    plus.addEventListener('pointerdown',e=>e.stopPropagation());
+    plus.addEventListener('click',e=>{e.stopPropagation();doc38AddItem(node.id,'child');});
+    plus.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();doc38AddItem(node.id,'sibling');});
+    row.append(plus);
+    row.classList.toggle('inline-selected',state.selected===node.id);
+    scroll.append(row);
+    if(subtree&&doc37PanelCollapsed.has(node.id))hiddenDepth=entry.depth;
+  }
+}
+
+function doc35SetTab(tab){
+  const isDocument=tab==='document';
+  $('doc35TabDocument').classList.toggle('active',isDocument);
+  $('doc35TabOutline').classList.toggle('active',!isDocument);
+  $('doc35TabDocument').setAttribute('aria-selected',String(isDocument));
+  $('doc35TabOutline').setAttribute('aria-selected',String(!isDocument));
+  $('doc35Tools').hidden=!isDocument;
+  $('doc35Scroll').hidden=!isDocument;
+  $('doc35Outline').hidden=isDocument;
+  if(!isDocument){
+    const list=$('doc35Outline');list.replaceChildren();
+    const source=doc36SourceRows();
+    source.forEach((row,i)=>{
+      const b=document.createElement('button');b.type='button';
+      b.style.marginLeft=Math.min(65,row.depth*16)+'px';
+      b.textContent=(row.depth?'  '.repeat(Math.min(5,row.depth)):'')+(i+1)+'. '+String(row.item.text||'未命名').slice(0,180);
+      b.addEventListener('click',()=>{
+        doc35SetTab('document');
+        const field=$('doc36Source').querySelectorAll('textarea.doc36-input')[i];
+        if(field){field.scrollIntoView({block:'center'});field.focus();}
+      });list.append(b);
     });
-    area.addEventListener('blur',()=>{
-      if(state.planEditing?.id===t.id&&state.planEditing?.key===key)settlePlanEditor();
+    const h=[...$('doc35Editor').querySelectorAll('h1,h2,h3')];
+    for(const heading of h){
+      const b=document.createElement('button');b.type='button';b.textContent='附注：'+(heading.textContent||'无标题');
+      b.addEventListener('click',()=>{doc35SetTab('document');heading.scrollIntoView({block:'center'});});list.append(b);
+    }
+  }
+}
+function openDoc35(ref){
+  const target=doc35Entity(ref);if(!target||!target.textMode)return;
+  if(doc35Active&&doc35IsSame(doc35Active,ref)){
+    if($('doc35Pane').hidden)$('doc35Pane').hidden=false;
+    document.querySelector('.app').classList.add('doc35-open');doc35Position();
+    if(!document.activeElement?.classList?.contains('doc36-input'))doc36RenderSource();
+    if(ref.kind==='topic')doc37SyncPanelSelection(state.selected,true);
+    return;
+  }
+  if(doc35Active)doc35Flush();
+  if(outlineIsOpen())setOutlineOpen(false);
+  doc35Active={...ref};doc35OriginalHTML=String(target.docHTML||'');doc35OriginalTitle=String(target.text||'');
+  if(ref.kind==='topic'&&doc37CurrentRoot!==ref.id){
+    doc37CurrentRoot=ref.id;doc37PanelCollapsed=new Set();doc38ResetFocus();
+  }
+  $('doc35Title').value=doc35OriginalTitle;
+  const editor=$('doc35Editor');editor.innerHTML=doc35CleanHTML(doc35OriginalHTML);
+  doc36RenderSource();
+  $('doc35Count').textContent=(editor.innerText||'').length+' 字';
+  $('doc35Status').textContent='已保存到本机';
+  $('doc35Pane').hidden=false;document.querySelector('.app').classList.add('doc35-open');
+  doc35SetTab('document');doc35Position();
+  if(ref.kind==='topic'){
+    requestAnimationFrame(()=>{
+      if(!doc35Active||doc35Active.kind!=='topic'||doc35Active.id!==ref.id)return;
+      centerNodeFromOutline(ref.id);
+      doc37SyncPanelSelection(ref.id,false);
     });
-    area.addEventListener('keydown',e=>{
-      if(e.key==='Escape'){
-        e.stopPropagation();e.preventDefault();
-        if(state.planEditing?.key===key){
-          t.plan.cells[key]=state.planEditing.original;
-          putPlanMarks(t,markKey,state.planEditing.originalMarks||[]);
+  }
+}
+function closeDoc35(){
+  if(!doc35Active)return;
+  doc35Flush();doc35Active=null;
+  doc38ResetFocus();
+  $('doc35Pane').hidden=true;
+  document.querySelector('.app').classList.remove('doc35-open');
+  document.querySelector('.app').style.removeProperty('--doc35-width');
+  // 恢复画布原本的展开状态：右侧点击引起的临时聚焦不写入云端和历史。
+  render();
+}
+function toggleDoc35Topic(id){
+  const node=topicById(id);if(!node||node.kind)return;
+  if(state.editing)endEditing(true);
+  node.textMode=!node.textMode;
+  if(node.textMode){
+    node.textFoldPreviousCollapsed=!!node.collapsed;
+    node.viewMode=undefined;node.collapsed=true;node.textFoldInitialized=true;
+  }else{
+    node.collapsed=node.textFoldPreviousCollapsed===true;
+    delete node.textFoldPreviousCollapsed;
+    delete node.textFoldInitialized;
+  }
+  if(!node.textMode&&doc35Active?.kind==='topic'&&doc35Active.id===id)closeDoc35();
+  state.selected=id;
+  scheduleSave(node.textMode?'切换为文本节点':'恢复普通节点');render();
+  // 不自动打开：只有点节点旁的文档图标才展示右侧编辑区。
+}
+function toggleDoc35Plan(owner,key,block){
+  if(!block)return;
+  block.textMode=!block.textMode;
+  if(!block.textMode&&doc35Active?.kind==='plan'&&doc35Active.ownerId===owner.id&&doc35Active.key===key&&doc35Active.blockId===block.id)closeDoc35();
+  planSyncCellTextFromBlocks(owner,key,false);
+  scheduleSave(block.textMode?'计划小块 · 转换文本节点':'计划小块 · 恢复普通节点');render();
+  // 计划小块也只通过文档图标打开对应侧栏。
+}
+
+  function mergePlanBlockLinkIds(fromId,toId){
+    if(!fromId||!toId||fromId===toId)return;
+    eachPlanBlock((owner,key,item)=>{if(item.linkId===fromId)item.linkId=toId;});
+  }
+  function normalizePlanBlockRuntime(){
+    if(activePlanLinkId){
+      let seen=false;eachPlanBlock((owner,key,item)=>{if(item.linkId===activePlanLinkId)seen=true;});
+      if(!seen)activePlanLinkId=null;
+    }
+    if(stagedPlanBlockSource&&!planBlockByRef(stagedPlanBlockSource))stagedPlanBlockSource=null;
+  }
+  function planBlockSelectionMatches(owner,key,item){
+    if(activePlanLinkId&&item.linkId&&item.linkId===activePlanLinkId)return 'related';
+    if(stagedPlanBlockSource&&stagedPlanBlockSource.ownerId===owner.id&&stagedPlanBlockSource.key===key&&stagedPlanBlockSource.blockId===item.id)return 'source';
+    return '';
+  }
+  function planBlockTextKey(text){
+    return String(text||'').toLowerCase().replace(/[\s\u3000【】\[\]（）()「」\-—:：·，。、；;！!？?]/g,'').replace(/列举|事项|清单/g,'');
+  }
+  function autoPlanRelation(source,target){
+    const a=planBlockTextKey(source),b=planBlockTextKey(target);
+    if(!a||!b)return false;
+    if(a===b)return true;
+    if(Math.min(a.length,b.length)>=3&&(a.includes(b)||b.includes(a)))return true;
+    // 已在需求中明确过的跨名称进度：账号借鉴/维持 → 平替发布。
+    if((a.includes('关注借鉴')||a.includes('账号维持'))&&(b.includes('平替发布')))return true;
+    if((b.includes('关注借鉴')||b.includes('账号维持'))&&(a.includes('平替发布')))return true;
+    return false;
+  }
+  function planBlockClickTargetRef(row){
+    return {ownerId:row.dataset.planOwnerId,key:row.dataset.planKey,blockId:row.dataset.blockId};
+  }
+  function planVisibleBlockMatchesFocus(row,focus,focusBlock){
+    if(!focus||!focusBlock)return false;
+    const self=row.dataset.planOwnerId===focus.ownerId&&row.dataset.planKey===focus.key&&row.dataset.blockId===focus.blockId;
+    if(self)return true;
+    const owner=topicById(row.dataset.planOwnerId);
+    if(!owner||owner.kind!=='plan')return false;
+    const item=findPlanBlock(owner,row.dataset.planKey,row.dataset.blockId);
+    if(!item)return false;
+    if(focusBlock.linkId&&item.linkId===focusBlock.linkId)return true;
+    const sameCategory=row.dataset.planId===focus.planId&&row.dataset.categoryId===focus.categoryId;
+    if(sameCategory&&focus.role==='category'&&row.dataset.role==='progress')
+      return autoPlanRelation(focusBlock.text,item.text);
+    return false;
+  }
+  function refreshPlanBlockHighlights(){
+    const focus=selectedPlanFocus;
+    const focusBlock=focus?planBlockByRef(focus)?.block:null;
+    if(focus&&!focusBlock)selectedPlanFocus=null;
+    document.querySelectorAll('.plan-mini-block[data-block-id]').forEach(row=>{
+      const self=!!focusBlock&&row.dataset.planOwnerId===focus.ownerId&&row.dataset.planKey===focus.key&&row.dataset.blockId===focus.blockId;
+      const related=!self&&planVisibleBlockMatchesFocus(row,focus,focusBlock);
+      row.classList.toggle('is-active',self);
+      row.classList.toggle('is-related',related);
+      row.classList.toggle('is-source',self&&focus.role==='category');
+    });
+  }
+  function selectPlanBlockDirect(owner,key,item,context){
+    const ref={ownerId:owner.id,key,blockId:item.id};
+    const selected=selectedPlanFocus;
+    // 左边选择一个长期主题后，再左键单击右侧进度便可绑定；以后直接单击左边即可亮。
+    if(selected&&selected.role==='category'&&context.role==='progress'&&
+       selected.planId===context.planId&&selected.categoryId===context.categoryId){
+      const isSelf=selected.ownerId===owner.id&&selected.key===key&&selected.blockId===item.id;
+      if(!isSelf){
+        const focus=planBlockByRef(selected);
+        if(focus&&autoPlanRelation(focus.block.text,item.text)){
+          refreshPlanBlockHighlights();return;
         }
-        area.blur();
+        if(focus){linkPlanBlocks(selected,ref);return;}
       }
+    }
+    const same=selected&&selected.ownerId===owner.id&&selected.key===key&&selected.blockId===item.id;
+    selectedPlanFocus=same?null:{...ref,...context};
+    activePlanLinkId=same?null:item.linkId||null;
+    state.selected=context.planId||owner.id;selectedPlanAxis=null;
+    refreshPlanBlockHighlights();
+  }
+  function openPlanMiniEditor(owner,key,blockId=null,target=null,afterId=null){
+    hidePlanBlockMenu();
+    if(!target)return;
+    if(target.querySelector('.plan-mini-editor'))return;
+    const existing=blockId?findPlanBlock(owner,key,blockId):null;
+    if(blockId&&!existing)return;
+    const editor=document.createElement('textarea');editor.className='plan-mini-editor';editor.rows=1;
+    editor.value=existing?.text||'';editor.maxLength=30000;editor.spellcheck=false;
+    editor.setAttribute('aria-label',existing?'原位编辑计划小块':'原位新增计划小块');
+    const created=!existing;
+    let host=target;
+    if(created){host=document.createElement('div');host.className='plan-mini-block is-editing';
+      const list=target.closest('.plan-block-board')?.querySelector('.plan-block-list');
+      if(!list)return;
+      const afterNode=target.closest('.plan-mini-block');
+      if(afterNode&&afterNode.parentElement===list)afterNode.after(host);else list.append(host);
+    }else host.classList.add('is-editing');
+    host.replaceChildren(editor);
+    const grow=()=>{editor.style.height='auto';editor.style.height=Math.max(35,editor.scrollHeight+2)+'px';};
+    editor.addEventListener('pointerdown',e=>e.stopPropagation());
+    editor.addEventListener('click',e=>e.stopPropagation());
+    editor.addEventListener('input',grow);
+    let finished=false;
+    const finish=commit=>{
+      if(finished)return;finished=true;
+      const value=editor.value.trim();
+      if(commit){
+        if(existing){
+          if(value&&value!==existing.text){existing.text=value;planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 原位编辑 · '+value.slice(0,18));}
+          else if(!value){owner.plan.blockCells[key]=planBlockList(owner,key).filter(x=>x.id!==existing.id);
+            planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 删除空项');}
+        }else if(value){
+          const list=planBlockList(owner,key),newItem={id:makeId(),text:value,linkId:null};
+          const index=afterId?list.findIndex(item=>item.id===afterId):-1;
+          if(index>=0)list.splice(index+1,0,newItem);else list.push(newItem);
+          planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 新增 · '+value.slice(0,18));}
+      }
+      render();
+    };
+    editor.addEventListener('keydown',e=>{
+      e.stopPropagation();
+      if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Escape'){e.preventDefault();finish(false);}
+      else if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();finish(true);}
     });
-    wrap.append(visual,area);
-    requestAnimationFrame(()=>{if(area.isConnected){refresh();}});
+    editor.addEventListener('blur',()=>finish(true));
+    editor.focus();editor.select();grow();
+  }
+  function startPlanBlockInput({owner,key,blockId=null,initial='',title='编辑小块'}){
+    hidePlanBlockMenu();
+    const seed=(initial||'').trim();
+    const value=window.prompt(title,seed);
+    if(value===null)return;
+    const next=value.trim();
+    if(blockId){
+      const block=findPlanBlock(owner,key,blockId);if(!block)return;
+      if(!next){
+        owner.plan.blockCells[key]=planBlockList(owner,key).filter(item=>item.id!==blockId);
+        if(activePlanLinkId&&block.linkId===activePlanLinkId)activePlanLinkId=null;
+        if(stagedPlanBlockSource&&stagedPlanBlockSource.blockId===blockId&&stagedPlanBlockSource.key===key&&stagedPlanBlockSource.ownerId===owner.id)stagedPlanBlockSource=null;
+        planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 删除');render();return;
+      }
+      block.text=next;planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 编辑 · '+next.slice(0,16));render();return;
+    }
+    if(!next)return;
+    const list=planBlockList(owner,key);list.push({id:makeId(),text:next,linkId:null});
+    planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 新增 · '+next.slice(0,16));render();
+  }
+  function clearPlanBlockLink(owner,key,blockId){
+    const block=findPlanBlock(owner,key,blockId);if(!block)return;
+    if(activePlanLinkId&&block.linkId===activePlanLinkId)activePlanLinkId=null;
+    block.linkId=null;planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 解除关联');render();
+  }
+  function linkPlanBlocks(sourceRef,targetRef){
+    const source=planBlockByRef(sourceRef),target=planBlockByRef(targetRef);
+    if(!source||!target)return;
+    const sourceId=source.block.linkId,targetId=target.block.linkId;
+    const linkId=sourceId||targetId||makeId();
+    if(sourceId&&targetId&&sourceId!==targetId)mergePlanBlockLinkIds(targetId,sourceId);
+    source.block.linkId=linkId;target.block.linkId=linkId;
+    planSyncCellTextFromBlocks(source.owner,source.key,false);
+    if(source.owner.id!==target.owner.id||source.key!==target.key)planSyncCellTextFromBlocks(target.owner,target.key,false);
+    stagedPlanBlockSource=null;activePlanLinkId=linkId;
+    // 只更新高亮，不重建整张表；这样双击编辑不会被第一次单击重绘打断。
+    if(!selectedPlanFocus){
+      const el=[...document.querySelectorAll('.plan-mini-block[data-block-id]')].find(row=>
+        row.dataset.planOwnerId===sourceRef.ownerId&&row.dataset.planKey===sourceRef.key&&row.dataset.blockId===sourceRef.blockId);
+      if(el)selectedPlanFocus={...sourceRef,planId:el.dataset.planId,categoryId:el.dataset.categoryId,role:el.dataset.role};
+    }
+    scheduleSave('计划小块 · 建立关联');refreshPlanBlockHighlights();notify('已关联；以后只需点击左侧小块就会自动高亮');
+  }
+  function hidePlanBlockMenu(){planBlockMenu?.remove();planBlockMenu=null;}
+  function setActivePlanBlock(owner,key,block){
+    const context={planId:owner.id,categoryId:key.split('|')[0],role:'progress'};
+    selectPlanBlockDirect(owner,key,block,context);
+  }
+  function openPlanBlockMenu(owner,key,block,clientX,clientY){
+    hidePlanBlockMenu();hidePlanViewMenu();normalizePlanBlockRuntime();
+    const menu=document.createElement('div');menu.className='plan-view-menu plan-block-menu';menu.setAttribute('role','menu');
+    const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='小块操作';menu.append(title);
+    const tag=document.createElement('div');tag.className='plan-menu-hint';
+    const label=document.createElement('span');label.className='plan-link-tag';label.textContent=String(block.text||'未命名').slice(0,24);tag.append(label);
+    menu.append(tag);
+    const makeItem=(label,fn,disabled=false)=>{const btn=document.createElement('button');btn.type='button';btn.textContent=label;if(disabled)btn.disabled=true;btn.addEventListener('click',e=>{e.stopPropagation();if(btn.disabled)return;hidePlanBlockMenu();fn&&fn();});return btn;};
+    menu.append(makeItem('编辑这个小块标题',()=>{const row=[...document.querySelectorAll('.plan-mini-block[data-block-id]')].find(el=>el.dataset.planOwnerId===owner.id&&el.dataset.planKey===key&&el.dataset.blockId===block.id);if(row)openPlanMiniEditor(owner,key,block.id,row);}));
+    menu.append(makeItem(block.textMode?'切换回普通小块':'切换为文本节点',()=>toggleDoc35Plan(owner,key,block)));
+    menu.append(makeItem('新增一个小块',()=>{const board=[...document.querySelectorAll('.plan-block-wrap')].find(el=>el.dataset.planOwnerId===owner.id&&el.dataset.planKey===key);if(board)openPlanMiniEditor(owner,key,null,board.querySelector('.plan-block-add'));}));
+    menu.append(makeItem('设为关联起点',()=>{stagedPlanBlockSource={ownerId:owner.id,key,blockId:block.id};render();notify('已记录关联起点，去点另一个小块右键即可建立关联');}));
+    const canLink=!!stagedPlanBlockSource&&!(stagedPlanBlockSource.ownerId===owner.id&&stagedPlanBlockSource.key===key&&stagedPlanBlockSource.blockId===block.id);
+    menu.append(makeItem('与当前起点建立关联',()=>linkPlanBlocks(stagedPlanBlockSource,{ownerId:owner.id,key,blockId:block.id}),!canLink));
+    menu.append(makeItem(block.linkId?'高亮这一组关联':'仅高亮当前小块',()=>{activePlanLinkId=block.linkId||null;render();}));
+    menu.append(makeItem('解除这个小块的关联',()=>clearPlanBlockLink(owner,key,block.id),!block.linkId));
+    menu.append(makeItem('删除这个小块',()=>{owner.plan.blockCells[key]=planBlockList(owner,key).filter(x=>x.id!==block.id);planSyncCellTextFromBlocks(owner,key,false);if(selectedPlanFocus?.blockId===block.id&&selectedPlanFocus?.ownerId===owner.id&&selectedPlanFocus?.key===key)selectedPlanFocus=null;scheduleSave('计划小块 · 删除');render();}));
+    if(stagedPlanBlockSource){
+      const source=planBlockByRef(stagedPlanBlockSource);
+      const hint=document.createElement('div');hint.className='plan-menu-hint';
+      hint.textContent='当前关联起点：'+(source?.block?.text||'已失效');menu.append(hint);
+    }
+    document.body.append(menu);planBlockMenu=menu;
+    const margin=8,rect=menu.getBoundingClientRect();
+    let left=Math.min(clientX,window.innerWidth-rect.width-margin),top=Math.min(clientY,window.innerHeight-rect.height-margin);
+    if(left<margin)left=margin;if(top<margin)top=margin;
+    menu.style.left=left+'px';menu.style.top=top+'px';
+  }
+  function renderPlanBlockCell(owner,key,ariaLabel,compact=false,context=null){
+    const wrap=document.createElement('div');wrap.className='plan-note-wrap plan-block-wrap';wrap.dataset.planKey=key;wrap.dataset.planOwnerId=owner.id;
+    const hidden=document.createElement('textarea');hidden.className='plan-note';hidden.rows=2;hidden.maxLength=30000;hidden.spellcheck=false;hidden.value=planValue(owner,key);hidden.placeholder='输入事项';hidden.setAttribute('aria-label',ariaLabel);hidden.tabIndex=-1;hidden.setAttribute('aria-hidden','true');
+    const visual=document.createElement('div');visual.className='plan-note-visual';visual.setAttribute('aria-hidden','true');
+    const board=document.createElement('div');board.className='plan-block-board'+(compact?' compact':'');
+    const listEl=document.createElement('div');listEl.className='plan-block-list';
+    const list=planBlockList(owner,key);
+    if(list.length){
+      for(const item of list){
+        const row=document.createElement('div');row.className='plan-mini-block';
+        row.dataset.blockId=item.id;row.dataset.planOwnerId=owner.id;row.dataset.planKey=key;
+        row.dataset.planId=context?.planId||owner.id;
+        row.dataset.categoryId=context?.categoryId||key.split('|')[0];
+        row.dataset.role=context?.role||'progress';
+        row.title=row.dataset.role==='category'?'单击高亮相关进度；再点右侧小块即可关联；双击直接编辑':'单击查看进度；双击直接编辑；右键显示菜单';
+        row.addEventListener('pointerdown',e=>e.stopPropagation());
+        if(item.textMode)row.classList.add('plan-text-mode');
+        row.addEventListener('click',e=>{e.stopPropagation();selectPlanBlockDirect(owner,key,item,{
+          planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
+          if(doc35Active?.kind==='plan'&&doc35Active.ownerId===owner.id&&doc35Active.key===key&&doc35Active.blockId!==item.id)closeDoc35();
+        });
+        row.addEventListener('dblclick',e=>{e.stopPropagation();if(item.textMode)selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});else openPlanMiniEditor(owner,key,item.id,row);});
+        row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
+        const text=document.createElement('div');text.className='plan-mini-text';text.textContent=item.text;
+        const plus=document.createElement('button');plus.type='button';plus.className='plan-mini-plus';plus.textContent='+';
+        plus.title='在这项下方新增小块';plus.setAttribute('aria-label','在'+item.text.slice(0,25)+'之后添加一项');
+        plus.addEventListener('pointerdown',e=>e.stopPropagation());
+        plus.addEventListener('click',e=>{e.stopPropagation();openPlanMiniEditor(owner,key,null,plus,item.id);});
+        row.append(text);
+        if(item.textMode)row.append(doc37EnableIcon(makeDoc35Icon(),()=>{
+          selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
+          openDoc35({kind:'plan',ownerId:owner.id,key,blockId:item.id});
+        }));
+        row.append(plus);listEl.append(row);
+      }
+    }
+    const add=document.createElement('button');add.type='button';add.className='plan-block-add';add.textContent='+';add.title='添加小块';add.setAttribute('aria-label','在当前单元格新增小块');
+    add.addEventListener('pointerdown',e=>e.stopPropagation());
+    add.addEventListener('click',e=>{e.stopPropagation();openPlanMiniEditor(owner,key,null,add);});
+    board.append(listEl,add);wrap.append(hidden,visual,board);
+    requestAnimationFrame(()=>{if(wrap.isConnected)refreshPlanBlockHighlights();});
     return wrap;
   }
-  // 月计划仍是单个普通单元格；不插入周一~周日事项，也不额外分割小框。
+  function planNote(t,cat,period){
+    const key=planCellKey(cat,period);
+    return renderPlanBlockCell(t,key,period.name+' · '+cat.name+' 事项',false,{planId:t.id,categoryId:cat.id,role:'progress'});
+  }
   function planLinkedMonthNote(month,cat,period){return planNote(month,cat,period);}
   function planLinkedWeekMemo(week,cat,width=200){
     const slot=weekCategorySlot(week,cat);
     const wrap=document.createElement('div');wrap.className='plan-linked-week-memo';
     wrap.dataset.weekCategoryId=cat.id;
-    const area=planNote(slot.owner,slot.cat,slot.period);
+    const key=planCellKey(slot.cat,slot.period);
+    const area=renderPlanBlockCell(slot.owner,key,'周计划分类 · '+cat.name,true,{planId:week.id,categoryId:cat.id,role:'category'});
     area.classList.add('linked-note');
-    area.style.height=Math.max(45,measureCellHeight(
-      planValue(slot.owner,planCellKey(slot.cat,slot.period)),width,false))+'px';
     wrap.append(area);
     wrap.title=slot.linked?'分类事项 · 与月计划对应格共用文字':'分类事项 · 可直接编辑，关联月计划后同步';
     return wrap;
@@ -3761,7 +5373,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const cat=byDate?row:col,period=byDate?col:row;
         const td=document.createElement('td');
         const note=plan.periodKind==='month'?planLinkedMonthNote(t,cat,period,d.widths[axes.cols.indexOf(col)+1]):planNote(t,cat,period);
-        if(!note.classList.contains('plan-linked-month'))note.style.height=(d.heights[r+1]-1)+'px';
+        if(!note.classList.contains('plan-block-wrap')&&!note.classList.contains('plan-linked-month'))note.style.height=(d.heights[r+1]-1)+'px';
         td.append(note);tr.append(td);
       }
       tbody.append(tr);
@@ -3927,7 +5539,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     data.topics=remaining;return true;
   }
   function settleRemoteAfterDrag(){
-    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||freeNodeDrag||freeWireDrag||topicDrag||axisDrag||columnResize||rowResize)return;
+    if(!cloud.externalRow||cloud.sending||state.editing||state.matrixEditing||inlineEditing||inlineDragging?.active||freeNodeDrag||freeWireDrag||topicDrag||axisDrag||columnResize||rowResize)return;
     const row=cloud.externalRow;cloud.externalRow=null;
     if(Number(row.revision)>Number(cloud.revision)){
       if(cloud.dirty)showCloudConflict(row,'拖动期间另一台设备更新了导图，请选择要保留的版本。');
@@ -4173,6 +5785,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     render();settleRemoteAfterDrag();
   }
+
+  document.addEventListener('pointerdown',e=>{
+    if(planBlockMenu&&!e.target.closest('.plan-block-menu'))hidePlanBlockMenu();
+  },true);
   window.addEventListener('pointermove',e=>{
     if(freeNodeDrag?.pointerId===e.pointerId||freeWireDrag?.pointerId===e.pointerId){moveFreeGesture(e);return;}
     if(matrixTouchHold?.pointerId===e.pointerId&&
@@ -4267,6 +5883,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(top<8)top=Math.min(innerHeight-55,caret.y+25);
     top=Math.max(8,Math.min(innerHeight-55,top));
     richBar.style.left=left+'px';richBar.style.top=top+'px';richBar.hidden=false;
+    // 高亮提示当前选区是否全部已经有删除线。
+    const rowTopic=topicById(id);
+    let textValue='',marksValue=[];
+    if(kind==='matrix'&&rowTopic){textValue=tableValue(rowTopic,r,c);marksValue=activeMarks(rowTopic,r,c);}
+    else if(kind==='planCell'&&rowTopic){textValue=planValue(rowTopic,planKey);marksValue=planMarks(rowTopic,planCellMarkKey(planKey));}
+    else if(kind==='planAxis'&&rowTopic){textValue=rowTopic.plan?.[planAxis]?.find(v=>v.id===planAxisId)?.name||'';marksValue=planMarks(rowTopic,planAxisMarkKey(planAxis,planAxisId));}
+    else if(rowTopic){textValue=rowTopic.text;marksValue=activeMarks(rowTopic);}
+    const cuts=[start,end,...validMarks(marksValue,textValue).flatMap(m=>[m.start,m.end])].filter(x=>x>=start&&x<=end);
+    const pts=[...new Set(cuts)].sort((a,b)=>a-b);
+    $('richStrike').classList.toggle('is-applied',pts.length>1&&pts.slice(0,-1).every((a,i)=>marksValue.some(m=>m.strike===true&&m.start<=a&&m.end>=pts[i+1])));
     const preset=currentPresets()[richLastPreset]||DEFAULT_MARK_PRESETS[0];
     $('richApply').style.borderBottomColor=preset.bg;
     $('richApply').style.color=preset.fg;
@@ -4318,6 +5944,51 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     hideRichBar(true);
     notify('文字与背景颜色已保存，可在另一台设备同步');
   }
+  function applyRichStrikethrough(){
+    const s=richSelection;if(!s){notify('请先进入编辑并选中一段文字');return;}
+    const t=topicById(s.id);if(!t)return;
+    let text='',existing=[],put=null;
+    if(s.kind==='planCell'){
+      if(t.kind!=='plan')return;
+      const key=planCellMarkKey(s.planKey);text=planValue(t,s.planKey);existing=planMarks(t,key);
+      put=(marks)=>putPlanMarks(t,key,marks);
+    }else if(s.kind==='planAxis'){
+      if(t.kind!=='plan')return;
+      const item=t.plan[s.planAxis]?.find(v=>v.id===s.planAxisId);if(!item)return;
+      const key=planAxisMarkKey(s.planAxis,s.planAxisId);text=item.name;existing=planMarks(t,key);
+      put=(marks)=>putPlanMarks(t,key,marks);
+    }else{
+      text=s.kind==='matrix'?tableValue(t,s.row,s.col):t.text;
+      existing=activeMarks(t,s.row,s.col);
+      put=(marks)=>putMarks(t,s.row,s.col,marks);
+    }
+    const start=Math.max(0,Math.min(s.start,text.length)),end=Math.max(0,Math.min(s.end,text.length));
+    if(end<=start){notify('请重新选中文字');return;}
+    const next=toggleStrikeMarks(existing,text,start,end);
+    put(next);
+    if(s.kind==='matrix'){
+      const visual=s.field.closest('td')?.querySelector('.matrix-cell-visual');
+      if(visual)renderMarkedText(visual,text,next);
+    }else if(s.kind==='planCell'){
+      document.querySelectorAll('.plan-note-wrap').forEach(w=>{
+        if((w.dataset.planOwnerId||w.closest('.plan-node')?.dataset.id)===t.id&&w.dataset.planKey===s.planKey){
+          const visual=w.querySelector('.plan-note-visual');if(visual)renderMarkedText(visual,text,next,'输入事项');
+        }
+      });
+    }else if(s.kind==='planAxis'){
+      document.querySelectorAll('.plan-axis-target').forEach(el=>{
+        if(el.closest('.plan-node')?.dataset.id===t.id&&el.dataset.axis===s.planAxis&&
+           el.dataset.axisId===s.planAxisId&&!el.querySelector('input'))renderMarkedText(el,text,next);
+      });
+    }
+    scheduleSave('切换删除线 · '+text.slice(start,Math.min(end,start+14)));
+    if(s.kind==='topic'&&state.editing===s.id)endEditing(true);
+    try{if(s.field.isConnected&&typeof s.field.setSelectionRange==='function')s.field.setSelectionRange(end,end);}catch{}
+    hideRichBar(true);
+    notify('删除线已更新并保存');
+  }
+  $('richStrike').addEventListener('pointerdown',e=>e.preventDefault());
+  $('richStrike').addEventListener('click',applyRichStrikethrough);
   function showRichPresets(){
     const list=$('richPresetList');list.replaceChildren();
     currentPresets().forEach((preset,index)=>{
@@ -4503,6 +6174,251 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   });
   refreshMapStyleControls();
 
+
+  // -------- v29：节点 / 大纲块双模式；唯一原始数据仍是 topics 的 id/parentId/text。 --------
+  const inlineScrollMemory=new Map();
+  let inlineEditing=null,inlineDragging=null,inlineIgnoreClickUntil=0;
+
+  function nearestInlineOwner(id){
+    let t=topicById(id),guard=0;
+    while(t&&guard++<4001){
+      if(t.viewMode==='outline'&&t.kind!=='plan'&&t.kind!=='matrix')return t.id;
+      t=t.parentId?topicById(t.parentId):null;
+    }
+    return null;
+  }
+  // 整个子树仍保存在原节点列表中。这里只处理当前大纲块中可见的行。
+  function inlineOutlineRows(ownerId){
+    const byParent=new Map();
+    for(const t of data.topics){
+      if(!byParent.has(t.parentId))byParent.set(t.parentId,[]);
+      byParent.get(t.parentId).push(t);
+    }
+    const result=[],stack=(byParent.get(ownerId)||[]).filter(t=>!t.boardRoot).reverse().map(t=>({t,depth:0}));
+    while(stack.length&&result.length<4000){
+      const {t,depth}=stack.pop();result.push({t,depth,hasChildren:(byParent.get(t.id)||[]).length>0});
+      if(t.inlineFolded===true)continue;
+      const sub=byParent.get(t.id)||[];
+      for(let i=sub.length-1;i>=0;i--)if(!sub[i].boardRoot)stack.push({t:sub[i],depth:depth+1});
+    }
+    return result;
+  }
+  function getInlineOutlineMetrics(t){
+    const width=Math.round(Math.min(960,Math.max(360,Number(t.boxWidth)||580)));
+    const rows=inlineOutlineRows(t.id);
+    let extent=0;
+    for(const {t:child,depth} of rows){
+      const name=outlineTitle(child);
+      const available=Math.max(120,width-96-Math.min(240,depth*18));
+      const estimated=measureCellHeight(name,available,false);
+      extent+=Math.max(36,Math.min(1100,estimated-12));
+      if(extent>1100)break;
+    }
+    const content=Math.min(590,Math.max(76,extent+14));
+    return {width,height:Math.max(136,Math.min(645,50+content))};
+  }
+  function clearInlineDragHints(){
+    topicLayer.querySelectorAll('.inline-drag-source,.inline-drop-before,.inline-drop-after,.inline-drop-child')
+      .forEach(e=>e.classList.remove('inline-drag-source','inline-drop-before','inline-drop-after','inline-drop-child'));
+  }
+  function selectInlineOutlineItem(id){
+    if(inlineEditing?.id!==id)commitInlineEditing(true);
+    state.selected=id;state.matrixSelection=null;
+    topicLayer.querySelectorAll('.inline-outline-row').forEach(e=>e.classList.toggle('inline-selected',e.dataset.nodeId===id));
+    topicLayer.querySelectorAll('.inline-outline-node').forEach(el=>el.classList.toggle('selected',el.dataset.id===nearestInlineOwner(id)));
+    syncOutlineSelection();drawConnections();
+  }
+  function commitInlineEditing(save=true){
+    const d=inlineEditing;if(!d)return;
+    inlineEditing=null;
+    const t=topicById(d.id);if(!t)return;
+    const value=d.input.value.trim()?d.input.value:'新主题';
+    if(save&&value!==d.original){
+      t.marks=updateMarksForEdit(t.marks||[],d.original,value);
+      t.text=value.slice(0,MAX_TOPIC_TEXT);
+      scheduleSave('大纲块编辑文字 · '+t.text.slice(0,24));
+    }
+    render();settleRemoteAfterDrag();
+  }
+  function startInlineOutlineRename(id,empty=false){
+    if(inlineDragging?.active)return;
+    if(inlineEditing){if(inlineEditing.id===id){inlineEditing.input.focus();return;}commitInlineEditing(true);}
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const node=topicById(id);if(!node)return;
+    const owner=nearestInlineOwner(id),block=[...topicLayer.querySelectorAll('.inline-outline-node')].find(x=>x.dataset.id===owner);
+    if(!block)return;
+    const host=id===owner?block.querySelector('.inline-outline-head-title'):
+      [...block.querySelectorAll('.inline-outline-row')].find(x=>x.dataset.nodeId===id)?.querySelector('.inline-outline-label');
+    if(!host)return;
+    const input=document.createElement('textarea');input.className='inline-outline-editor';input.rows=1;
+    input.maxLength=MAX_TOPIC_TEXT;input.value=empty?'':node.text;
+    input.setAttribute('aria-label','编辑大纲文字');
+    const draft={id,input,original:node.text};inlineEditing=draft;state.selected=id;
+    host.replaceWith(input);
+    const resize=()=>{input.style.height='auto';input.style.height=Math.max(30,input.scrollHeight)+'px';};
+    input.addEventListener('input',resize);
+    input.addEventListener('pointerdown',e=>e.stopPropagation());
+    input.addEventListener('click',e=>e.stopPropagation());
+    input.addEventListener('keydown',e=>{
+      e.stopPropagation();if(e.isComposing||e.keyCode===229)return;
+      if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();commitInlineEditing(true);}
+      else if(e.key==='Escape'){e.preventDefault();commitInlineEditing(false);}
+    });
+    input.addEventListener('blur',()=>{if(inlineEditing===draft)commitInlineEditing(true);});
+    input.focus();resize();if(!empty)input.select();
+  }
+  function startInlineOutlineDrag(e,id,ownerId,handle){
+    if(inlineEditing||inlineDragging||e.button!==0)return;
+    e.preventDefault();e.stopPropagation();
+    const touch=e.pointerType==='touch';
+    const d={id,ownerId,pointerId:e.pointerId,x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY,
+      active:false,drop:null,timer:null,ghost:null,done:false};
+    inlineDragging=d;
+    const container=[...topicLayer.querySelectorAll('.inline-outline-node')].find(x=>x.dataset.id===ownerId);
+    if(!container){inlineDragging=null;return;}
+    const scroller=container.querySelector('.inline-outline-scroll');
+    const family=descendantsOf(id);
+    function showGhost(){
+      if(d.done||d.active)return;
+      d.active=true;
+      const ghost=document.createElement('div');ghost.className='inline-outline-drag-ghost';
+      ghost.textContent=String(topicById(id)?.text||'节点').replace(/\s+/g,' ').slice(0,30);
+      document.body.append(ghost);d.ghost=ghost;
+      moveGhost(d.x,d.y);
+      try{handle.setPointerCapture(d.pointerId);}catch{}
+    }
+    function moveGhost(x,y){if(!d.ghost)return;d.ghost.style.left=Math.min(innerWidth-110,Math.max(6,x+13))+'px';
+      d.ghost.style.top=Math.max(6,Math.min(innerHeight-50,y+10))+'px';}
+    function targetAt(x,y){
+      clearInlineDragHints();
+      const source=[...container.querySelectorAll('.inline-outline-row')].find(r=>r.dataset.nodeId===id);
+      source?.classList.add('inline-drag-source');
+      const el=document.elementFromPoint(x,y);
+      const target=el?.closest('.inline-outline-row,.inline-outline-head');
+      if(!target||!container.contains(target))return null;
+      const targetId=target.classList.contains('inline-outline-head')?ownerId:target.dataset.nodeId;
+      if(!targetId||targetId===id||family.has(targetId))return null;
+      const rect=target.getBoundingClientRect(),ratio=(y-rect.top)/Math.max(1,rect.height);
+      let mode=(ratio<.26?'before':ratio>.74?'after':'child');
+      if(targetId===ownerId)mode='child';
+      const t=topicById(targetId);
+      if(mode!=='child'&&(!t?.parentId||family.has(t.parentId)))return null;
+      target.classList.add('inline-drop-'+mode);
+      if(d.ghost)d.ghost.textContent=({child:'放入内部（下级） · ',before:'同级插到前面 · ',after:'同级插到后面 · '}[mode])+outlineTitle(topicById(id)).slice(0,24);
+      return {id:targetId,mode};
+    }
+    function cleanup(){
+      if(d.done)return;d.done=true;clearTimeout(d.timer);
+      window.removeEventListener('pointermove',onMove);window.removeEventListener('pointerup',onUp);window.removeEventListener('pointercancel',onCancel);
+      d.ghost?.remove();clearInlineDragHints();try{handle.releasePointerCapture(d.pointerId);}catch{}
+      inlineDragging=null;
+    }
+    const onMove=ev=>{
+      if(d.done||ev.pointerId!==d.pointerId)return;
+      d.x=ev.clientX;d.y=ev.clientY;
+      if(!d.active){if(Math.hypot(d.x-d.startX,d.y-d.startY)>(touch?11:5)){
+        if(touch){clearTimeout(d.timer);return;}showGhost();}else return;}
+      if(ev.cancelable)ev.preventDefault();moveGhost(d.x,d.y);d.drop=targetAt(d.x,d.y);
+      if(scroller){const r=scroller.getBoundingClientRect();
+        if(d.y<r.top+30)scroller.scrollTop-=12;
+        else if(d.y>r.bottom-30)scroller.scrollTop+=12;}
+    };
+    const onUp=ev=>{
+      if(d.done||ev.pointerId!==d.pointerId)return;
+      const wasActive=d.active,drop=d.drop;cleanup();
+      if(!wasActive)return;
+      inlineIgnoreClickUntil=Date.now()+550;
+      if(!drop)return;
+      if(reorderTopicSubtree(id,drop)){
+        const parent=topicById(topicById(id)?.parentId);
+        if(parent)parent.inlineFolded=false;
+        state.selected=id;scheduleSave('大纲块内移动分支 · '+outlineTitle(topicById(id)).slice(0,24));
+        render();notify(drop.mode==='child'?'已放入目标下级':'已在同级调整顺序');
+      }
+      settleRemoteAfterDrag();
+    };
+    const onCancel=ev=>{if(ev.pointerId===d.pointerId)cleanup();};
+    window.addEventListener('pointermove',onMove,{passive:false});window.addEventListener('pointerup',onUp);
+    window.addEventListener('pointercancel',onCancel);
+    if(touch)d.timer=setTimeout(showGhost,450);
+  }
+  function renderInlineOutlineNode(t,p){
+    const box=document.createElement('div');box.className='inline-outline-node'+(state.selected===t.id||nearestInlineOwner(state.selected)===t.id?' selected':'');
+    box.dataset.id=t.id;box.style.left=p.x+'px';box.style.top=p.y+'px';box.style.width=p.w+'px';box.style.height=p.h+'px';
+    box.addEventListener('pointerdown',e=>e.stopPropagation());
+    box.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();
+      if(inlineEditing)commitInlineEditing(true);
+      const row=e.target.closest('.inline-outline-row');
+      state.selected=row?.dataset.nodeId||t.id;showDeleteContext(e.clientX,e.clientY);});
+    const head=document.createElement('div');head.className='inline-outline-head';
+    head.dataset.nodeId=t.id;
+    const title=document.createElement('button');title.type='button';title.className='inline-outline-head-title';
+    renderMarkedText(title,t.text||'新主题',t.marks||[]);
+    title.title='双击可编辑大纲块标题';
+    title.addEventListener('click',e=>{e.stopPropagation();selectInlineOutlineItem(t.id);});
+    title.addEventListener('dblclick',e=>{e.stopPropagation();startInlineOutlineRename(t.id);});
+    head.append(title);
+    const back=document.createElement('button');back.type='button';back.className='inline-outline-head-action';
+    back.textContent='↔ 节点模式';back.title='恢复为普通思维导图分支，不删除内容';
+    back.addEventListener('pointerdown',e=>e.stopPropagation());
+    back.addEventListener('click',e=>{e.stopPropagation();toggleInlineOutlineMode(t.id);});
+    head.append(back);box.append(head);
+    const scroll=document.createElement('div');scroll.className='inline-outline-scroll';scroll.dataset.ownerId=t.id;
+    const rows=inlineOutlineRows(t.id);
+    if(!rows.length){
+      const empty=document.createElement('div');empty.className='inline-outline-empty';empty.textContent='暂无子节点 · ';
+      const add=document.createElement('button');add.type='button';add.textContent='＋ 添加下级';
+      add.addEventListener('click',e=>{e.stopPropagation();addChild(t.id);});empty.append(add);scroll.append(empty);
+    }
+    for(const {t:node,depth,hasChildren} of rows){
+      const row=document.createElement('div');row.className='inline-outline-row'+(state.selected===node.id?' inline-selected':'');
+      row.dataset.nodeId=node.id;row.style.setProperty('--inline-indent',Math.min(290,depth*19)+'px');
+      const grip=document.createElement('button');grip.type='button';grip.className='inline-outline-grip';
+      grip.textContent='⠿';grip.title='拖动到上下边缘＝同级；拖到中间＝下级（手机长按后拖动）';
+      grip.setAttribute('aria-label','拖动调整主题层级：'+outlineTitle(node).slice(0,40));
+      grip.addEventListener('pointerdown',e=>startInlineOutlineDrag(e,node.id,t.id,grip));
+      grip.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});row.append(grip);
+      if(hasChildren){
+        const triangle=document.createElement('button');triangle.type='button';triangle.className='inline-outline-chevron';
+        triangle.textContent=node.inlineFolded?'▸':'▾';triangle.title=node.inlineFolded?'展开下级':'收起下级';
+        triangle.setAttribute('aria-expanded',String(!node.inlineFolded));
+        triangle.addEventListener('click',e=>{e.stopPropagation();node.inlineFolded=!node.inlineFolded;
+          scheduleSave((node.inlineFolded?'收起':'展开')+'大纲下级');render();});row.append(triangle);
+      }else{const placeholder=document.createElement('span');placeholder.className='inline-outline-chevron-empty';row.append(placeholder);}
+      const label=document.createElement('button');label.type='button';label.className='inline-outline-label';
+      const name=outlineTitle(node);
+      renderMarkedText(label,name,node.kind?[]:(node.marks||[]));
+      label.title='单击选中，双击编辑';
+      label.addEventListener('click',e=>{e.stopPropagation();if(Date.now()<inlineIgnoreClickUntil)return;selectInlineOutlineItem(node.id);});
+      label.addEventListener('dblclick',e=>{e.stopPropagation();startInlineOutlineRename(node.id);});
+      row.append(label);scroll.append(row);
+    }
+    scroll.addEventListener('scroll',()=>inlineScrollMemory.set(t.id,scroll.scrollTop),{passive:true});
+    box.append(scroll);
+    topicLayer.append(box);
+    scroll.scrollTop=inlineScrollMemory.get(t.id)||0;
+    if(currentFreeMode())addFreeGrabHandle(box,t.id);
+    return box;
+  }
+  function toggleInlineOutlineMode(id){
+    if(inlineEditing)commitInlineEditing(true);
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const t=topicById(id);
+    if(!t||t.kind==='matrix'||t.kind==='plan'){
+      notify('请在普通主题上选择「变换模式」；表格保持原样');return;
+    }
+    t.viewMode=t.viewMode==='outline'?undefined:'outline';
+    if(t.viewMode==='outline'){t.textMode=false;if(doc35Active?.kind==='topic'&&doc35Active.id===id)closeDoc35();}
+    state.selected=id;state.matrixSelection=null;
+    scheduleSave((t.viewMode==='outline'?'切换为大纲块':'恢复导图节点')+' · '+t.text.slice(0,25));
+    render();ensureVisible(id);
+  }
+  // -------- v29 双模式结束 --------
+
   function render() {
     refreshMapStyleControls();
     stage.classList.toggle('layout-logic',currentMapLayout()==='logic');
@@ -4515,6 +6431,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     for(const t of data.topics) {
       const p=state.positions.get(t.id);
       if(!p)continue;
+      if(t.viewMode==='outline' && !t.kind){
+        renderInlineOutlineNode(t,p);
+        continue;
+      }
       if(t.kind==='plan' && t.plan){
         topicLayer.append(renderPlanNode(t,p));
         continue;
@@ -4531,7 +6451,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(t.id===state.selected) el.classList.add('selected');
       if(t.id===state.editing) el.classList.add('editing');
       const title=document.createElement('span');title.className='topic-text';renderMarkedText(title,t.text||'新主题',t.marks||[]);
+      if(t.textMode)el.classList.add('topic-text-mode');
       el.append(title);
+      if(t.textMode)el.append(doc37EnableIcon(makeDoc35Icon(),()=>{
+        selectInteractive(t.id);
+        openDoc35({kind:'topic',id:t.id});
+      }));
       el.addEventListener('pointerdown',e=>prepareTopicDrag(e,t.id,el));
       el.addEventListener('click',e=>{
         if(Date.now()<freeIgnoreClickUntil){e.preventDefault();e.stopPropagation();return;}
@@ -4539,7 +6464,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if(state.editing!==t.id)selectInteractive(t.id);
         e.stopPropagation();
       });
-      el.addEventListener('dblclick',e=>{e.stopPropagation();hideDeleteContext();startEditing(t.id);});
+      el.addEventListener('dblclick',e=>{e.stopPropagation();hideDeleteContext();if(!t.textMode)startEditing(t.id);});
       el.addEventListener('contextmenu',e=>{
         e.preventDefault();e.stopPropagation();selectInteractive(t.id);showDeleteContext(e.clientX,e.clientY);
       });
@@ -4685,7 +6610,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const parent=topicById(parentId);if(!parent)return;
     const t={id:makeId(),parentId,text:'新主题'};
     if(parent.collapsed)parent.collapsed=false;
-    data.topics.splice(subtreeLastIndex(parentId)+1,0,t); state.selected=t.id; scheduleSave('添加子主题');render();ensureVisible(t.id);startEditing(t.id,false,true);
+    if(parent.inlineFolded)parent.inlineFolded=false;
+    data.topics.splice(subtreeLastIndex(parentId)+1,0,t); state.selected=t.id; scheduleSave('添加子主题');render();
+    if(nearestInlineOwner(t.id))startInlineOutlineRename(t.id,true);
+    else{ensureVisible(t.id);startEditing(t.id,false,true);}
   }
   function addSibling(id) {
     if(state.editing)endEditing(true);
@@ -4695,7 +6623,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // 子树应作为整体插入，保证以后继续添加时同级节点顺序稳定。
     const end=subtreeLastIndex(id);
     data.topics.splice(end+1,0,t);
-    state.selected=t.id;scheduleSave('添加同级主题');render();ensureVisible(t.id);startEditing(t.id,false,true);
+    state.selected=t.id;scheduleSave('添加同级主题');render();
+    if(nearestInlineOwner(t.id))startInlineOutlineRename(t.id,true);
+    else{ensureVisible(t.id);startEditing(t.id,false,true);}
   }
   function subtreeLastIndex(id) {
     const descendants=new Set([id]); let changed=true;
@@ -5041,7 +6971,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           const sh=getShadow(id);
           if(sh&&sameTopics(sh.topics,row.topics))return;
         }
-        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming){
+        if(state.editing||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming||inlineEditing||inlineDragging?.active){
           // 编辑或拖动期间不替换 DOM，也不弹窗抢焦点；结束编辑后再处理新版。
           if(!cloud.externalRow||Number(row.revision)>Number(cloud.externalRow.revision))cloud.externalRow=row;
           return;
@@ -5057,7 +6987,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
   }
   function requestCloudPush(){
-    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming)return;
+    if(!cloud.client||!cloud.user||!cloud.ready||cloud.conflict||state.matrixEditing||state.planEditing||document.body.classList.contains('plan-is-dragging')||document.body.classList.contains('plan-resize-active')||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming||inlineEditing||inlineDragging?.active)return;
     clearTimeout(cloud.timer);
     cloud.timer=setTimeout(()=>{if(cloud.dirty)void flushCloud();else void uploadPendingHistory();},300);
   }
@@ -5085,7 +7015,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
   }
   async function flushCloud(){
-    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming)return;
+    if(cloud.sending||!cloud.client||!cloud.user||!cloud.ready||!cloud.dirty||cloud.conflict||state.editing||state.planEditing||topicDrag?.moved||freeNodeDrag||freeWireDrag||axisDrag?.moved||columnResize||rowResize||boardTabDrag||outlineDrag?.active||outlineRenaming||inlineEditing||inlineDragging?.active)return;
     cloud.sending=true;clearTimeout(cloud.timer);
     const snapshot=cloneTopics();
     const entries=cloud.pendingEntries.splice(0);
@@ -5154,7 +7084,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(!row)return;
       if(Number(row.revision)>Number(cloud.revision)){
         if(state.planEditing){cloud.externalRow=row;return;}
-        if(cloud.dirty||state.editing||state.matrixEditing||cloud.sending)showCloudConflict(row,'重新进入页面时检测到另一设备的修改。');
+        if(cloud.dirty||state.editing||state.matrixEditing||inlineEditing||inlineDragging?.active||cloud.sending)showCloudConflict(row,'重新进入页面时检测到另一设备的修改。');
         else adoptCloudRow(row);
       }else if(cloud.dirty||cloud.pendingEntries.length)requestCloudPush();
     }).catch(err=>console.warn('检查云端新版本失败',err));
@@ -5174,7 +7104,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 空白画布拖动（主题节点由思维导图布局自动排列）。
   const pointers=new Map();let gesture=null;
   function down(e) {
-    if(e.target.closest('.topic')||e.target.closest('.matrix-node')||e.target.closest('.plan-node')||e.target.closest('.zoom-tools'))return;
+    if(e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node,.zoom-tools'))return;
     if(e.button!==0&&e.pointerType==='mouse')return;
     stage.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -5270,25 +7200,32 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   stage.addEventListener('pointermove',move);
   stage.addEventListener('pointerup',up);
   stage.addEventListener('pointercancel',up);
+  // V39：无论光标位于计划表、横纵表格、文本节点还是画布空白处，
+  // Ctrl/⌘+滚轮（含触控板双指缩放产生的 ctrl+wheel）都只更新 world 的缩放。
+  // 必须先拦截缩放，再判断内层滚动容器；否则表格上方会触发浏览器页面缩放，
+  // 导致不属于 world 的顶栏和「画布1／画布2」底栏一同变大。
+  // 使用捕获阶段，使表格内的事件即便后续 stopPropagation 也不能漏到浏览器。
   stage.addEventListener('wheel',e=>{
-    // 保留计划表等内层滚动容器自己的滚动行为。
-    if(e.target.closest('.plan-scroll,.plan-focus-overlay'))return;
-    e.preventDefault();
     const mul=e.deltaMode===1?18:e.deltaMode===2?Math.max(350,stage.clientHeight):1;
     const dy=e.deltaY*mul,dx=e.deltaX*mul;
     if(e.ctrlKey||e.metaKey){
-      // Ctrl+滚轮缩放：以鼠标位置为锚点，避免导图跳位。
+      e.preventDefault();
+      e.stopPropagation();
+      // 始终缩放中间画布，并以指针位置为缩放中心；外部栏不受影响。
       zoomAt(Math.exp(Math.max(-3,Math.min(3,-dy*0.0018))),e.clientX,e.clientY);
-    }else if(e.shiftKey){
-      // Shift+滚轮横向平移，普通滚轮保持上下平移。
+      return;
+    }
+    // 没按 Ctrl/⌘ 时，仍允许计划表和内嵌大纲各自滚动，不干涉输入和选区。
+    if(e.target.closest('.plan-scroll,.plan-focus-overlay,.inline-outline-scroll'))return;
+    e.preventDefault();
+    if(e.shiftKey){
       state.panX-=(Math.abs(dy)>Math.abs(dx)?dy:dx);
-      applyTransform();
     }else{
       state.panX-=dx;
       state.panY-=dy;
-      applyTransform();
     }
-  },{passive:false});
+    applyTransform();
+  },{capture:true,passive:false});
   $('zoomIn').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1.2,r.left+r.width/2,r.top+r.height/2);});
   $('zoomOut').addEventListener('click',()=>{const r=stage.getBoundingClientRect();zoomAt(1/1.2,r.left+r.width/2,r.top+r.height/2);});
   $('fitBtn').addEventListener('click',fitToView);
@@ -5311,7 +7248,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // Ctrl/⌘ 点击可以选中两张表；Ctrl/⌘+A 可以选择当前画布所有顶层分支。
   topicLayer.addEventListener('pointerdown',e=>{
     if(!(e.ctrlKey||e.metaKey)||e.button!==0||isTextEditingTarget(e.target)||e.target.closest('button,input,textarea,[contenteditable]'))return;
-    const el=e.target.closest('.topic,.matrix-node,.plan-node');if(!el||!topicLayer.contains(el))return;
+    const el=e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node');if(!el||!topicLayer.contains(el))return;
     const id=el.dataset.id;if(!id||!insideActiveBoard(id))return;
     e.preventDefault();e.stopImmediatePropagation();
     if(!multiCopyIds.size&&state.selected&&state.selected!==activeRootId()&&insideActiveBoard(state.selected))multiCopyIds.add(state.selected);
@@ -5319,7 +7256,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     highlightCopySelection();notify('已选中 '+multiCopyIds.size+' 个主题，按 Ctrl+C 复制完整内容');
   },true);
   topicLayer.addEventListener('click',e=>{
-    if((e.ctrlKey||e.metaKey)&&e.target.closest('.topic,.matrix-node,.plan-node')){
+    if((e.ctrlKey||e.metaKey)&&e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node')){
       e.preventDefault();e.stopImmediatePropagation();
     }else if(!e.target.closest('.plan-category-inline-actions')){
       if(multiCopyIds.size)clearCopySelection();
@@ -5448,8 +7385,47 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   const EXTERNAL_PASTE_LIMIT=1500;
   let nativePasteSerial=0;
   function isTextEditingTarget(el){
-    return !!(el?.closest?.('[contenteditable="true"],input:not([readonly]),textarea:not([readonly])') ||
+    // readOnly textarea 仍有原生文本选区：也必须当作文字，而不是导图节点。
+    return !!(el?.closest?.('[contenteditable="true"],input,textarea') ||
       state.editing||state.matrixEditing||state.planEditing);
+  }
+  function clipboardTextField(el){
+    const field=el?.closest?.('textarea,input');
+    return field instanceof HTMLTextAreaElement||field instanceof HTMLInputElement?field:null;
+  }
+  function copiedSelectedText(e){
+    const field=clipboardTextField(e.target);
+    if(field){
+      const a=field.selectionStart,b=field.selectionEnd;
+      if(typeof a==='number'&&typeof b==='number'&&b>a)return field.value.slice(a,b);
+      return null;
+    }
+    const sel=window.getSelection?.();
+    if(sel&&!sel.isCollapsed&&sel.rangeCount){
+      const value=sel.toString();
+      if(value)return value;
+    }
+    return null;
+  }
+  function pasteIntoReadonlyMatrixCell(field,plain){
+    const wrap=field.closest('.matrix-node'),tr=field.closest('tr'),td=field.closest('td');
+    if(!wrap||!tr||!td)return false;
+    const id=wrap.dataset.id,r=tr.rowIndex,c=td.cellIndex,t=topicById(id);
+    if(!t||t.kind!=='matrix')return false;
+    const old=tableValue(t,r,c);
+    // 未编辑状态按单元格粘贴，替换本格内容，不误创建新导图节点。
+    startMatrixEditing(id,r,c);
+    const input=wrap.querySelectorAll('tbody tr')[r]?.children[c]?.querySelector('.matrix-cell-input');
+    if(!input)return false;
+    input.value=String(plain).slice(0,30000);
+    const next=updateMarksForEdit(activeMarks(t,r,c),old,input.value);
+    putMarks(t,r,c,next);setTableValue(t,r,c,input.value);
+    const visual=input.closest('td')?.querySelector('.matrix-cell-visual');
+    if(visual)renderMarkedText(visual,input.value,next);
+    settleMatrixEditor(true);
+    input.readOnly=true;
+    render(); // settleMatrixEditor 已记录一次完成的编辑与云端待同步状态
+    return true;
   }
   const importError = (msg) => { throw new Error(msg); };
   function safeOutlineText(title){
@@ -5564,8 +7540,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     rejectAmbiguousPaste();return true;
   }
   document.addEventListener('paste',e=>{
-    if(isTextEditingTarget(e.target))return;
     const c=e.clipboardData;if(!c)return;
+    const field=clipboardTextField(e.target);
+    if(field?.matches('.matrix-cell-input[readonly]')){
+      e.preventDefault();e.stopImmediatePropagation();nativePasteSerial++;
+      if(pasteIntoReadonlyMatrixCell(field,c.getData('text/plain')))notify('已粘贴原文到选中的表格单元格');
+      return;
+    }
+    if(isTextEditingTarget(e.target))return; // 编辑文本时交给浏览器原生 Ctrl+V
     nativePasteSerial++;
     e.preventDefault();
     try{
@@ -5599,7 +7581,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     },100);
   },true);
   document.addEventListener('copy',e=>{
-    if(isTextEditingTarget(e.target)||!e.clipboardData)return;
+    if(!e.clipboardData)return;
+    const chosen=copiedSelectedText(e);
+    if(chosen!==null){
+      // 永远优先复制用户选中的原文，保留空格、换行和标点，清掉旧节点缓存。
+      diyInternalClipboard=null;
+      e.clipboardData.clearData();e.clipboardData.setData('text/plain',chosen);
+      e.preventDefault();return;
+    }
+    // 未编辑、且没有选中文字的表格单元格，仍可作为整个节点复制；
+    // 真正在编辑的输入框永远按普通文字复制。
+    if(isTextEditingTarget(e.target)&&!clipboardTextField(e.target)?.matches('.matrix-cell-input[readonly]'))return;
     const payload=buildInternalCopy();if(!payload)return;
     const plain=copyTextForInternal(payload);
     const encoded=encodeURIComponent(JSON.stringify(payload));
@@ -5709,7 +7701,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(topicById(state.selected)?.kind==='matrix'){
         const s=state.matrixSelection?.id===state.selected?state.matrixSelection:null;
         startMatrixEditing(state.selected,s?.row??0,s?.col??0);
-      }else startEditing(state.selected,true);
+      }else if(nearestInlineOwner(state.selected))startInlineOutlineRename(state.selected);
+      else startEditing(state.selected,true);
       return;
     }
     if(topicById(state.selected)?.kind==='plan')return;
@@ -5719,6 +7712,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     if(e.key==='Tab'){e.preventDefault();addChild(state.selected);}
     else if(e.key==='Enter'){e.preventDefault();addSibling(state.selected);}
+  });
+  $('contextToggleOutline').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();const id=state.selected;hideDeleteContext();toggleInlineOutlineMode(id);
+  });
+  $('contextToggleText').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();const id=state.selected;hideDeleteContext();toggleDoc35Topic(id);
   });
   $('contextDelete').addEventListener('click',e=>{e.stopPropagation();deleteCurrentSelection();});
   $('deleteContext').addEventListener('pointerdown',e=>e.stopPropagation());
@@ -5776,9 +7775,77 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){setMenu(false);$('historyPanel').hidden=true;hideBoardPopup();}
   });
-  window.addEventListener('pagehide',()=>{if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();persist();});
-  window.addEventListener('resize',applyTransform);
-  render();centerInitial();
+  window.addEventListener('pagehide',()=>{if(inlineEditing)commitInlineEditing(true);if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();persist();});
+
+// 右侧编辑区事件：正文输入实时本机保存，停顿后写入历史及云端。
+$('doc35Close').addEventListener('click',e=>{e.stopPropagation();closeDoc35();});
+$('doc35TabDocument').addEventListener('click',()=>doc35SetTab('document'));
+$('doc35TabOutline').addEventListener('click',()=>doc35SetTab('outline'));
+$('doc35Title').addEventListener('pointerdown',e=>e.stopPropagation());
+$('doc35Title').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}});
+$('doc35Title').addEventListener('input',e=>{
+  const entity=doc35Entity();if(!entity)return;
+  entity.text=e.target.value||'新主题';
+  if(doc35Active?.kind==='plan'){
+    const owner=topicById(doc35Active.ownerId);if(owner)planSyncCellTextFromBlocks(owner,doc35Active.key,false);
+  }
+  persist();$('doc35Status').textContent='正在保存…';
+  if(doc35SaveTimer)clearTimeout(doc35SaveTimer);
+  doc35SaveTimer=setTimeout(doc35Flush,1100);
+});
+$('doc35Title').addEventListener('blur',()=>{doc35Flush();render();});
+$('doc35Editor').addEventListener('pointerdown',e=>e.stopPropagation());
+$('doc35Editor').addEventListener('click',e=>e.stopPropagation());
+$('doc35Editor').addEventListener('keydown',e=>e.stopPropagation());
+$('doc35Editor').addEventListener('input',doc35Snapshot);
+$('doc35Editor').addEventListener('blur',doc35Flush);
+$('doc35Editor').addEventListener('paste',e=>{
+  // 只允许纯文本粘贴，避免外部网页样式/脚本污染导图备份。
+  const plain=e.clipboardData?.getData('text/plain');if(plain===undefined)return;
+  e.preventDefault();e.stopPropagation();
+  document.execCommand('insertText',false,plain);
+});
+$('doc35Tools').addEventListener('pointerdown',e=>{e.stopPropagation();if(e.target.closest('button'))e.preventDefault();});
+$('doc35Tools').addEventListener('click',e=>{
+  const btn=e.target.closest('[data-doc35-command],[data-doc35-format]');if(!btn)return;
+  e.stopPropagation();$('doc35Editor').focus();
+  if(btn.dataset.doc35Command)document.execCommand(btn.dataset.doc35Command,false,null);
+  else document.execCommand('formatBlock',false,btn.dataset.doc35Format);
+  doc35Snapshot();
+});
+$('doc35Pane').addEventListener('pointerdown',e=>e.stopPropagation());
+$('doc35Pane').addEventListener('wheel',e=>e.stopPropagation(),{passive:true});
+$('doc35Resize').addEventListener('pointerdown',e=>{
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  e.preventDefault();e.stopPropagation();
+  const handle=$('doc35Resize');
+  const startX=e.clientX,startWidth=doc35MeasureWidth();
+  doc35Width=startWidth;handle.classList.add('is-resizing');
+  try{handle.setPointerCapture(e.pointerId);}catch{}
+  const move=ev=>{
+    if(ev.pointerId!==e.pointerId)return;
+    ev.preventDefault();doc35Width=Math.round(startWidth+startX-ev.clientX);
+    doc35Position();
+  };
+  const end=ev=>{
+    if(ev.pointerId!==e.pointerId)return;
+    handle.removeEventListener('pointermove',move);
+    handle.removeEventListener('pointerup',end);
+    handle.removeEventListener('pointercancel',end);
+    handle.classList.remove('is-resizing');
+    doc35Width=doc35MeasureWidth();
+    try{localStorage.setItem(DOC35_STORAGE_WIDTH,String(doc35Width));}catch{}
+    try{handle.releasePointerCapture(e.pointerId);}catch{}
+    applyTransform();
+  };
+  handle.addEventListener('pointermove',move);
+  handle.addEventListener('pointerup',end);
+  handle.addEventListener('pointercancel',end);
+});
+window.addEventListener('resize',()=>{if(doc35Active)doc35Position();});
+window.addEventListener('pagehide',doc35Flush);
+window.addEventListener('resize',applyTransform);
+render();centerInitial();
   // 启用历史功能时先为已有数据建立一个基准版本，供后续恢复。
   void getHistory(1).then(({total})=>{
     if(total===0)void appendHistory({at:new Date().toISOString(),label:'初始记录',topics:data.topics.map(t=>({...t}))});
@@ -5788,7 +7855,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.18.7";
+  const BUILD = "2026.11.20.8";
   const $ = id => document.getElementById(id);
   const installButton = $('pwaInstallBtn');
   const banner = $('appUpdateBanner');
