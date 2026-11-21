@@ -563,6 +563,27 @@
 .plan-block-menu button[disabled]:hover{background:transparent;color:#222;}
 .plan-link-tag{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:999px;background:#20b9ff14;color:#1759a4;font-weight:700;font-size:12px;}
 
+/* V44：表格外与表格内使用相同的单指画布拖动行为。 */
+@media (pointer:coarse){
+  #stage .plan-node.plan-inline,
+  #stage .plan-node.plan-inline .plan-scroll,
+  #stage .plan-node.plan-inline .plan-table-live,
+  #stage .plan-node.plan-inline .plan-table-live *,
+  #stage .matrix-node,
+  #stage .matrix-node .matrix-table,
+  #stage .matrix-node .matrix-table *{
+    touch-action:none!important;
+  }
+  /* 双击/点入真正编辑框后，允许正常文本选取与输入；隐藏的兼容 textarea 不能夺走触控。 */
+  #stage .matrix-node .matrix-cell-input:not([readonly]),
+  #stage .plan-mini-editor,
+  #stage .plan-axis-input,
+  #stage .plan-node textarea:not([readonly]):not([aria-hidden="true"]){
+    touch-action:pan-y!important;
+  }
+  /* “单独查看计划表”在画布以外，那里使用表格自身原生单指横纵滚动。 */
+  #planFocusOverlay .plan-scroll{overflow:auto!important;touch-action:pan-x pan-y!important;}
+}
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -572,7 +593,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="2026.11.20.8">
+<meta name="app-build" content="1.0.44">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -1338,10 +1359,11 @@ body{color:var(--app-ink,#f5f5f6);}
 .doc35-footer{flex:none;display:flex;justify-content:space-between;align-items:center;gap:6px;padding:10px 17px;border-top:1px solid #e7ecf4;color:#7e8b9b;font-size:12px;}
 .doc35-save-state{color:#247b55;}
 @media(max-width:700px){
- .app.doc35-open .stage{margin-right:0;}
- .doc35-pane{width:100vw!important;max-width:none!important;}
- .doc35-resize{display:none;}
- .doc35-scroll{padding:19px 22px 55px;}
+ /* V42：手机竖屏保留左侧可见画布，不再全屏遮盖。宽度由 JS 按屏幕比例计算。 */
+ .app.doc35-open .stage{margin-right:var(--doc35-width,74vw);}
+ .doc35-pane{width:var(--doc35-width,74vw)!important;max-width:calc(100vw - 64px)!important;}
+ .doc35-resize{display:flex;}
+ .doc35-scroll{padding:9px 10px 24px;}
 }
 
 /* V36：以原有主题树为正文来源，确保点开不是空白附注。 */
@@ -1498,6 +1520,47 @@ body{color:var(--app-ink,#f5f5f6);}
 /* 已选中项目需要保持可辨识度；选中高亮沿用 V40，文字颜色不被蓝色全部覆盖。 */
 #doc36Source.doc38-block .inline-outline-row.inline-selected .inline-outline-label{
   text-decoration:none;
+}
+
+/* V42：700～900px 的横屏手机/折叠屏，同样用比例分栏，保留可触控的拖动手柄。 */
+@media (min-width:701px) and (max-width:900px){
+ .app.doc35-open .stage{margin-right:var(--doc35-width,61vw);}
+ .doc35-pane{max-width:calc(100vw - 64px);}
+ .doc35-resize{display:flex;}
+}
+@media(max-width:700px){
+ #doc35Pane .doc35-head{padding-right:max(8px,env(safe-area-inset-right))!important;}
+ #doc35Pane .doc35-close{min-width:30px;min-height:30px;}
+}
+/* V44：手机在两种横纵表格上，单指平移画布；长按计划小块则可拖动排序。
+   正在输入的 textarea 和表格调节手柄不抢手势。 */
+@media (pointer:coarse){
+  .stage .plan-node.plan-inline,
+  .stage .plan-node.plan-inline .plan-table-live,
+  .stage .plan-node.plan-inline .plan-table-live th,
+  .stage .plan-node.plan-inline .plan-table-live td,
+  .stage .plan-node.plan-inline .plan-mini-block,
+  .stage .matrix-node,
+  .stage .matrix-node .matrix-table,
+  .stage .matrix-node .matrix-table td {touch-action:none!important;}
+  .stage .matrix-node .matrix-cell-input:not([readonly]),
+  .stage .plan-node textarea:not([readonly]),
+  .stage .plan-mini-editor {touch-action:pan-y!important;-webkit-user-select:text!important;user-select:text!important;}
+}
+.plan-mini-block.plan-mini-dragging{opacity:.38!important;outline:2px dashed #2494ef!important;}
+.plan-mini-block.plan-mini-drop-before::before,
+.plan-mini-block.plan-mini-drop-after::after{content:'';position:absolute;left:3px;right:3px;height:3px;background:#248cf0;border-radius:4px;z-index:12;pointer-events:none;}
+.plan-mini-block.plan-mini-drop-before::before{top:-5px;}
+.plan-mini-block.plan-mini-drop-after::after{bottom:-5px;}
+.plan-block-wrap.plan-mini-drop-empty{outline:2px dashed #278feb;outline-offset:-2px;}
+.plan-mini-ghost{position:fixed;z-index:99999;pointer-events:none;max-width:240px;white-space:pre-wrap;overflow-wrap:anywhere;
+ background:#e9f4ff;color:#154b7a;border:2px solid #288ff0;box-shadow:0 8px 22px #0004;border-radius:9px;
+ padding:8px 12px;font:600 13px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
+.plan-block-wrap .plan-mini-text .rich-fragment{color:inherit;}
+.plan-block-wrap .plan-mini-text{user-select:text;-webkit-user-select:text;}
+@media(pointer:coarse){
+  /* 触屏长按优先拖动小块；要选择文字时先双击进入原位编辑。 */
+  .plan-block-wrap .plan-mini-text{user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none;}
 }
 </style>
 </head>
@@ -2040,6 +2103,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
               id:typeof x.id==='string'&&x.id.length<140?x.id:makeId(),
               text:x.text.slice(0,30000),
               linkId:typeof x.linkId==='string'&&x.linkId.length<=150?x.linkId:null,
+              // V44：小块的局部颜色标注跟随其唯一 ID，跨格移动/重启后仍保留。
+              ...(Array.isArray(x.marks)?{marks:validMarks(x.marks,x.text.slice(0,30000))}:{}),
               ...(x.textMode===true?{textMode:true}:{}),
               ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{})
             }));
@@ -4287,7 +4352,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           if(item.linkId===undefined)item.linkId=null;
         }
       }
-      t.plan.blockCells[key]=list=list.filter(item=>item&&typeof item.text==='string'&&item.text.trim());
+      // V44：保持单元格列表的数组身份不变。移动、排序、保存和渲染必须操作同一份数组。
+      // 旧写法 list.filter() 每次返回新数组，同格移动会删除旧数组、向新数组插入，产生重复卡片。
+      // 同一格中若已存有 V43 误操作生成的重复 ID，保留最后的位置并清理此前的重复项。
+      // 仅以 ID 判断，文字相同但 ID 不同的正常事项绝不合并。
+      const seenBlockIds=new Set();
+      for(let i=list.length-1;i>=0;i--){
+        const item=list[i];
+        if(!item||typeof item.text!=='string'||!item.text.trim()||seenBlockIds.has(item.id)){
+          list.splice(i,1);
+        }else seenBlockIds.add(item.id);
+      }
+      t.plan.blockCells[key]=list;
     }
     planSyncCellTextFromBlocks(t,key,false);
     return list;
@@ -4440,9 +4516,22 @@ function doc35CleanHTML(html){
   const container=document.createElement('div');container.append(frag);
   return container.innerHTML.slice(0,300000);
 }
+// V42：屏幕比例优先，移动端不套用电脑版保存的固定像素宽度。
+// 竖屏手机保留至少约四分之一的画布；横屏及较宽设备自动缩窄正文占比。
+let doc42MobileDragRatio=null;
+let doc42PrevMobile=window.innerWidth<=900;
+let doc42PrevLandscape=window.innerWidth>window.innerHeight;
 function doc35MeasureWidth(){
-  const avail=Math.max(280,window.innerWidth);
-  if(avail<=700)return avail;
+  const avail=Math.max(1,window.innerWidth);
+  if(avail<=900){
+    const landscape=avail>window.innerHeight;
+    const proportion=avail<=480?(landscape?.65:.74):avail<=700?(landscape?.63:.68):(landscape?.60:.61);
+    const leftVisible=Math.max(64,Math.round(avail*(avail<=480?.20:avail<=700?.26:.30)));
+    const maxWidth=Math.max(1,avail-leftVisible);
+    const minWidth=Math.min(maxWidth,Math.max(170,Math.round(avail*.52)));
+    const width=Math.round(avail*(doc42MobileDragRatio??proportion));
+    return Math.max(minWidth,Math.min(width,maxWidth));
+  }
   const def=Math.max(Math.ceil(avail*.36),440);
   let stored=0;try{stored=Number(localStorage.getItem(DOC35_STORAGE_WIDTH))||0;}catch{}
   const saved=doc35Width||stored||def;
@@ -4857,6 +4946,7 @@ function toggleDoc35Plan(owner,key,block){
     if(blockId&&!existing)return;
     const editor=document.createElement('textarea');editor.className='plan-mini-editor';editor.rows=1;
     editor.value=existing?.text||'';editor.maxLength=30000;editor.spellcheck=false;
+    editor.dataset.planOwnerId=owner.id;editor.dataset.planKey=key;editor.dataset.planBlockId=existing?.id||'';
     editor.setAttribute('aria-label',existing?'原位编辑计划小块':'原位新增计划小块');
     const created=!existing;
     let host=target;
@@ -4877,7 +4967,7 @@ function toggleDoc35Plan(owner,key,block){
       const value=editor.value.trim();
       if(commit){
         if(existing){
-          if(value&&value!==existing.text){existing.text=value;planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 原位编辑 · '+value.slice(0,18));}
+          if(value&&value!==existing.text){existing.text=value;existing.marks=[];planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 原位编辑 · '+value.slice(0,18));}
           else if(!value){owner.plan.blockCells[key]=planBlockList(owner,key).filter(x=>x.id!==existing.id);
             planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 删除空项');}
         }else if(value){
@@ -4973,6 +5063,121 @@ function toggleDoc35Plan(owner,key,block){
     if(left<margin)left=margin;if(top<margin)top=margin;
     menu.style.left=left+'px';menu.style.top=top+'px';
   }
+  // V44：每个小块都可以长按后拖到同格其它位置，或拖到其它计划单元格。
+  // 拖动的是原对象，textMode/docHTML/linkId/颜色标注不会丢失。
+  let planMiniDrag=null,planMiniIgnoreClickUntil=0;
+  function clearPlanMiniDropHint(){
+    document.querySelectorAll('.plan-mini-drop-before,.plan-mini-drop-after,.plan-mini-drop-empty')
+      .forEach(el=>el.classList.remove('plan-mini-drop-before','plan-mini-drop-after','plan-mini-drop-empty'));
+  }
+  function endPlanMiniDrag(commit=false){
+    const d=planMiniDrag;if(!d)return;
+    planMiniDrag=null;clearTimeout(d.timer);
+    window.removeEventListener('pointermove',d.onMove,true);
+    window.removeEventListener('pointerup',d.onUp,true);
+    window.removeEventListener('pointercancel',d.onCancel,true);
+    if(d.frame)cancelAnimationFrame(d.frame);
+    d.ghost?.remove();d.row.classList.remove('plan-mini-dragging');clearPlanMiniDropHint();
+    if(!d.active||!commit||!d.target)return;
+    const source=topicById(d.ownerId),destination=topicById(d.target.ownerId);
+    if(!source||!destination||source.kind!=='plan'||destination.kind!=='plan')return;
+    // V44：按照真实计划表的 ownerId + 单元格 key 判定同一格。
+    // 共享的月/周分类格可能在画布上出现多个视图，但底层只有一份数据。
+    const sameCell=source.id===destination.id&&d.key===d.target.key;
+    const from=planBlockList(source,d.key);
+    const to=sameCell?from:planBlockList(destination,d.target.key);
+    const sourceIndex=from.findIndex(x=>x.id===d.blockId);if(sourceIndex<0)return;
+    const item=from[sourceIndex],targetId=d.target.blockId;
+    if(sameCell&&targetId===item.id)return;
+    const targetIndex=targetId?to.findIndex(x=>x.id===targetId):-1;
+    if(targetId&&targetIndex<0)return; // 目标在拖动过程中消失，不进行错误插入
+    let insert=targetIndex<0?to.length:targetIndex+(d.target.after?1:0);
+    if(sameCell&&sourceIndex<insert)insert--;
+    if(sameCell&&insert===sourceIndex)return;
+    // 真正的“移动”：从原位置移除同一个对象，再插入目标位置；不是复制一份文本。
+    from.splice(sourceIndex,1);
+    to.splice(Math.max(0,Math.min(insert,to.length)),0,item);
+    planSyncCellTextFromBlocks(source,d.key,false);
+    if(!sameCell)planSyncCellTextFromBlocks(destination,d.target.key,false);
+    if(selectedPlanFocus?.ownerId===d.ownerId&&selectedPlanFocus.key===d.key&&selectedPlanFocus.blockId===d.blockId){
+      selectedPlanFocus.ownerId=d.target.ownerId;selectedPlanFocus.key=d.target.key;
+      const board=document.querySelector('.plan-block-wrap[data-plan-owner-id="'+CSS.escape(d.target.ownerId)+'"][data-plan-key="'+CSS.escape(d.target.key)+'"]');
+      selectedPlanFocus.planId=board?.closest('.plan-node')?.dataset.id||d.target.ownerId;
+      selectedPlanFocus.categoryId=d.target.key.split('|')[0];
+    }
+    if(stagedPlanBlockSource?.ownerId===d.ownerId&&stagedPlanBlockSource.key===d.key&&stagedPlanBlockSource.blockId===d.blockId){
+      stagedPlanBlockSource.ownerId=d.target.ownerId;stagedPlanBlockSource.key=d.target.key;
+    }
+    if(doc35Active?.kind==='plan'&&doc35Active.ownerId===d.ownerId&&doc35Active.key===d.key&&doc35Active.blockId===d.blockId){
+      doc35Active.ownerId=d.target.ownerId;doc35Active.key=d.target.key;
+    }
+    scheduleSave('计划小块 · 长按移动 · '+item.text.slice(0,20));render();
+  }
+  function cancelPlanMiniDrag(){endPlanMiniDrag(false);}
+  function startPlanMiniDrag(e,row,owner,key,blockId){
+    if(planMiniDrag||e.button!==0||e.target.closest('button,textarea,input,[contenteditable]'))return;
+    const d={pointerId:e.pointerId,ownerId:owner.id,key,blockId,row,
+      startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,target:null,ghost:null,timer:null};
+    planMiniDrag=d;
+    const begin=()=>{
+      if(planMiniDrag!==d||anySurfacePinch||!row.isConnected)return;
+      d.active=true;planMiniIgnoreClickUntil=Date.now()+750;
+      row.classList.add('plan-mini-dragging');
+      const ghost=document.createElement('div');ghost.className='plan-mini-ghost';
+      ghost.textContent=(findPlanBlock(owner,key,blockId)?.text||'').slice(0,130);
+      document.body.append(ghost);d.ghost=ghost;
+      reposition();
+      // 靠近画布边缘继续长按拖动时缓慢平移画布，方便拖入屏幕外的日期/分类格。
+      const edgePan=()=>{
+        if(planMiniDrag!==d||!d.active)return;
+        if(d.hasMoved){
+          const r=stage.getBoundingClientRect(),pad=48;
+          if(d.x>=r.left&&d.x<=r.right&&d.y>=r.top&&d.y<=r.bottom){
+            const dx=d.x<r.left+pad?Math.min(11,(r.left+pad-d.x)*.22):
+              d.x>r.right-pad?-Math.min(11,(d.x-(r.right-pad))*.22):0;
+            const dy=d.y<r.top+pad?Math.min(11,(r.top+pad-d.y)*.22):
+              d.y>r.bottom-pad?-Math.min(11,(d.y-(r.bottom-pad))*.22):0;
+            if(dx||dy){state.panX+=dx;state.panY+=dy;applyTransform();reposition();}
+          }
+        }
+        d.frame=requestAnimationFrame(edgePan);
+      };
+      d.frame=requestAnimationFrame(edgePan);
+    };
+    const reposition=()=>{
+      if(!d.active)return;
+      d.ghost.style.left=Math.max(4,Math.min(innerWidth-210,d.x+14))+'px';
+      d.ghost.style.top=Math.max(4,Math.min(innerHeight-50,d.y+12))+'px';
+      clearPlanMiniDropHint();d.target=null;
+      const under=document.elementFromPoint(d.x,d.y);
+      const targetRow=under?.closest('.plan-mini-block[data-block-id]');
+      const board=under?.closest('.plan-block-wrap[data-plan-key][data-plan-owner-id]');
+      if(!board)return;
+      const target={ownerId:board.dataset.planOwnerId,key:board.dataset.planKey,blockId:null,after:true};
+      if(targetRow){
+        const r=targetRow.getBoundingClientRect();
+        target.blockId=targetRow.dataset.blockId;target.after=d.y>=r.top+r.height/2;
+        targetRow.classList.add(target.after?'plan-mini-drop-after':'plan-mini-drop-before');
+      }else board.classList.add('plan-mini-drop-empty');
+      d.target=target;
+    };
+    d.onMove=ev=>{
+      if(ev.pointerId!==d.pointerId)return;
+      d.x=ev.clientX;d.y=ev.clientY;
+      if(!d.active){if(Math.hypot(d.x-d.startX,d.y-d.startY)>10)cancelPlanMiniDrag();return;}
+      if(ev.cancelable)ev.preventDefault();ev.stopPropagation();d.hasMoved=true;reposition();
+    };
+    d.onUp=ev=>{
+      if(ev.pointerId!==d.pointerId)return;
+      if(d.active){if(ev.cancelable)ev.preventDefault();ev.stopPropagation();planMiniIgnoreClickUntil=Date.now()+700;}
+      endPlanMiniDrag(true);
+    };
+    d.onCancel=ev=>{if(ev.pointerId===d.pointerId)endPlanMiniDrag(false);};
+    window.addEventListener('pointermove',d.onMove,true);
+    window.addEventListener('pointerup',d.onUp,true);
+    window.addEventListener('pointercancel',d.onCancel,true);
+    d.timer=setTimeout(begin,e.pointerType==='touch'?430:420);
+  }
   function renderPlanBlockCell(owner,key,ariaLabel,compact=false,context=null){
     const wrap=document.createElement('div');wrap.className='plan-note-wrap plan-block-wrap';wrap.dataset.planKey=key;wrap.dataset.planOwnerId=owner.id;
     const hidden=document.createElement('textarea');hidden.className='plan-note';hidden.rows=2;hidden.maxLength=30000;hidden.spellcheck=false;hidden.value=planValue(owner,key);hidden.placeholder='输入事项';hidden.setAttribute('aria-label',ariaLabel);hidden.tabIndex=-1;hidden.setAttribute('aria-hidden','true');
@@ -4990,13 +5195,14 @@ function toggleDoc35Plan(owner,key,block){
         row.title=row.dataset.role==='category'?'单击高亮相关进度；再点右侧小块即可关联；双击直接编辑':'单击查看进度；双击直接编辑；右键显示菜单';
         row.addEventListener('pointerdown',e=>e.stopPropagation());
         if(item.textMode)row.classList.add('plan-text-mode');
-        row.addEventListener('click',e=>{e.stopPropagation();selectPlanBlockDirect(owner,key,item,{
+        row.addEventListener('click',e=>{e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;selectPlanBlockDirect(owner,key,item,{
           planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
           if(doc35Active?.kind==='plan'&&doc35Active.ownerId===owner.id&&doc35Active.key===key&&doc35Active.blockId!==item.id)closeDoc35();
         });
-        row.addEventListener('dblclick',e=>{e.stopPropagation();if(item.textMode)selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});else openPlanMiniEditor(owner,key,item.id,row);});
-        row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
-        const text=document.createElement('div');text.className='plan-mini-text';text.textContent=item.text;
+        row.addEventListener('dblclick',e=>{e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;if(item.textMode)selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});else openPlanMiniEditor(owner,key,item.id,row);});
+        row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
+        row.addEventListener('pointerdown',e=>startPlanMiniDrag(e,row,owner,key,item.id));
+        const text=document.createElement('div');text.className='plan-mini-text';renderMarkedText(text,item.text,item.marks||[]);
         const plus=document.createElement('button');plus.type='button';plus.className='plan-mini-plus';plus.textContent='+';
         plus.title='在这项下方新增小块';plus.setAttribute('aria-label','在'+item.text.slice(0,25)+'之后添加一项');
         plus.addEventListener('pointerdown',e=>e.stopPropagation());
@@ -5143,9 +5349,13 @@ function toggleDoc35Plan(owner,key,block){
     const getTargets=()=>[...document.querySelectorAll('.plan-node .plan-axis-target')]
       .filter(el=>el.closest('.plan-node')?.dataset.id===t.id&&el.closest('#planFocusOverlay')===element.closest('#planFocusOverlay')&&el.dataset.axis===axis&&el.dataset.axisId!==id);
     let dragging=false,ghost=null,drop=null;
+    const touchAxis=e.pointerType==='touch';
+    let axisArmed=!touchAxis,axisTimer=touchAxis?setTimeout(()=>{axisArmed=true;},480):null;
     const move=ev=>{
       if(ev.pointerId!==e.pointerId)return;
-      if(!dragging&&Math.hypot(ev.clientX-startX,ev.clientY-startY)<9)return;
+      const travel=Math.hypot(ev.clientX-startX,ev.clientY-startY);
+      if(!dragging&&travel<9)return;
+      if(!dragging&&!axisArmed){clear();return;} // 单指滑动，不拖动整行/列
       if(!dragging){
         dragging=true;document.body.classList.add('plan-is-dragging');
         ghost=document.createElement('div');ghost.className='plan-axis-ghost';ghost.textContent=element.textContent;document.body.append(ghost);
@@ -5166,6 +5376,7 @@ function toggleDoc35Plan(owner,key,block){
       }else drop=null;
     };
     const clear=()=>{
+      clearTimeout(axisTimer);
       window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',cancel);
       ghost?.remove();element.classList.remove('plan-axis-origin');document.body.classList.remove('plan-is-dragging');
       document.querySelectorAll('.plan-axis-drop-before,.plan-axis-drop-after').forEach(el=>el.classList.remove('plan-axis-drop-before','plan-axis-drop-after'));
@@ -5699,8 +5910,11 @@ function toggleDoc35Plan(owner,key,block){
     if(axisDrag||topicDrag||columnResize||rowResize)return;
     // 不捕获手机触摸指针：捕获会吞掉原生选择手柄/系统长按行为。
     if(e.pointerType!=='touch')try{field.setPointerCapture(e.pointerId);}catch{}
-    axisDrag={pointerId:e.pointerId,id,axis,from,wrap,field,startX:e.clientX,startY:e.clientY,
-      moved:false,dropBoundary:null,ghost:null,line:null};
+    // V44：手机短滑手指优先平移画布；行列拖动必须长按后才允许。
+    const d={pointerId:e.pointerId,id,axis,from,wrap,field,startX:e.clientX,startY:e.clientY,
+      moved:false,dropBoundary:null,ghost:null,line:null,touchArmed:e.pointerType!=='touch',touchTimer:null};
+    axisDrag=d;
+    if(e.pointerType==='touch')d.touchTimer=setTimeout(()=>{if(axisDrag===d)d.touchArmed=true;},480);
   }
   function beginAxisMove(d){
     d.moved=true;state.selected=d.id;
@@ -5801,9 +6015,12 @@ function toggleDoc35Plan(owner,key,block){
       if(d.moved){e.preventDefault();updateTopicMove(d,e);}
     }
     if(axisDrag&&axisDrag.pointerId===e.pointerId){
-      const d=axisDrag;
-      if(!d.moved&&Math.hypot(e.clientX-d.startX,e.clientY-d.startY)>=8)beginAxisMove(d);
-      if(d.moved){e.preventDefault();updateAxisMove(d,e);}
+      const d=axisDrag,travel=Math.hypot(e.clientX-d.startX,e.clientY-d.startY);
+      if(!d.moved&&travel>=8){
+        if(!d.touchArmed){clearTimeout(d.touchTimer);axisDrag=null;}
+        else beginAxisMove(d);
+      }
+      if(axisDrag===d&&d.moved){e.preventDefault();updateAxisMove(d,e);}
     }
   },{passive:false});
   window.addEventListener('pointerup',e=>{
@@ -5812,7 +6029,7 @@ function toggleDoc35Plan(owner,key,block){
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,true);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,true);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,true);}
-    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,true);}
+    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;clearTimeout(d.touchTimer);finishAxisMove(d,true);}
   });
   window.addEventListener('pointercancel',e=>{
     if(finishFreeGesture(e,false))return;
@@ -5820,7 +6037,7 @@ function toggleDoc35Plan(owner,key,block){
     if(columnResize&&columnResize.pointerId===e.pointerId){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
     if(rowResize&&rowResize.pointerId===e.pointerId){const d=rowResize;rowResize=null;finishRowResize(d,false);}
     if(topicDrag&&topicDrag.pointerId===e.pointerId){const d=topicDrag;topicDrag=null;finishTopicMove(d,false);}
-    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;finishAxisMove(d,false);}
+    if(axisDrag&&axisDrag.pointerId===e.pointerId){const d=axisDrag;axisDrag=null;clearTimeout(d.touchTimer);finishAxisMove(d,false);}
   });
 
 
@@ -5829,7 +6046,7 @@ function toggleDoc35Plan(owner,key,block){
   const richMobileHelper=$('richMobileHelper');
   function showRichMobileHelper(){
     const editor=document.activeElement;
-    if(editor?.matches?.('.topic-editor,.matrix-cell-input:not([readonly]),.plan-note,.plan-axis-input'))lastRichEditor=editor;
+    if(editor?.matches?.('.topic-editor,.matrix-cell-input:not([readonly]),.plan-note,.plan-axis-input,.plan-mini-editor'))lastRichEditor=editor;
     const active=(state.editing||state.matrixEditing||state.planEditing)&&lastRichEditor?.isConnected&&$('richToolbar').hidden;
     richMobileHelper.hidden=!active;
   }
@@ -5858,15 +6075,18 @@ function toggleDoc35Plan(owner,key,block){
     const focused=document.activeElement;
     const field=(focused instanceof HTMLTextAreaElement || focused instanceof HTMLInputElement)?focused:lastRichEditor;
     if(!(field instanceof HTMLTextAreaElement || field instanceof HTMLInputElement))return;
-    if(!field.matches('.matrix-cell-input,.topic-editor,.plan-note,.plan-axis-input')||!field.isConnected)return;
+    if(!field.matches('.matrix-cell-input,.topic-editor,.plan-note,.plan-axis-input,.plan-mini-editor')||!field.isConnected)return;
     const start=field.selectionStart,end=field.selectionEnd;
     if(start===null||end===null||start===end){if(!richPopover.hidden)return;hideRichBar();return;}
-    let id,r=null,c=null,kind='topic',planKey=null,planAxis=null,planAxisId=null;
+    let id,r=null,c=null,kind='topic',planKey=null,planAxis=null,planAxisId=null,planBlockId=null;
     if(field.classList.contains('matrix-cell-input')){
       const wrapper=field.closest('.matrix-node'),tr=field.closest('tr'),td=field.closest('td');
       if(!wrapper||!tr||!td)return;
       id=wrapper.dataset.id;r=tr.rowIndex;c=td.cellIndex;kind='matrix';
       if(state.matrixEditing?.id!==id||state.matrixEditing?.row!==r||state.matrixEditing?.col!==c)return;
+    }else if(field.classList.contains('plan-mini-editor')){
+      id=field.dataset.planOwnerId;planKey=field.dataset.planKey;planBlockId=field.dataset.planBlockId;kind='planBlock';
+      if(!planBlockId||!findPlanBlock(topicById(id),planKey,planBlockId))return;
     }else if(field.classList.contains('plan-note')){
       id=field.dataset.planOwnerId||field.closest('.plan-node')?.dataset.id;planKey=field.dataset.planKey;kind='planCell';
       if(state.planEditing?.id!==id||state.planEditing?.key!==planKey)return;
@@ -5875,7 +6095,7 @@ function toggleDoc35Plan(owner,key,block){
       planAxis=field.dataset.planAxis;planAxisId=field.dataset.planAxisId;kind='planAxis';
       if(state.planEditing?.id!==id||state.planEditing?.axis!==planAxis||state.planEditing?.axisId!==planAxisId)return;
     }else {id=field.closest('.topic')?.dataset.id;if(state.editing!==id)return;}
-    richSelection={id,row:r,col:c,kind,planKey,planAxis,planAxisId,start,end,field};
+    richSelection={id,row:r,col:c,kind,planKey,planAxis,planAxisId,planBlockId,start,end,field};
     lastRichEditor=field;richMobileHelper.hidden=true;
     const caret=selectedTextCoordinates(field,end),w=richBar.offsetWidth||90;
     const left=Math.max(8,Math.min(innerWidth-w-8,caret.x-w/2));
@@ -5887,6 +6107,7 @@ function toggleDoc35Plan(owner,key,block){
     const rowTopic=topicById(id);
     let textValue='',marksValue=[];
     if(kind==='matrix'&&rowTopic){textValue=tableValue(rowTopic,r,c);marksValue=activeMarks(rowTopic,r,c);}
+    else if(kind==='planBlock'&&rowTopic){const b=findPlanBlock(rowTopic,planKey,planBlockId);textValue=b?.text||'';marksValue=b?.marks||[];}
     else if(kind==='planCell'&&rowTopic){textValue=planValue(rowTopic,planKey);marksValue=planMarks(rowTopic,planCellMarkKey(planKey));}
     else if(kind==='planAxis'&&rowTopic){textValue=rowTopic.plan?.[planAxis]?.find(v=>v.id===planAxisId)?.name||'';marksValue=planMarks(rowTopic,planAxisMarkKey(planAxis,planAxisId));}
     else if(rowTopic){textValue=rowTopic.text;marksValue=activeMarks(rowTopic);}
@@ -5901,7 +6122,10 @@ function toggleDoc35Plan(owner,key,block){
     const s=richSelection;if(!s){notify('请先双击进入文字编辑，再选中要标注的文字');return;}
     const t=topicById(s.id);if(!t)return;
     let text='',existing=[],markKey=null;
-    if(s.kind==='planCell'){
+    if(s.kind==='planBlock'){
+      if(t.kind!=='plan')return;const b=findPlanBlock(t,s.planKey,s.planBlockId);if(!b)return;
+      text=b.text;existing=b.marks||[];
+    }else if(s.kind==='planCell'){
       if(t.kind!=='plan')return;
       markKey=planCellMarkKey(s.planKey);text=planValue(t,s.planKey);existing=planMarks(t,markKey);
     }else if(s.kind==='planAxis'){
@@ -5915,7 +6139,14 @@ function toggleDoc35Plan(owner,key,block){
     const start=Math.min(s.start,text.length),end=Math.min(s.end,text.length);
     if(end<=start){notify('请重新选中要标注的文字');return;}
     const next=assignMarks(existing,text,start,end,preset.fg,preset.bg);
-    if(markKey){
+    if(s.kind==='planBlock'){
+      const b=findPlanBlock(t,s.planKey,s.planBlockId);if(!b)return;b.marks=next;
+      document.querySelectorAll('.plan-mini-block[data-block-id]').forEach(row=>{
+        if(row.dataset.planOwnerId===t.id&&row.dataset.planKey===s.planKey&&row.dataset.blockId===s.planBlockId){
+          const visual=row.querySelector('.plan-mini-text');if(visual)renderMarkedText(visual,text,next);
+        }
+      });
+    }else if(markKey){
       putPlanMarks(t,markKey,next);
       if(s.kind==='planCell'){
         document.querySelectorAll('.plan-note-wrap').forEach(w=>{
@@ -5948,7 +6179,10 @@ function toggleDoc35Plan(owner,key,block){
     const s=richSelection;if(!s){notify('请先进入编辑并选中一段文字');return;}
     const t=topicById(s.id);if(!t)return;
     let text='',existing=[],put=null;
-    if(s.kind==='planCell'){
+    if(s.kind==='planBlock'){
+      if(t.kind!=='plan')return;const b=findPlanBlock(t,s.planKey,s.planBlockId);if(!b)return;
+      text=b.text;existing=b.marks||[];put=marks=>{b.marks=marks;};
+    }else if(s.kind==='planCell'){
       if(t.kind!=='plan')return;
       const key=planCellMarkKey(s.planKey);text=planValue(t,s.planKey);existing=planMarks(t,key);
       put=(marks)=>putPlanMarks(t,key,marks);
@@ -5966,7 +6200,13 @@ function toggleDoc35Plan(owner,key,block){
     if(end<=start){notify('请重新选中文字');return;}
     const next=toggleStrikeMarks(existing,text,start,end);
     put(next);
-    if(s.kind==='matrix'){
+    if(s.kind==='planBlock'){
+      document.querySelectorAll('.plan-mini-block[data-block-id]').forEach(row=>{
+        if(row.dataset.planOwnerId===t.id&&row.dataset.planKey===s.planKey&&row.dataset.blockId===s.planBlockId){
+          const visual=row.querySelector('.plan-mini-text');if(visual)renderMarkedText(visual,text,next);
+        }
+      });
+    }else if(s.kind==='matrix'){
       const visual=s.field.closest('td')?.querySelector('.matrix-cell-visual');
       if(visual)renderMarkedText(visual,text,next);
     }else if(s.kind==='planCell'){
@@ -6042,14 +6282,14 @@ function toggleDoc35Plan(owner,key,block){
     richSelectionFromDOM();showRichMobileHelper();
   },180);}
   document.addEventListener('selectionchange',deferredMobileSelect);
-  document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input'))deferredMobileSelect();},true);
-  document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input')){lastRichEditor=e.target;showRichMobileHelper();}},true);
+  document.addEventListener('select',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input,.plan-mini-editor'))deferredMobileSelect();},true);
+  document.addEventListener('focusin',e=>{if(e.target?.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input,.plan-mini-editor')){lastRichEditor=e.target;showRichMobileHelper();}},true);
   document.addEventListener('touchend',()=>{[100,320,650].forEach(ms=>setTimeout(()=>{richSelectionFromDOM();showRichMobileHelper();},ms));},{passive:true});
   richMobileHelper.addEventListener('pointerdown',e=>e.preventDefault());
   richMobileHelper.addEventListener('click',()=>{richSelectionFromDOM();if(!richSelection){notify('请先长按选中一段文字，再点标注');return;}richBar.hidden=false;showRichPresets();richPopover.hidden=false;placeRichPopover();});
-  document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input'))deferRichSelection();});
+  document.addEventListener('keyup',e=>{if(e.target.matches?.('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input,.plan-mini-editor'))deferRichSelection();});
   document.addEventListener('pointerdown',e=>{
-    if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input')){
+    if(!e.target.closest('#richToolbar,#richPopover')&&!e.target.matches('.topic-editor,.matrix-cell-input,.plan-note,.plan-axis-input,.plan-mini-editor')){
       if(!richBar.hidden)hideRichBar();
       showRichMobileHelper();
     }
@@ -7157,8 +7397,43 @@ function toggleDoc35Plan(owner,key,block){
       distance:Math.max(1,Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY))
     };
   }
+  // V44：统一由 Pointer Events 处理表格内单指平移。
+  // touchmove 方案会受浏览器 touch-action/pointercancel、子节点监听器影响，造成表格上滑动失败。
+  // 捕获阶段能收到表格内文字、卡片和表头的移动事件；拖动超过阈值后平移画布。
+  let tablePointerPan=null;
+  function tablePanExcluded(target){
+    return !!target.closest('textarea:not([readonly]):not([aria-hidden="true"]),input:not([readonly]),[contenteditable="true"],'+
+      '.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer,.plan-axis-input,'+
+      '.plan-plus,.plan-mini-plus,.plan-block-add,.plan-category-inline-actions,.doc35-icon,'+
+      '.plan-col-head .plan-axis-input,.plan-row-head .plan-axis-input');
+  }
+  stage.addEventListener('pointerdown',e=>{
+    if(e.pointerType!=='touch'||e.button!==0||anySurfacePinch||!e.isPrimary)return;
+    if(!e.target.closest('.plan-node.plan-inline,.matrix-node')||tablePanExcluded(e.target))return;
+    tablePointerPan={id:e.pointerId,startX:e.clientX,startY:e.clientY,
+      baseX:state.panX,baseY:state.panY,active:false};
+  },true);
+  stage.addEventListener('pointermove',e=>{
+    const p=tablePointerPan;
+    if(!p||p.id!==e.pointerId||anySurfacePinch||planMiniDrag?.active)return;
+    if((e.buttons===0)&&e.pointerType==='mouse')return;
+    const dx=e.clientX-p.startX,dy=e.clientY-p.startY;
+    if(!p.active&&Math.hypot(dx,dy)<8)return;
+    if(!p.active){p.active=true;cancelPlanMiniDrag();}
+    if(e.cancelable)e.preventDefault();
+    state.panX=p.baseX+dx;state.panY=p.baseY+dy;applyTransform();
+  },true);
+  function finishTablePointerPan(e){
+    if(tablePointerPan&&e.pointerId===tablePointerPan.id){
+      const hadMoved=tablePointerPan.active;tablePointerPan=null;
+      if(hadMoved&&e.cancelable)e.preventDefault();
+    }
+  }
+  stage.addEventListener('pointerup',finishTablePointerPan,true);
+  stage.addEventListener('pointercancel',finishTablePointerPan,true);
   stage.addEventListener('touchstart',e=>{
     if(e.touches.length<2||anySurfacePinch)return;
+    tablePointerPan=null;cancelPlanMiniDrag();
     if(e.cancelable)e.preventDefault();
     cancelMatrixTouchHold();
     // 禁止原有空白画布手势在同一轮触摸中重复缩放。
@@ -7825,6 +8100,7 @@ $('doc35Resize').addEventListener('pointerdown',e=>{
   const move=ev=>{
     if(ev.pointerId!==e.pointerId)return;
     ev.preventDefault();doc35Width=Math.round(startWidth+startX-ev.clientX);
+    if(window.innerWidth<=900)doc42MobileDragRatio=doc35Width/Math.max(1,window.innerWidth);
     doc35Position();
   };
   const end=ev=>{
@@ -7834,7 +8110,8 @@ $('doc35Resize').addEventListener('pointerdown',e=>{
     handle.removeEventListener('pointercancel',end);
     handle.classList.remove('is-resizing');
     doc35Width=doc35MeasureWidth();
-    try{localStorage.setItem(DOC35_STORAGE_WIDTH,String(doc35Width));}catch{}
+    if(window.innerWidth<=900)doc42MobileDragRatio=doc35Width/Math.max(1,window.innerWidth);
+    else try{localStorage.setItem(DOC35_STORAGE_WIDTH,String(doc35Width));}catch{}
     try{handle.releasePointerCapture(e.pointerId);}catch{}
     applyTransform();
   };
@@ -7842,7 +8119,14 @@ $('doc35Resize').addEventListener('pointerdown',e=>{
   handle.addEventListener('pointerup',end);
   handle.addEventListener('pointercancel',end);
 });
-window.addEventListener('resize',()=>{if(doc35Active)doc35Position();});
+window.addEventListener('resize',()=>{
+  const mobile=window.innerWidth<=900,landscape=window.innerWidth>window.innerHeight;
+  // 横竖屏切换时恢复按比例的初始布局，不把上一个方向手动拖的宽度硬套过来。
+  if(mobile!==doc42PrevMobile){doc35Width=0;doc42MobileDragRatio=null;}
+  else if(mobile&&landscape!==doc42PrevLandscape)doc42MobileDragRatio=null;
+  doc42PrevMobile=mobile;doc42PrevLandscape=landscape;
+  if(doc35Active)doc35Position();
+});
 window.addEventListener('pagehide',doc35Flush);
 window.addEventListener('resize',applyTransform);
 render();centerInitial();
@@ -7855,81 +8139,90 @@ render();centerInitial();
 <script>
 (() => {
   'use strict';
-  const BUILD = "2026.11.20.8";
+  // 版本来源统一：index.html 的 app-build 与 version.json 中 version 必须一致。
+  const BUILD = document.querySelector('meta[name="app-build"]')?.content || '1.0.44';
   const $ = id => document.getElementById(id);
-  const installButton = $('pwaInstallBtn');
-  const banner = $('appUpdateBanner');
-  let deferredInstall = null;
-  let registration = null;
-  let waitingWorker = null;
-  let requestedUpdate = false;
-  const localSite = location.protocol==='https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-
-  window.addEventListener('beforeinstallprompt', event => {
-    event.preventDefault();
-    deferredInstall = event;
-    installButton.hidden = false;
+  const installButton=$('pwaInstallBtn'),banner=$('appUpdateBanner');
+  let deferredInstall=null,registration=null,waitingWorker=null,requestedUpdate=false;
+  let checkedAt=0,checkPromise=null,lastKnownRemote='';
+  const localSite=location.protocol==='https:' || /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const ignoredKey='diyrecord_ignored_update_'+BUILD;
+  const compareVersion=(a,b)=>{
+    const parse=s=>String(s||'').split('.').map(v=>parseInt(v,10));
+    const aa=parse(a),bb=parse(b);if(aa.some(n=>!Number.isFinite(n))||bb.some(n=>!Number.isFinite(n)))return a===b?0:null;
+    for(let i=0;i<Math.max(aa.length,bb.length);i++){
+      const d=(aa[i]||0)-(bb[i]||0);if(d)return d>0?1:-1;
+    }return 0;
+  };
+  const readIgnored=()=>{try{return localStorage.getItem(ignoredKey)||'';}catch{return ''}};
+  const writeIgnored=v=>{try{localStorage.setItem(ignoredKey,v);}catch{}};
+  window.addEventListener('beforeinstallprompt',event=>{
+    event.preventDefault();deferredInstall=event;installButton.hidden=false;
   });
-  window.addEventListener('appinstalled', () => { installButton.hidden = true; deferredInstall = null; });
-  installButton.addEventListener('click', async () => {
-    if (!deferredInstall) return;
-    const evt = deferredInstall;
-    deferredInstall = null;
-    installButton.hidden = true;
-    try { await evt.prompt(); await evt.userChoice; } catch (error) { console.warn('安装交互不可用',error); }
+  window.addEventListener('appinstalled',()=>{installButton.hidden=true;deferredInstall=null;});
+  installButton.addEventListener('click',async()=>{
+    if(!deferredInstall)return;const evt=deferredInstall;deferredInstall=null;installButton.hidden=true;
+    try{await evt.prompt();await evt.userChoice;}catch(error){console.warn('安装交互不可用',error);}
   });
-
-  function offerUpdate(worker) {
-    if (worker) waitingWorker = worker;
-    banner.hidden = false;
+  function offerUpdate(version,worker){
+    if(!version||compareVersion(version,BUILD)!==1){banner.hidden=true;waitingWorker=null;return;}
+    if(readIgnored()===version){banner.hidden=true;return;}
+    lastKnownRemote=version;waitingWorker=worker||registration?.waiting||null;
+    banner.hidden=false;
   }
-  $('appUpdateLater').addEventListener('click', () => { banner.hidden=true; });
-  $('appUpdateNow').addEventListener('click', () => {
-    const info = $('saveStatus')?.textContent||'';
-    if (/待同步|未登录|同步中|保存中/.test(info) &&
-      !window.confirm('当前可能仍有未同步的修改。请确认已经备份或愿意稍后再同步，然后再刷新。继续更新吗？')) return;
-    requestedUpdate=true;
-    if (waitingWorker) {
-      waitingWorker.postMessage({type:'SKIP_WAITING'});
-      // 正常情况下 controllerchange 会触发刷新。
-      setTimeout(() => { if(requestedUpdate)location.reload(); },2800);
-    } else { location.reload(); }
+  $('appUpdateLater').addEventListener('click',()=>{
+    banner.hidden=true;if(lastKnownRemote)writeIgnored(lastKnownRemote);
   });
-
-  async function checkLatestVersion() {
-    if (!localSite || !navigator.onLine || document.hidden) return;
-    try {
-      const path = new URL('./version.json?check='+Date.now(), location.href);
-      const result = await fetch(path, {cache:'no-store'});
-      if (!result.ok) return;
-      const current = await result.json();
-      if (typeof current.version==='string' && current.version!==BUILD) offerUpdate(null);
-    } catch (error) { console.debug('暂不能检查版本',error); }
+  $('appUpdateNow').addEventListener('click',()=>{
+    const info=$('saveStatus')?.textContent||'';
+    if(/待同步|未登录|同步中|保存中/.test(info) &&
+       !window.confirm('当前可能仍有未同步的修改。请先备份或确认同步完成。继续更新吗？'))return;
+    requestedUpdate=true;banner.hidden=true;
+    const worker=waitingWorker||registration?.waiting;
+    if(worker){worker.postMessage({type:'SKIP_WAITING'});
+      setTimeout(()=>{if(requestedUpdate)location.reload();},2800);
+    }else location.reload();
+  });
+  async function checkLatestVersion(force=false){
+    if(!localSite||!navigator.onLine||document.hidden)return;
+    if(checkPromise)return checkPromise;
+    if(!force&&Date.now()-checkedAt<1000*60*2)return;
+    checkedAt=Date.now();
+    checkPromise=(async()=>{
+      try{
+        const path=new URL('./version.json?check='+Date.now(),location.href);
+        const resp=await fetch(path,{cache:'no-store'});if(!resp.ok)return;
+        const data=await resp.json();const version=String(data?.version||'');
+        if(compareVersion(version,BUILD)===1)offerUpdate(version,registration?.waiting);
+        else{banner.hidden=true;waitingWorker=null;lastKnownRemote='';}
+      }catch(err){console.debug('暂不能检查版本',err);}
+    })();
+    try{await checkPromise;}finally{checkPromise=null;}
   }
-
-  if ('serviceWorker' in navigator && localSite) {
-    window.addEventListener('load', async () => {
-      try {
-        registration = await navigator.serviceWorker.register('./service-worker.js', {scope:'./',updateViaCache:'none'});
-        if(registration.waiting && navigator.serviceWorker.controller) offerUpdate(registration.waiting);
-        registration.addEventListener('updatefound', () => {
-          const installing=registration.installing;
-          if(!installing) return;
-          installing.addEventListener('statechange',()=> {
-            if(installing.state==='installed' && navigator.serviceWorker.controller) offerUpdate(installing);
+  if('serviceWorker' in navigator&&localSite){
+    window.addEventListener('load',async()=>{
+      try{
+        registration=await navigator.serviceWorker.register('./service-worker.js',{scope:'./',updateViaCache:'none'});
+        registration.addEventListener('updatefound',()=>{
+          const worker=registration.installing;if(!worker)return;
+          worker.addEventListener('statechange',()=>{
+            if(worker.state==='installed'&&navigator.serviceWorker.controller){
+              waitingWorker=worker;void checkLatestVersion(true);
+            }
           });
         });
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (requestedUpdate) { requestedUpdate=false; location.reload(); }
+        navigator.serviceWorker.addEventListener('controllerchange',()=>{
+          if(requestedUpdate){requestedUpdate=false;location.reload();}
         });
-      } catch(error) { console.warn('PWA 离线功能未启用',error); }
-      await checkLatestVersion();
+      }catch(err){console.warn('PWA 离线功能未启用',err);}
+      await checkLatestVersion(true);
     });
-    document.addEventListener('visibilitychange', () => {
-      if(!document.hidden) { registration?.update().catch(()=>{}); checkLatestVersion(); }
+    document.addEventListener('visibilitychange',()=>{
+      if(!document.hidden){registration?.update().catch(()=>{});void checkLatestVersion();}
     });
-    // 只做检查，不强制重新加载；正常编辑不被中断。
-    setInterval(() => { if(!document.hidden){registration?.update().catch(()=>{});checkLatestVersion();} },5*60*1000);
+    setInterval(()=>{
+      if(!document.hidden){registration?.update().catch(()=>{});void checkLatestVersion();}
+    },5*60*1000);
   }
 })();
 </script>
