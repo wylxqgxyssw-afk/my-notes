@@ -204,7 +204,7 @@
   .topic.drag-origin { background:#494a4c!important; border:2px dashed #b4b6b9!important; opacity:.42; box-shadow:none!important; }
   .topic.drag-origin .plus{display:none!important;}
   .topic.drag-origin .topic-text { opacity:.32; }
-  .topic.drop-child, .matrix-node.drop-child { outline:3px solid var(--blue); outline-offset:5px; }
+  .topic.drop-child, .matrix-node.drop-child, .plan-node.drop-child, .quadrant-node.drop-child, .inline-outline-node.drop-child { outline:3px solid var(--blue); outline-offset:5px; }
   .topic.drop-before, .matrix-node.drop-before { box-shadow:0 -6px 0 -3px #35baff!important; }
   .topic.drop-after, .matrix-node.drop-after { box-shadow:0 6px 0 -3px #35baff!important; }
   .topic-drag-ghost { position:fixed; z-index:80; pointer-events:none; transform:translate(-50%,-50%);
@@ -262,6 +262,30 @@
   .plus.child { left:calc(100% + 12px); top:50%; transform:translateY(-50%); }
   .plus.sibling { left:50%; top:calc(100% + 11px); transform:translateX(-50%); }
   .plus.sibling:hover { transform:translateX(-50%) scale(1.08); }
+  /* V75: 鼠标触碰节点就出现右侧下级 + 下方同级，选择节点后继续可见。 */
+  @media(hover:hover){.topic:not(:hover):not(.selected):not(:focus-within)>.plus{opacity:0;visibility:hidden;pointer-events:none;}
+  .topic:hover>.plus,.topic.selected>.plus{opacity:1;visibility:visible;pointer-events:auto;}}
+  /* V72: 展开 / 收起始终固定在第三列表头，展开后不会跳到最后一列。 */
+  .matrix-node .matrix-table td.matrix-toggle-anchor{position:relative!important;overflow:visible;}
+  .matrix-node .matrix-table td.matrix-toggle-anchor .matrix-cell-visual,
+  .matrix-node .matrix-table td.matrix-toggle-anchor .matrix-cell-input{padding-right:34px!important;}
+  .matrix-node .matrix-table td.matrix-toggle-anchor .matrix-cols-toggle{
+    position:absolute;right:4px;top:50%;transform:translateY(-50%);z-index:7;
+    display:grid;place-items:center;width:24px;height:25px;padding:0;
+    border:0;border-radius:5px;
+    background:transparent;color:var(--matrix-ink,#253047);
+    box-shadow:none;font:700 15px/1 system-ui;
+    cursor:pointer;touch-action:manipulation;}
+  .matrix-node .matrix-table td.matrix-toggle-anchor .matrix-cols-toggle:hover,
+  .matrix-node .matrix-table td.matrix-toggle-anchor .matrix-cols-toggle:focus-visible{
+    outline:2px solid #20b9ff;outline-offset:0;}
+  .matrix-node .matrix-corner{cursor:grab;}
+  .matrix-node .matrix-corner.drag-ready{outline:3px solid #20b9ff;outline-offset:-3px;}
+  .matrix-node .matrix-corner .matrix-corner-mark{position:absolute;left:3px;top:3px;z-index:4;
+    display:flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:5px;
+    font-size:13px;font-weight:800;color:var(--matrix-ink,#fff);background:#219cef26;
+    pointer-events:none;user-select:none;}
+  .matrix-node .matrix-corner:hover .matrix-corner-mark{background:#269df399;}
   /* XMind 风格的内嵌横纵矩阵：没有表格上方的额外中心主题标题。 */
   .matrix-node { position:absolute; color:#f5f5f5; user-select:none; overflow:visible; cursor:default; touch-action:none; }
   .matrix-node .matrix-table { border-collapse:collapse; border-spacing:0; table-layout:fixed; background:#363638; border:1px solid #bfc0c2; width:100%; }
@@ -360,8 +384,12 @@
   .matrix-drop-indicator { position:absolute; pointer-events:none; z-index:8; background:#1fb8ff;
     box-shadow:0 0 0 2px #1fb8ff33,0 0 10px #1fb8ffcc; }
   .matrix-drag-ghost { position:fixed; pointer-events:none; z-index:85; background:#666b72;
-    border:3px solid #23baff; border-radius:7px; padding:12px 16px; max-width:250px; min-width:110px;
+    border:3px solid #23baff; border-radius:7px; padding:12px 16px; max-width:290px; min-width:110px;
     overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#fff; box-shadow:0 9px 22px #0008; text-align:center; }
+  /* V73: 拖出的列生成子表时高亮真实的落点，原表不改变。 */
+  .matrix-column-copy-target{outline:4px solid #20b9ff!important;outline-offset:5px!important;
+    box-shadow:0 0 0 7px #20b9ff29!important;}
+  .matrix-drag-ghost.matrix-copy-preview{background:#186c99;border-color:#91e5ff;white-space:normal;}
 
   .hud { position:absolute; z-index:2; pointer-events:none; }
   .board-bar {display:flex;flex:none;align-items:stretch;gap:5px;background:#303136;border-top:1px solid #494b52;
@@ -747,6 +775,70 @@
 .quadrant-node .quadrant-items{inset:22px;}
 .quadrant-node .quadrant-label{font-size:13px;color:#65717e;}
 
+
+/* V65: 计划小块手机长按菜单：保持移动手势可用，菜单完整留在视口内。 */
+.plan-block-menu{max-height:calc(100dvh - 16px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;}
+@media (pointer:coarse){
+  .plan-block-wrap .plan-mini-block:not(.is-editing){-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+  .plan-block-menu button{min-height:43px;touch-action:manipulation;}
+}
+
+/* V75: 计划单元格不再显示常驻加号。空白处双击创建事项。 */
+.plan-block-wrap .plan-block-add{display:none!important;}
+.plan-block-wrap .plan-block-board{min-height:40px!important;padding-bottom:8px!important;cursor:default;}
+.plan-block-wrap .plan-block-list{min-height:30px;}
+.plan-block-wrap .plan-mini-block{overflow:visible!important;position:relative;padding-right:31px!important;}
+.plan-block-wrap .plan-mini-plus{opacity:0;visibility:hidden;pointer-events:none;z-index:50!important;}
+.plan-block-wrap .plan-mini-block{margin-bottom:27px!important;}
+.plan-block-wrap .plan-mini-plus.child{right:3px;top:50%;bottom:auto;left:auto;transform:translateY(-50%);}
+.plan-block-wrap .plan-mini-plus.sibling{top:calc(100% - 14px);bottom:auto;left:50%;right:auto;transform:translateX(-50%);}
+.plan-block-wrap .plan-mini-block:hover>.plan-mini-plus,
+.plan-block-wrap .plan-mini-block:focus-within>.plan-mini-plus,
+.plan-block-wrap .plan-mini-block.is-active>.plan-mini-plus{opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
+@media(pointer:coarse){.plan-block-wrap .plan-mini-block:not(.is-active):not(:focus-within)>.plan-mini-plus{opacity:0!important;visibility:hidden!important;pointer-events:none!important;}}
+
+/* V76 轻量嵌入式绘图板，桌面/触控通用，无额外依赖。 */
+.drawing-node{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;overflow:hidden;
+  border:2px solid #9bc7ee;border-radius:12px;background:#fff;color:#263444;
+  box-shadow:0 3px 13px #0002;font:13px/1.35 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;}
+.drawing-node.selected{border-color:var(--blue,#168fff);box-shadow:0 0 0 2px #168fff33,0 4px 18px #0003;}
+.drawing-head{height:35px;min-height:35px;display:flex;align-items:center;gap:6px;border-bottom:1px solid #e1e8ef;
+  padding:0 8px;background:#f7faff;color:#283d52;}
+.drawing-drag{border:0;background:transparent;color:#67819d;cursor:grab;touch-action:none;font-size:21px;min-width:23px;height:30px;padding:0;}
+.drawing-drag:active{cursor:grabbing;}
+.drawing-head{touch-action:none;cursor:grab;}
+.drawing-head:active{cursor:grabbing;}
+.drawing-node{isolation:isolate;}
+.drawing-surface{touch-action:none;overscroll-behavior:contain;user-select:none;-webkit-user-select:none;}
+.drawing-node .drawing-surface canvas{touch-action:none!important;overscroll-behavior:contain;}
+
+.drawing-title{flex:1;font-weight:650;font-size:13px;user-select:none;}
+.drawing-head button:not(.drawing-drag){border:0;background:transparent;color:#567089;border-radius:5px;padding:4px 5px;font-size:15px;}
+.drawing-head button:hover{background:#e4f1ff;color:#1466ac;}
+.drawing-surface{flex:1;min-height:0;margin:7px 7px 0;background:#fff;border:1px solid #e3e6ea;border-radius:7px;overflow:hidden;}
+.drawing-surface canvas{display:block;width:100%;height:100%;background:transparent;touch-action:none;cursor:crosshair;}
+.drawing-tools{min-height:47px;display:flex;align-items:center;gap:4px;padding:4px 7px;flex-wrap:nowrap;overflow-x:auto;
+  scrollbar-width:thin;white-space:nowrap;}
+.drawing-tools button{flex:none;display:grid;place-items:center;min-width:32px;height:32px;border:1px solid transparent;
+  border-radius:7px;background:transparent;color:#435062;font-size:18px;cursor:pointer;padding:0 5px;}
+.drawing-tools button:hover{background:#eff6ff;}
+.drawing-tools button.is-active{border-color:#439ef5;background:#eaf4ff;color:#126bc1;}
+.drawing-tools .drawing-swatch{width:20px;min-width:20px;height:20px;border-radius:50%;padding:0;
+  border:2px solid #fff;box-shadow:0 0 0 1px #adb9c6;}
+.drawing-tools .drawing-swatch.is-active{box-shadow:0 0 0 2px #1689e5;}
+.drawing-color{width:27px;height:29px;flex:none;border:0;background:transparent;padding:0;cursor:pointer;}
+.drawing-divider{flex:none;height:23px;width:1px;background:#dce3e9;margin:0 3px;}
+
+
+/* V76 计划表单元格内的画板：与普通事项共存，缩到格内，不溢出相邻列。 */
+.plan-block-wrap .plan-mini-block.plan-mini-drawing{display:block!important;position:relative!important;
+  padding:3px!important;width:100%!important;min-width:0!important;max-width:100%!important;
+  overflow:hidden!important;transform:none!important;}
+.plan-block-wrap .plan-mini-drawing>.drawing-inline{position:relative!important;left:0!important;top:0!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;box-shadow:none;}
+.plan-block-wrap .plan-mini-drawing .drawing-tools{padding:3px;gap:3px;}
+.plan-block-wrap .plan-mini-drawing .drawing-tools button{min-width:28px;}
+
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -756,7 +848,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="1.0.64">
+<meta name="app-build" content="1.0.71">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -914,7 +1006,8 @@
 .more-toggle{background:transparent!important;border:0!important;font-size:27px!important;line-height:16px;padding:2px 9px!important;letter-spacing:1px;color:var(--app-ink,#f8f8fa);}
 .more-toggle:hover{background:var(--nav-hover,#515256)!important;}
 .board-bar{min-height:34px;height:34px;padding:3px 8px;gap:4px;background:var(--nav);border-color:var(--nav-border);}
-.board-tabs{max-width:calc(100% - 42px);gap:4px;}
+.board-bar{justify-content:center;}
+.board-tabs{max-width:calc(100% - 42px);gap:4px;min-width:0;}
 .board-tab-wrap{border-radius:5px;}
 .board-tab{font-size:12px;min-width:55px;max-width:140px;padding:0 6px 0 9px;}
 .board-arrow{width:22px;min-width:22px;font-size:13px;}
@@ -1803,6 +1896,7 @@ body{color:var(--app-ink,#f5f5f6);}
       <button type="button" class="menu-entry has-arrow" id="insertMenuItem" aria-expanded="false" aria-controls="insertSubmenu">插入 <span class="menu-arrow">›</span></button>
       <div class="insert-submenu" id="insertSubmenu" hidden>
         <button type="button" class="menu-entry" id="insertMatrixItem">横纵表格</button>
+        <button type="button" class="menu-entry" id="insertDrawingItem">✎ 绘图板</button>
         <button type="button" class="menu-entry" id="insertQuadrantItem">重要紧急四象限</button>
         <button type="button" class="menu-entry" id="insertWeeklyPlan">周计划横纵表格</button>
         <button type="button" class="menu-entry" id="insertMonthlyPlan">月计划横纵表格</button>
@@ -2144,7 +2238,33 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       t.plan.groupSchemaVersion=57;
       if(snapshotHasEdges(snapshot)){
         plans[t.id]=snapshot;
-        archive[t.id]=snapshot; // 最后一次成功保存的非空父子关系（ID 索引，不复制正文）
+        // 不能用一次部分丢失的分组快照覆盖更完整的历史记录。
+        // 以现有真实父子关系为准；只保留之前仍在同一格、且没有主动脱组的边。
+        const prior=archive[t.id];
+        if(snapshotHasEdges(prior)){
+          const merged=JSON.parse(JSON.stringify(snapshot));
+          for(const [key,cell] of Object.entries(prior.cells||{})){
+            const list=t.plan.blockCells?.[key];if(!Array.isArray(list))continue;
+            const byId=new Map(list.map(x=>[x.id,x]));
+            if(!merged.cells[key])merged.cells[key]={edges:[],collapsed:[]};
+            const dst=merged.cells[key],known=new Set(dst.edges.map(x=>x[0]));
+            for(const edge of cell.edges||[]){
+              const child=byId.get(edge[0]),parent=byId.get(edge[1]);
+              if(!child||!parent||known.has(child.id)||child.groupDetached===true)continue;
+              if(child.groupParentId&&child.groupParentId!==parent.id)continue;
+              dst.edges.push(edge);known.add(child.id);
+            }
+            const alreadyCollapsed=new Set(dst.collapsed);
+            for(const parentId of cell.collapsed||[]){
+              const parent=byId.get(parentId);
+              if(!parent||alreadyCollapsed.has(parentId))continue;
+              // 若现有父子已存在且用户主动展开，不覆盖当前状态。
+              if(list.some(x=>x.groupParentId===parentId))continue;
+              dst.collapsed.push(parentId);alreadyCollapsed.add(parentId);
+            }
+          }
+          archive[t.id]=merged;
+        }else archive[t.id]=snapshot;
       }
       // 这里绝不清空 archive：旧版/旧设备丢失 groupParentId 后，当前空快照并不
       // 足以说明“用户主动解散了分组”，不能把最后可用的恢复线索覆盖掉。
@@ -2160,46 +2280,82 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function restorePlanGroupsToNode(topic,rawPlan,allowLocalShadow){
     if(topic?.kind!=='plan'||!topic.plan)return 0;
-    // V57：先信任正文真实存在的 groupParentId。若被旧版程序删掉，依次寻找
-    // 该文件内的快照、V56 本机影子、V57 最后有效非空快照。只恢复原 ID，绝不制造新事项。
+    // V67：从旧版、云同步或取消关联后错误写入的“空快照”，不应推断为用户主动解散了分组。
+    // 真实移动/脱离父节点单独记为 groupDetached；仅它才阻止历史备份将该孩子重新归组。
     const inline=rawPlan?.groupStructure?.v===56?rawPlan.groupStructure:null;
-    const currentHasEdges=snapshotHasEdges(inline);
-    const markedModern=rawPlan?.groupSchemaVersion===57;
     const local=allowLocalShadow?readPlanGroupRecovery()[topic.id]:null;
     const archive=allowLocalShadow?readPlanGroupArchive()[topic.id]:null;
-    // V57 明确写入的“空分组”具有权威性；没有 V57 标记的旧版空快照不可靠。
-    // 有现成父子关系时优先按原数据，不用历史记录覆盖已经修改过的归组。
-    const explicitEmpty=markedModern&&!!inline&&!currentHasEdges;
-    const backup=currentHasEdges?inline:
-      explicitEmpty?inline:
-      snapshotHasEdges(local)?local:
-      snapshotHasEdges(archive)?archive:inline;
+    const sources=[inline,local,archive].filter(s=>s?.v===56&&s.cells&&typeof s.cells==='object');
     let restored=0;
-    if(backup?.v===56&&backup.cells&&typeof backup.cells==='object'){
-      for(const [key,group] of Object.entries(backup.cells)){
-        const list=topic.plan.blockCells?.[key];if(!Array.isArray(list)||!Array.isArray(group?.edges))continue;
-        const lookup=new Map(list.map(x=>[x.id,x]));
+    for(const snapshot of sources){
+      for(const [key,group] of Object.entries(snapshot.cells)){
+        const list=topic.plan.blockCells?.[key];
+        if(!Array.isArray(list)||!Array.isArray(group?.edges))continue;
+        const lookup=new Map(list.map(x=>[x.id,x])),recoveredParents=new Set();
         for(const [childId,parentId,layout] of group.edges){
           const child=lookup.get(childId),parent=lookup.get(parentId);
-          if(!child||!parent||child===parent||child.groupParentId)continue;
-          // 阻止历史损坏的循环父子关系。
-          let cursor=parent,valid=true,steps=0;
+          // 已归到其他节点、被用户明确移出父节点、或不在同一格的事项均不恢复。
+          if(!child||!parent||child===parent||child.groupParentId||child.groupDetached===true)continue;
+          let cursor=parent,valid=true,steps=0,seen=new Set([childId]);
           while(cursor?.groupParentId&&steps++<list.length){
-            if(cursor.groupParentId===childId){valid=false;break;}
-            cursor=lookup.get(cursor.groupParentId);
+            if(seen.has(cursor.id)){valid=false;break;}
+            seen.add(cursor.id);cursor=lookup.get(cursor.groupParentId);
           }
           if(!valid)continue;
-          child.groupParentId=parentId;if(layout==='branch')child.groupLayout='branch';restored++;
+          child.groupParentId=parentId;
+          if(layout==='branch')child.groupLayout='branch';else delete child.groupLayout;
+          recoveredParents.add(parentId);restored++;
         }
-        const parents=new Set(list.filter(x=>x.groupParentId).map(x=>x.groupParentId));
+        // 只有曾经实际补回丢失孩子的父节点，才参考历史快照还原收起状态。
+        // 已经由用户主动展开的现有父节点，不会被旧快照强行重新收起。
         for(const parentId of group.collapsed||[]){
           const parent=lookup.get(parentId);
-          if(parent&&parents.has(parentId)&&!parent.groupCollapsed){parent.groupCollapsed=true;restored++;}
+          if(parent&&recoveredParents.has(parentId)&&parent.groupCollapsed!==true){
+            parent.groupCollapsed=true;restored++;
+          }
         }
       }
     }
     topic.plan.groupStructure=planGroupSnapshotForNode(topic);
     return restored;
+  }
+  // V67：取消关联前后对真实父子关系做断言；只有 linkId/linkSource 可变。
+  function capturePlanFoldState(linkId){
+    const records=[],recovered=[];
+    for(const t of data.topics){
+      if(t?.kind!=='plan'||!t.plan)continue;
+      // 只检查参与该关联的计划，取消关联不能影响其他无关计划的折叠状态。
+      if(linkId&&!Object.values(t.plan.blockCells||{}).some(list=>
+        Array.isArray(list)&&list.some(item=>item?.linkId===linkId)))continue;
+      const count=restorePlanGroupsToNode(t,t.plan,true);
+      if(count)recovered.push({id:t.id,count});
+      for(const [key,list] of Object.entries(t.plan.blockCells||{})){
+        if(!Array.isArray(list))continue;
+        for(const item of list)if(item?.id)records.push({planId:t.id,key,id:item.id,
+          parentId:item.groupParentId||null,layout:item.groupLayout||null,
+          collapsed:item.groupCollapsed===true,detached:item.groupDetached===true});
+      }
+    }
+    return {records,recovered};
+  }
+  function verifyAndRestorePlanFoldState(checkpoint){
+    let repaired=0;
+    for(const before of checkpoint.records){
+      const t=topicById(before.planId);
+      const current=t?.plan?.blockCells?.[before.key]?.find(x=>x?.id===before.id);
+      if(!current)continue;
+      const changed=(current.groupParentId||null)!==before.parentId||
+        (current.groupLayout||null)!==before.layout||
+        (current.groupCollapsed===true)!==before.collapsed||
+        (current.groupDetached===true)!==before.detached;
+      if(!changed)continue;
+      if(before.parentId)current.groupParentId=before.parentId;else delete current.groupParentId;
+      if(before.layout)current.groupLayout=before.layout;else delete current.groupLayout;
+      if(before.collapsed)current.groupCollapsed=true;else delete current.groupCollapsed;
+      if(before.detached)current.groupDetached=true;else delete current.groupDetached;
+      repaired++;
+    }
+    return repaired;
   }
 
   const ACTIVE_BOARD_KEY = 'graph_note_xmind_active_board_v1';
@@ -2426,6 +2582,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return sizes;
   }
+  function v76CleanDrawing(raw){
+    const d=raw&&typeof raw==='object'?raw:{};
+    const strokes=Array.isArray(d.strokes)?d.strokes:[];
+    return {
+      strokes:strokes.slice(0,700).filter(st=>st&&Array.isArray(st.points)&&st.points.length>0)
+        .map(st=>({mode:st.mode==='eraser'?'eraser':'pen',
+          color:/^#[0-9a-fA-F]{6}$/.test(st.color||'')?st.color:'#263444',
+          width:Math.max(1,Math.min(45,Number(st.width)||3)),
+          points:st.points.slice(0,1500).filter(pt=>pt&&Number.isFinite(Number(pt.x))&&Number.isFinite(Number(pt.y)))
+            .map(pt=>({x:Math.max(0,Math.min(720,Number(pt.x))),y:Math.max(0,Math.min(405,Number(pt.y)))}))})),
+      color:/^#[0-9a-fA-F]{6}$/.test(d.color||'')?d.color:'#263444',
+      tool:d.tool==='eraser'?'eraser':'pen',expanded:d.expanded===true,
+      view:{zoom:Math.max(1,Math.min(5,Number(d.view?.zoom)||1)),
+        x:Math.max(-3000,Math.min(3000,Number(d.view?.x)||0)),
+        y:Math.max(-2000,Math.min(2000,Number(d.view?.y)||0))}
+    };
+  }
   function normalize(raw,options={}) {
     let recoveredPlanGroups=0;
     if (!raw || !Array.isArray(raw.topics) || raw.topics.length===0 || raw.topics.length>4000) return null;
@@ -2437,6 +2610,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const legacyQuadrant=isLegacyQuadrant(n);
       const node={ id:n.id, parentId:n.parentId===null?null:String(n.parentId), text:n.kind==='matrix'?n.text:n.text.slice(0,MAX_TOPIC_TEXT) };
       if(n.collapsed===true)node.collapsed=true;
+      // V75: 画布空白处创建的独立节点：存储在本画布根下以保留单根数据结构，但不画父连线、不自动排进树。
+      if(n.detached===true&&n.parentId!==null)node.detached=true;
       // V35：每个普通节点独立存储文本模式和正文，切换模式不会改变原有父子关系。
       if(n.textMode===true&&n.kind!=='plan'&&n.kind!=='matrix'&&!legacyQuadrant){
         node.textMode=true;node.textFoldInitialized=true;
@@ -2538,10 +2713,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
               ...(typeof x.groupParentId==='string'&&x.groupParentId.length<=140?{groupParentId:x.groupParentId}:{}),
               ...(x.groupLayout==='branch'?{groupLayout:'branch'}:{}),
               ...(x.groupCollapsed===true?{groupCollapsed:true}:{}),
+              ...(x.groupDetached===true?{groupDetached:true}:{}),
               // V44：小块的局部颜色标注跟随其唯一 ID，跨格移动/重启后仍保留。
               ...(Array.isArray(x.marks)?{marks:validMarks(x.marks,x.text.slice(0,30000))}:{}),
               ...(x.textMode===true?{textMode:true}:{}),
-              ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{})
+              ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{}),
+              ...(x.drawing&&typeof x.drawing==='object'?{drawing:v76CleanDrawing(x.drawing)}:{})
             }));
           }
         }
@@ -2571,6 +2748,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if(m.cells.length!==m.rowHeaders.length||m.cells.some(row=>!Array.isArray(row)||row.length!==m.colHeaders.length))return null;
         if([...m.rowHeaders,...m.colHeaders,...m.cells.flat()].some(v=>typeof v!=='string'))return null;
         node.kind='matrix';node.matrix={orientation:m.orientation==='transpose'?'transpose':'normal',
+          colsExpanded:m.colsExpanded===true,
           richMap:readRichMap(m.richMap),
           rowHeaders:m.rowHeaders.slice(),colHeaders:m.colHeaders.slice(),
           cells:m.cells.map(row=>row.slice()),
@@ -2588,6 +2766,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           rowHeightsTranspose:Array.from({length:m.colHeaders.length+1},(_,i)=>{
             const h=Number(m.rowHeightsTranspose?.[i]);return Number.isFinite(h)&&h>=0&&h<=4000?Math.round(h):0;
           })};
+      }
+      // 记录于主题层级的绘图板，保存/导入/同步时保留笔画。
+      if(n.kind==='drawing'){
+        node.kind='drawing';node.drawing=v76CleanDrawing(n.drawing);
       }
       nodes.push(node);
     }
@@ -2655,7 +2837,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const next=source.pop();opposite.push(cloneTopics());if(opposite.length>80)opposite.shift();
     const restored=normalize({topics:next});if(!restored){notify('该历史快照无效');return;}
     suppressUndoCapture=true;
-    data=restored;state.selected=null;state.matrixSelection=null;ensureBoardValid();
+    data=restored;state.selected=null;state.matrixSelection=null;v54ClearSelection();clearCopySelection();ensureBoardValid();
     scheduleSave(direction==='undo'?'撤销操作':'重做操作');
     suppressUndoCapture=false;render();lastCommittedTopics=cloneTopics();
     notify(direction==='undo'?'已撤销':'已重做');
@@ -2859,9 +3041,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(doc38FocusHide.has(id))return [];
       if(doc38FocusShow.has(id))return children(id);
     }
-    return n?.collapsed||n?.viewMode==='outline'?[]:children(id);
+    return n?.collapsed||n?.viewMode==='outline'?[]:children(id).filter(child=>!(id===activeRootId()&&child.detached));
   }
-  function directBranchCount(id){return children(id).length;}
+  function directBranchCount(id){return children(id).filter(n=>!(id===activeRootId()&&n.detached)).length;}
   function countBranchDescendants(id){
     let count=0,queue=children(id).map(t=>t.id),guard=0;
     while(queue.length&&guard++<4000){const at=queue.pop();count++;
@@ -3576,7 +3758,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(expandedPlanId)closeExpandedPlan();
     hideBoardPopup();state.activeBoardId=id;
     try{localStorage.setItem(ACTIVE_BOARD_KEY,id);}catch{}
-    state.selected=null;state.editing=null;clearCopySelection();render();centerInitial();fitToView();
+    state.selected=null;state.editing=null;clearCopySelection();v54ClearSelection();render();centerInitial();fitToView();
   }
   function createBoard(){
     if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();
@@ -3661,6 +3843,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       m.rowHeightsTranspose=fix(m.rowHeightsTranspose,m.colHeaders.length+1);
     return m.orientation==='transpose'?m.rowHeightsTranspose:m.rowHeightsNormal;
   }
+  // V71: 显示层只决定可见列数，隐藏列保留原数据、宽度及标注。
+  function matrixVisibleColCount(t){
+    const total=tableAxes(t).colNames.length;
+    return total>3&&t.matrix.colsExpanded!==true?3:total;
+  }
   // 动态文字高度始终是下限，手动缩小不会裁剪已记录的长文本。
   function matrixAutoRowHeight(t,r,widths){
     let height=r===0?MATRIX_MIN_HEAD_HEIGHT:MATRIX_MIN_ROW_HEIGHT;
@@ -3669,7 +3856,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function getMatrixMetrics(t){
     const axes=tableAxes(t), rows=axes.rowNames.length+1, cols=axes.colNames.length+1;
-    const widths=ensuredMatrixWidths(t).slice();
+    const widths=ensuredMatrixWidths(t).slice(0,matrixVisibleColCount(t)+1);
     const minimums=ensuredMatrixHeights(t);
     const heights=[];
     for(let r=0;r<rows;r++)heights.push(Math.max(matrixAutoRowHeight(t,r,widths),minimums[r]||0));
@@ -3706,7 +3893,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     for(const block of blocks){
       planMiniMeasureProbe.textContent=String(block.text||' ')+'\u200b';
       const textHeight=Math.ceil(planMiniMeasureProbe.getBoundingClientRect().height);
-      blockHeights.set(block.id,Math.max(36,textHeight+14));
+      // V77: embedded sketch canvases occupy a real 230/330px box, not a 36px text card.
+      const boardHeight=block.drawing?(block.drawing.expanded?330:230)+10:0;
+      blockHeights.set(block.id,Math.max(36,textHeight+14,boardHeight));
     }
     if(blocks.some(x=>x.groupParentId&&x.groupLayout==='branch')){
       // Side branches use horizontal space. Counting every child vertically caused
@@ -3857,9 +4046,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     });
   }
+  // V77: real DOM measurements correct differences between plan row-height estimates and
+  // the actual table after browser layout. This is view-only; never writes row sizes or alters user data.
+  const planRenderedMinHeights=new Map();
   function getSize(t) {
+    if(t.kind==='drawing')return t.drawing?.expanded===true?{width:620,height:435}:{width:384,height:298};
     if(t.viewMode==='outline'&&!t.kind)return getInlineOutlineMetrics(t);
-    if(t.kind==='plan'&&t.plan){const d=getPlanMetrics(t);return {width:d.width,height:d.height};}
+    if(t.kind==='plan'&&t.plan){const d=getPlanMetrics(t);return {width:d.width,height:Math.max(d.height,planRenderedMinHeights.get(t.id)||0)};}
     if(t.kind==='matrix'&&t.matrix){
       const size=getMatrixMetrics(t);
       return {width:size.width,height:size.height};
@@ -3979,6 +4172,43 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       }
     }
+    // V75: 双击新建的独立节点不参与中心主题的子树排版。每个独立节点有自己的画布坐标；
+    // 其下级仍可在本独立节点附近按正常层级排布，且不改变中心导图的任何现有位置。
+    for(const loose of data.topics.filter(n=>n.parentId===rootId&&n.detached===true)){
+      const h=measure(loose.id),originX=Number.isFinite(loose.freeX)?loose.freeX:0,
+        originY=Number.isFinite(loose.freeY)?loose.freeY:0;
+      const placeDetached=(id,x,top,depth)=>{
+        const s=sizes.get(id),height=subtree.get(id);
+        pos.set(id,{x,y:top+(height-s.height)/2,w:s.width,h:s.height,depth,side:1});
+        const cs=visibleChildren(id),total=cs.reduce((a,c,i)=>a+subtree.get(c.id)+(i?gap.y:0),0);
+        let cy=top+(height-total)/2;
+        for(const c of cs){placeDetached(c.id,x+s.width+gap.x,cy,depth+1);cy+=subtree.get(c.id)+gap.y;}
+      };
+      placeDetached(loose.id,originX,originY-(h-sizes.get(loose.id).height)/2,0);
+    }
+    // V77: last-resort protection against *different* auto-positioned tables overlapping.
+    // This never changes detached/hand-positioned nodes or free-layout coordinates.
+    if(!currentFreeMode()){
+      const ordered=data.topics.filter(t=>(t.kind==='plan'||t.kind==='matrix')&&!t.detached&&pos.has(t.id))
+        .sort((a,b)=>(pos.get(a.id).y-pos.get(b.id).y));
+      const finished=[];
+      for(const t of ordered){
+        const r=pos.get(t.id);if(!r)continue;
+        let shift=0;
+        for(const prior of finished){
+          const pr=pos.get(prior.id);
+          if(!pr || r.x>=pr.x+pr.w-1 || r.x+r.w<=pr.x+1)continue;
+          const need=pr.y+pr.h+Math.max(18,gap.y)-r.y;
+          if(need>shift)shift=need;
+        }
+        if(shift>0){
+          for(const id of descendantsOf(t.id)){
+            const item=pos.get(id);if(item)pos.set(id,{...item,y:item.y+shift});
+          }
+        }
+        finished.push(t);
+      }
+    }
     if(currentFreeMode()){
       // v26：旧版自由模式以每条独立弧线+独立坐标绘图，容易散成斜线网。
       // 仅首次升级时以当前规整的自动布局重新作为自由模式起点。
@@ -4042,7 +4272,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     for(const t of data.topics){
       const p=state.positions.get(t.id);if(!p||t.viewMode==='outline')continue;
-      const direct=(allChildren.get(t.id)||[]).filter(n=>!(t.id===ROOT_ID&&n.boardRoot));if(!direct.length)continue;
+      const direct=(allChildren.get(t.id)||[]).filter(n=>!(t.id===ROOT_ID&&n.boardRoot)&&!(t.id===activeRootId()&&n.detached));if(!direct.length)continue;
       let side=1;
       if(t.collapsed){
         side=t.foldSide===-1?-1:(p.side===-1?-1:1);
@@ -4146,10 +4376,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return result;
   }
-  function startFreeNodeDrag(e,id,el){
+  function startFreeNodeDrag(e,id,el,allowMatrixCorner=false){
     if(!currentFreeMode()||(e.pointerType==='mouse'&&e.button!==0)||freeNodeDrag||freeWireDrag)return;
     if(state.editing||state.matrixEditing||state.planEditing)return;
-    if(e.target.closest('input,textarea,[contenteditable],.topic-resize-handle,.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer'))return;
+    if(!allowMatrixCorner&&e.target.closest('input,textarea,[contenteditable],.topic-resize-handle,.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer'))return;
     e.stopPropagation();
     const p=state.positions.get(id);if(!p)return;
     const ids=freeBranchIds(id),initial=new Map(),elements=new Map();
@@ -4165,7 +4395,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const sourceSide=parentCenter===null?0:(rootCenter>=parentCenter?1:-1);
     freeNodeDrag={id,pointerId:e.pointerId,element:el,startX:e.clientX,startY:e.clientY,
       initialX:p.x,initialY:p.y,initial,ids,elements,
-      parentCenter,sourceSide,mirror:false,moved:false};
+      parentCenter,sourceSide,mirror:false,moved:false,matrixCorner:allowMatrixCorner,connectable:allowMatrixCorner||topicById(id)?.detached===true,drop:null};
     try{el.setPointerCapture(e.pointerId);}catch{}
   }
   function moveFreeGesture(e){
@@ -4198,6 +4428,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const nodeEl=d.elements.get(memberId);
         if(nodeEl){nodeEl.style.left=p.x+'px';nodeEl.style.top=p.y+'px';}
       }
+      if(d.connectable){
+        topicLayer.querySelectorAll('.drop-child').forEach(el=>el.classList.remove('drop-child'));
+        const drop=findTopicDropTarget({ignore:new Set(d.ids)},e.clientX,e.clientY);
+        d.drop=drop&&drop.id!==d.id?{id:drop.id,mode:'child',el:drop.el}:null;
+        if(d.drop)d.drop.el.classList.add('drop-child');
+      }
       drawConnections();return;
     }
   }
@@ -4205,9 +4441,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if(freeNodeDrag?.pointerId===e.pointerId){
       const d=freeNodeDrag;freeNodeDrag=null;
       for(const member of d.elements.values())member.classList.remove('free-moving','free-subtree-moving');
+      if(d.connectable)topicLayer.querySelectorAll('.drop-child').forEach(el=>el.classList.remove('drop-child'));
       if(d.moved){
         freeIgnoreClickUntil=Date.now()+400;
         if(commit){
+          if(d.connectable&&d.drop)reorderTopicSubtree(d.id,{id:d.drop.id,mode:'child'});
           // 一次操作将整棵子树的实际位置写回同一份导图数据，撤销和云端同步只记录一次。
           for(const memberId of d.ids){
             const p=state.positions.get(memberId),t=topicById(memberId);
@@ -4235,6 +4473,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // 选择时不销毁 DOM：保证两次连续点击能够触发原生 dblclick。
   function selectInteractive(id, matrixSelection=null){
+    v54ClearSelection();clearCopySelection();selectedPlanFocus=null; // V69: 普通主题单选取代之前的批量小块选择。
     // 大纲可选中尚处于隐藏分支的节点：先展开祖先，再定位真实可见节点。
     if(!state.positions.has(id)&&topicById(id)){
       let at=topicById(id),unfolded=false,guard=0;
@@ -4261,7 +4500,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     topicLayer.querySelectorAll('.topic,.matrix-node').forEach(el=>{
       el.classList.toggle('selected',el.dataset.id===id);
-      el.querySelectorAll(':scope > .plus,:scope > .matrix-tools,:scope > .matrix-plus,:scope > .topic-resize-handle').forEach(b=>b.remove());
+      el.querySelectorAll(':scope > .matrix-tools,:scope > .matrix-plus,:scope > .topic-resize-handle').forEach(b=>b.remove());
     });
     const el=[...topicLayer.children].find(n=>n.dataset.id===id);
     const t=topicById(id);
@@ -4274,8 +4513,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }else if(el&&t&&!el.classList.contains('inline-outline-node')){
       topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
       if(state.editing!==id){
-        el.append(createButton('child','添加子主题（Tab）',()=>addChild(id)));
-        if(t.parentId!==null&&id!==activeRootId())el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(id)));
+        // V75: 两个按钮已随节点生成，选中不再重复添加。
+        if(!el.querySelector(':scope > .plus.child'))el.append(createButton('child','右侧：添加下级节点（Tab）',()=>addChild(id)));
+        if(t.parentId!==null&&id!==activeRootId()&&!el.querySelector(':scope > .plus.sibling'))el.append(createButton('sibling','下方：添加同级节点（Enter）',()=>addSibling(id)));
         attachTopicResizeHandles(el,id);
       }
     }else topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
@@ -4404,6 +4644,65 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     clearTimeout(matrixTouchHold.timer);matrixTouchHold=null;
   }
   function mobileMatrixEditorAvailable(){return matchMedia('(pointer:coarse)').matches;}
+  // 表头长按是“整行/列菜单”，手指移动则交给现有行列排序功能。
+  let v71HeaderHold=null,v71HeaderSuppressClickUntil=0;
+  function v71CancelHeaderHold(){
+    const h=v71HeaderHold;if(!h)return;
+    clearTimeout(h.timer);window.removeEventListener('pointermove',h.move,true);
+    window.removeEventListener('pointerup',h.end,true);window.removeEventListener('pointercancel',h.end,true);
+    v71HeaderHold=null;
+  }
+  function v71HeaderLongPress(e,t,axis,index){
+    v71CancelHeaderHold();
+    const h={id:e.pointerId,x:e.clientX,y:e.clientY,timer:null,move:null,end:null};v71HeaderHold=h;
+    h.move=ev=>{if(ev.pointerId===h.id&&Math.hypot(ev.clientX-h.x,ev.clientY-h.y)>9)v71CancelHeaderHold();};
+    h.end=ev=>{if(ev.pointerId===h.id)v71CancelHeaderHold();};
+    window.addEventListener('pointermove',h.move,true);window.addEventListener('pointerup',h.end,true);window.addEventListener('pointercancel',h.end,true);
+    h.timer=setTimeout(()=>{
+      if(v71HeaderHold!==h)return;
+      v71CancelHeaderHold();
+      // V73: 保留已驻留的拖动指针。手指停住时仍显示复制菜单，
+      // 若继续移动则从长按状态切换为拖动（包括拖到其他节点生成子表）。
+      v71HeaderSuppressClickUntil=Date.now()+650;
+      selectInteractive(t.id,matrixTarget(t.id,axis==='row'?index:0,axis==='col'?index:0));
+      openMatrixAxisMenu(t,axis,index,h.x,h.y);
+    },530);
+  }
+  let v71CornerHold=null,v71CornerSuppressClickUntil=0;
+  function v71CancelCornerHold(){
+    const h=v71CornerHold;if(!h)return;
+    clearTimeout(h.timer);window.removeEventListener('pointermove',h.move,true);
+    window.removeEventListener('pointerup',h.end,true);window.removeEventListener('pointercancel',h.end,true);
+    h.td?.classList.remove('drag-ready');v71CornerHold=null;
+  }
+  // 长按已就绪但没有移动时，松手也必须撤销临时高亮，避免蓝框残留。
+  window.addEventListener('pointerup',()=>{
+    topicLayer.querySelectorAll('.matrix-corner.drag-ready').forEach(td=>td.classList.remove('drag-ready'));
+  },true);
+  window.addEventListener('pointercancel',()=>{
+    topicLayer.querySelectorAll('.matrix-corner.drag-ready').forEach(td=>td.classList.remove('drag-ready'));
+  },true);
+  function v71StartMatrixCornerDrag(e,t,wrap,td){
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    e.stopPropagation();
+    if(e.pointerType!=='touch'){
+      prepareTopicDrag(e,t.id,wrap,true);return;
+    }
+    v71CancelCornerHold();
+    const h={id:e.pointerId,x:e.clientX,y:e.clientY,td,move:null,end:null,timer:null};v71CornerHold=h;
+    h.move=ev=>{if(ev.pointerId===h.id&&Math.hypot(ev.clientX-h.x,ev.clientY-h.y)>9)v71CancelCornerHold();};
+    h.end=ev=>{if(ev.pointerId===h.id)v71CancelCornerHold();};
+    window.addEventListener('pointermove',h.move,true);window.addEventListener('pointerup',h.end,true);window.addEventListener('pointercancel',h.end,true);
+    h.timer=setTimeout(()=>{
+      if(v71CornerHold!==h)return;
+      // 使用按下时的真实坐标，以便后续的 pointermove 继续使用旧版拖动逻辑。
+      v71CancelCornerHold();v71CornerSuppressClickUntil=Date.now()+650;
+      td.classList.add('drag-ready');
+      const simulated={pointerId:h.id,pointerType:'touch',button:0,clientX:h.x,clientY:h.y,
+        target:td,stopPropagation(){},preventDefault(){}};
+      prepareTopicDrag(simulated,t.id,wrap,true);
+    },420);
+  }
   function renderMatrixNode(t,p){
     const wrap=document.createElement('div');wrap.className='matrix-node';wrap.dataset.id=t.id;
     if(state.selected===t.id)wrap.classList.add('selected');
@@ -4415,7 +4714,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       selectInteractive(t.id,null);showDeleteContext(e.clientX,e.clientY);
     });
     const table=document.createElement('table');table.className='matrix-table';table.setAttribute('aria-label','横纵表格');
-    const axes=tableAxes(t),rowCount=axes.rowNames.length,colCount=axes.colNames.length;
+    const axes=tableAxes(t),rowCount=axes.rowNames.length,colCount=matrixVisibleColCount(t);
     const metrics=matrixMeasureCache.get(t.id)||getMatrixMetrics(t);
     const cols=document.createElement('colgroup');
     for(let c=0;c<=colCount;c++){const col=document.createElement('col');col.style.width=metrics.widths[c]+'px';cols.append(col);}
@@ -4437,7 +4736,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         renderMarkedText(visual,field.value,activeMarks(t,r,c),hint);
         field.addEventListener('pointerdown',e=>{
           e.stopPropagation();
-          if(e.pointerType==='touch'&&field.readOnly){
+          if(e.pointerType==='touch'&&field.readOnly&&r>0&&c>0){
             cancelMatrixTouchHold();
             const hold={pointerId:e.pointerId,x:e.clientX,y:e.clientY,timer:null};matrixTouchHold=hold;
             // 短按仍然单击选中；持续按下则在浏览器原生长按选字前进入编辑。
@@ -4450,11 +4749,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           }
           // 编辑期间不能启动“整行/列拖动”，否则触摸选区柄会被拖动操作抢走。
           if(!field.readOnly)return;
+          if(r===0&&c===0)v71StartMatrixCornerDrag(e,t,wrap,td);
+          if(e.pointerType==='touch'&&((r===0&&c>0)||(r>0&&c===0)))v71HeaderLongPress(e,t,r===0?'col':'row',r===0?c:r);
           if(r>0&&c===0)prepareAxisDrag(e,t.id,'row',r-1,wrap,field);
           else if(r===0&&c>0)prepareAxisDrag(e,t.id,'col',c-1,wrap,field);
         });
         field.addEventListener('click',e=>{
-          e.stopPropagation();if(axisDrag?.moved){e.preventDefault();return;}
+          e.stopPropagation();if(axisDrag?.moved||Date.now()<v71HeaderSuppressClickUntil||Date.now()<v71CornerSuppressClickUntil){e.preventDefault();return;}
           if(state.matrixEditing?.id===t.id&&state.matrixEditing.row===r&&state.matrixEditing.col===c)return;
           if(mobileMatrixEditorAvailable()){
             const now=Date.now(),prev=matrixLastTouchTap;
@@ -4472,6 +4773,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           // 编辑中的安卓长按必须交给系统原生选中文字/拖选柄，不能弹自定义删除菜单。
           if(!field.readOnly){e.stopPropagation();return;}
           if(r===0&&c===0){e.preventDefault();e.stopPropagation();openMatrixViewMenu(t,e.clientX,e.clientY);return;}
+          if(r===0||c===0){e.preventDefault();e.stopPropagation();selectInteractive(t.id,matrixTarget(t.id,r,c));openMatrixAxisMenu(t,r===0?'col':'row',r===0?c:r,e.clientX,e.clientY);return;}
           if(mobileMatrixEditorAvailable()){
             e.preventDefault();e.stopPropagation();startMatrixEditing(t.id,r,c);
             return;
@@ -4497,7 +4799,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             settleMatrixEditor(true);field.readOnly=true;td.classList.remove('editing-cell');scheduleMatrixReflow();
           }
         });
-        td.append(visual,field);tr.append(td);
+        td.append(visual,field);
+        if(r===0&&c===3&&axes.colNames.length>3){
+          td.classList.add('matrix-toggle-anchor');
+          const toggle=document.createElement('button');toggle.type='button';toggle.className='matrix-cols-toggle';
+          toggle.textContent=t.matrix.colsExpanded===true?'▼':'▶';
+          toggle.title=t.matrix.colsExpanded===true?'收起列（仅显示前三列）':'展开全部'+axes.colNames.length+'列';
+          toggle.setAttribute('aria-label',toggle.title);
+          toggle.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();});
+          toggle.addEventListener('click',e=>{
+            e.preventDefault();e.stopPropagation();settleMatrixEditor(true);
+            t.matrix.colsExpanded=t.matrix.colsExpanded!==true;
+            state.selected=t.id;state.matrixSelection=null;
+            scheduleSave('横纵表格 · '+(t.matrix.colsExpanded?'展开所有列':'收起到前三列'));
+            render();ensureVisible(t.id);
+          });
+          td.append(toggle);
+        }
+        if(r===0&&c===0){
+          const mark=document.createElement('span');mark.className='matrix-corner-mark';mark.textContent='⠿';
+          mark.title='电脑：按住左上角拖动表格；手机：长按后拖动；可归入其他主题';td.append(mark);
+        }
+        tr.append(td);
       }
       tbody.append(tr);
     }
@@ -4710,11 +5033,34 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return map;
   }
+  // V68：复制月/周计划共享格时，必须同时迁移整个分组树的 ID 引用。
+  // 旧版只改了小节点 id，未改 groupParentId：子节点找不到父节点，渲染时就全部变成根节点。
+  // 只复制目标格；不触碰源表、其他格、节点展开状态或计划行列设置。
   function copyPlanCell(from,fromKey,to,toKey){
-    const value=planValue(from,fromKey);
-    to.plan.cells[toKey]=value;
+    if(from===to&&fromKey===toKey)return;
     planStableFields(from);planStableFields(to);
-    if(Array.isArray(from.plan.blockCells[fromKey]))to.plan.blockCells[toKey]=from.plan.blockCells[fromKey].map(x=>({...x,id:makeId()}));
+    const value=planValue(from,fromKey);
+    const source=from.plan.blockCells[fromKey];
+    let copies=null;
+    if(Array.isArray(source)){
+      // 同一批子节点先统一生成新 ID，再迁移 groupParentId；支持任意层级和混合布局。
+      // 其余字段（groupCollapsed、groupLayout、marks、textMode、docHTML、linkId）原样复制。
+      const ids=new Map();
+      for(const item of source)if(item?.id&&!ids.has(item.id))ids.set(item.id,makeId());
+      copies=source.map(item=>{
+        const clone=JSON.parse(JSON.stringify(item));
+        clone.id=ids.get(item.id)||makeId();
+        if(clone.groupParentId){
+          if(ids.has(clone.groupParentId)&&clone.groupParentId!==item.id)
+            clone.groupParentId=ids.get(clone.groupParentId);
+          else delete clone.groupParentId; // 原数据中的无效跨格父节点不传染给新格
+        }
+        return clone;
+      });
+    }
+    // 在所有内容准备好之后才替换目标格；周一至周日、其他分类及月计划均不变。
+    to.plan.cells[toKey]=value;
+    if(copies!==null)to.plan.blockCells[toKey]=copies;
     else delete to.plan.blockCells[toKey];
     const marks=planMarks(from,planCellMarkKey(fromKey));
     putPlanMarks(to,planCellMarkKey(toKey),JSON.parse(JSON.stringify(marks)));
@@ -4789,6 +5135,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function planAxisArray(t,axis){return t.plan[axis];}
   function planSelectAxis(t,axis,id){
+    v54ClearSelection();clearCopySelection();selectedPlanFocus=null; // V69: 分类/日期标题选中时不保留旧的计划小块框选。
     state.selected=t.id;
     selectedPlanAxis={planId:t.id,axis,id};
     const hosts=[...document.querySelectorAll('.plan-node')].filter(e=>e.dataset.id===t.id);
@@ -5082,7 +5429,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     let item=null;
     if(entry.kind==='plan'&&owner?.kind==='plan')item=findPlanBlock(owner,entry.key,entry.blockId);
     if(entry.kind==='quadrant'&&owner?.kind==='quadrant')item=quadrantItems(owner).find(x=>x.id===entry.blockId)||null;
-    if(!item?.linkId){notify('这个事项已经没有关联');render();return;}
+    if(!item?.linkId){notify('这个事项已经没有关联');return;}
+    const checkpoint=capturePlanFoldState(item.linkId);
     const groupId=item.linkId;
     item.linkId=null;
     delete item.linkSource;
@@ -5105,9 +5453,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(last.kind==='plan')planSyncCellTextFromBlocks(last.owner,last.key,false);
     }
     if(activePlanLinkId===groupId)activePlanLinkId=null;
+    const fixed=verifyAndRestorePlanFoldState(checkpoint);
     scheduleSave('从展开列表解除关联 · '+String(item.text||'事项').slice(0,26));
-    render();
-    notify('关联已取消，原事项及其文字颜色均保留');
+    if(checkpoint.recovered.length||fixed){
+      for(const r of checkpoint.recovered){const t=topicById(r.id);if(t?.kind==='plan')
+        for(const key of Object.keys(t.plan.blockCells||{}))planReleaseFoldedRowHeight(t,key);}
+      render();
+    }else{syncPlanAssociatedRows();refreshPlanBlockHighlights();}
+    notify((checkpoint.recovered.length||fixed?'已恢复分组并解除关联；':'关联已取消；')+'原有收起状态不变');
   }
   function openAssociatedPeerMenu(entry,clientX,clientY){
     hidePlanBlockMenu();hidePlanViewMenu();
@@ -5736,6 +6089,8 @@ function toggleDoc35Plan(owner,key,block){
   }
   function selectPlanBlockDirect(owner,key,item,context){
     const ref={ownerId:owner.id,key,blockId:item.id};
+    if(v54SelectedPlanBlocks.size&&!v54SelectedPlanBlocks.has(v54Ref(owner.id,key,item.id)))v54ClearSelection();
+    if(multiCopyIds.size)clearCopySelection();
     const selected=selectedPlanFocus;
     // 左边选择一个长期主题后，再左键单击右侧进度便可绑定；以后直接单击左边即可亮。
     if(selected&&selected.role==='category'&&context.role==='progress'&&
@@ -5765,14 +6120,40 @@ function toggleDoc35Plan(owner,key,block){
     renderMarkedText(visual,editor.value,block?.marks||[]);
     visual.scrollTop=editor.scrollTop;visual.scrollLeft=editor.scrollLeft;
   }
-  function openPlanMiniEditor(owner,key,blockId=null,target=null,afterId=null){
+  const v76PendingPlanEdits=new Set();
+  function openPlanMiniEditor(owner,key,blockId=null,target=null,afterId=null,relation='root'){
     hidePlanBlockMenu();
     if(!target)return;
     if(target.querySelector('.plan-mini-editor'))return;
     const existing=blockId?findPlanBlock(owner,key,blockId):null;
     if(blockId&&!existing)return;
+    // V76: 新增的那一刻先确定真实父子关系及最终位置，再原位输入。
+    // 旧实现把临时文本框一律 append 到根列表末尾，提交后才重新排版，视觉上跳来跳去。
+    if(!existing){
+      const list=planBlockList(owner,key),anchor=afterId?list.find(item=>item.id===afterId):null;
+      const fresh={id:makeId(),text:'\u200b',linkId:null};
+      if(anchor&&relation==='child'){
+        fresh.groupParentId=anchor.id;fresh.groupLayout='branch';anchor.groupCollapsed=false;
+      }else if(anchor&&relation==='sibling'&&anchor.groupParentId){
+        fresh.groupParentId=anchor.groupParentId;
+        if(anchor.groupLayout==='branch')fresh.groupLayout='branch';
+      }
+      let place=list.length;
+      if(anchor){
+        const family=v54PlanDescendants(list,anchor.id);
+        place=list.findIndex(item=>item.id===anchor.id)+1;
+        while(place<list.length&&family.has(list[place].id))place++;
+      }
+      list.splice(place,0,fresh);v76PendingPlanEdits.add(fresh.id);
+      planReleaseFoldedRowHeight(owner,key);
+      render();
+      const newRow=[...document.querySelectorAll('.plan-mini-block[data-block-id]')]
+        .find(row=>row.dataset.planOwnerId===owner.id&&row.dataset.planKey===key&&row.dataset.blockId===fresh.id);
+      if(!newRow){list.splice(list.indexOf(fresh),1);v76PendingPlanEdits.delete(fresh.id);render();return;}
+      return openPlanMiniEditor(owner,key,fresh.id,newRow);
+    }
     // V59：保留编辑前的文字和标注，所有改字/插入换行都只移动字符区间，绝不清空 marks。
-    const originalText=existing?.text||'';
+    const originalText=v76PendingPlanEdits.has(existing?.id)?'':(existing?.text||'');
     const originalMarks=existing?JSON.parse(JSON.stringify(existing.marks||[])):[];
     const editor=document.createElement('textarea');editor.className='plan-mini-editor';editor.rows=1;
     editor.value=originalText;editor.maxLength=30000;editor.spellcheck=false;
@@ -5829,6 +6210,13 @@ function toggleDoc35Plan(owner,key,block){
       if(finished)return;finished=true;
       document.removeEventListener('pointerdown',onEditorExternalDown,true);
       const value=editor.value.trim();
+      const pending=v76PendingPlanEdits.has(existing?.id);
+      if(existing?.id)v76PendingPlanEdits.delete(existing.id);
+      if(pending&&!commit){
+        owner.plan.blockCells[key]=planBlockList(owner,key).filter(x=>x.id!==existing.id);
+        planReleaseFoldedRowHeight(owner,key);
+        render();return;
+      }
       if(commit){
         if(existing){
           if(value){
@@ -5844,6 +6232,10 @@ function toggleDoc35Plan(owner,key,block){
           }
         }else if(value){
           const list=planBlockList(owner,key),newItem={id:makeId(),text:value,linkId:null};
+          const anchor=afterId?list.find(item=>item.id===afterId):null;
+          if(anchor&&relation==='child'){newItem.groupParentId=anchor.id;newItem.groupLayout='branch';anchor.groupCollapsed=false;}
+          else if(anchor&&relation==='sibling'&&anchor.groupParentId){newItem.groupParentId=anchor.groupParentId;
+            if(anchor.groupLayout==='branch')newItem.groupLayout='branch';}
           const index=afterId?list.findIndex(item=>item.id===afterId):-1;
           if(index>=0)list.splice(index+1,0,newItem);else list.push(newItem);
           planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 新增 · '+value.slice(0,18));
@@ -5898,8 +6290,17 @@ function toggleDoc35Plan(owner,key,block){
   }
   function clearPlanBlockLink(owner,key,blockId){
     const block=findPlanBlock(owner,key,blockId);if(!block)return;
+    const checkpoint=capturePlanFoldState(block.linkId);
     if(activePlanLinkId&&block.linkId===activePlanLinkId)activePlanLinkId=null;
-    block.linkId=null;delete block.linkSource;planSyncCellTextFromBlocks(owner,key,false);scheduleSave('计划小块 · 解除关联');render();
+    block.linkId=null;delete block.linkSource;
+    planSyncCellTextFromBlocks(owner,key,false);
+    const fixed=verifyAndRestorePlanFoldState(checkpoint);
+    scheduleSave('计划小块 · 解除关联');
+    if(checkpoint.recovered.length||fixed){
+      for(const r of checkpoint.recovered){const t=topicById(r.id);if(t?.kind==='plan')
+        for(const cell of Object.keys(t.plan.blockCells||{}))planReleaseFoldedRowHeight(t,cell);}
+      render();
+    }else{syncPlanAssociatedRows();refreshPlanBlockHighlights();}
   }
   function linkPlanBlocks(sourceRef,targetRef){
     const source=planBlockByRef(sourceRef),target=planBlockByRef(targetRef);
@@ -5922,6 +6323,38 @@ function toggleDoc35Plan(owner,key,block){
     }
     scheduleSave('计划小块 · 建立关联');syncPlanAssociatedRows();refreshPlanBlockHighlights();notify('已关联；点击小块前的箭头可展开关联事项');
   }
+  // V65：复制计划小块保留原文字、富文本颜色与子级结构；粘贴时产生新 ID，
+  // 不自动建立原关联，避免复制后两个事项被误认为同一个关联组。
+  let planMiniClipboard=null;
+  function copyPlanMiniBlock(owner,key,block){
+    const list=planBlockList(owner,key);
+    const ids=v54PlanDescendants(list,block.id);
+    const items=list.filter(x=>ids.has(x.id)).map(x=>JSON.parse(JSON.stringify(x)));
+    if(!items.length)return;
+    planMiniClipboard={rootId:block.id,items};
+    const plain=String(block.text||'');
+    if(navigator.clipboard?.writeText){
+      navigator.clipboard.writeText(plain).catch(()=>{/* 非安全站点仍可在应用内粘贴小块 */});
+    }
+    notify('已复制'+(items.length>1?' '+items.length+' 个关联下级':'')+'小节点；长按目标可选择粘贴');
+  }
+  function pastePlanMiniBlock(owner,key,afterId){
+    if(!planMiniClipboard?.items?.length)return;
+    const list=planBlockList(owner,key);
+    const mapping=new Map(planMiniClipboard.items.map(item=>[item.id,makeId()]));
+    const copies=planMiniClipboard.items.map(item=>{
+      const copy=JSON.parse(JSON.stringify(item));
+      copy.id=mapping.get(item.id);
+      if(copy.groupParentId&&mapping.has(copy.groupParentId))copy.groupParentId=mapping.get(copy.groupParentId);
+      else delete copy.groupParentId;
+      delete copy.linkSource;copy.linkId=null;
+      return copy;
+    });
+    const at=list.findIndex(item=>item.id===afterId);
+    list.splice(at>=0?at+1:list.length,0,...copies);
+    planSyncCellTextFromBlocks(owner,key,false);
+    scheduleSave('计划小块 · 手机粘贴'+copies.length+'项');render();
+  }
   function hidePlanBlockMenu(){planBlockMenu?.remove();planBlockMenu=null;}
   function setActivePlanBlock(owner,key,block){
     const context={planId:owner.id,categoryId:key.split('|')[0],role:'progress'};
@@ -5936,6 +6369,8 @@ function toggleDoc35Plan(owner,key,block){
     menu.append(tag);
     const makeItem=(label,fn,disabled=false)=>{const btn=document.createElement('button');btn.type='button';btn.textContent=label;if(disabled)btn.disabled=true;btn.addEventListener('click',e=>{e.stopPropagation();if(btn.disabled)return;hidePlanBlockMenu();fn&&fn();});return btn;};
     menu.append(makeItem('编辑这个小块标题',()=>{const row=[...document.querySelectorAll('.plan-mini-block[data-block-id]')].find(el=>el.dataset.planOwnerId===owner.id&&el.dataset.planKey===key&&el.dataset.blockId===block.id);if(row)openPlanMiniEditor(owner,key,block.id,row);}));
+    menu.append(makeItem('复制',()=>copyPlanMiniBlock(owner,key,block)));
+    if(planMiniClipboard?.items?.length)menu.append(makeItem('粘贴到这个小块后面',()=>pastePlanMiniBlock(owner,key,block.id)));
     menu.append(makeItem(block.textMode?'切换回普通小块':'切换为文本节点',()=>toggleDoc35Plan(owner,key,block)));
     menu.append(makeItem('新增一个小块',()=>{const board=[...document.querySelectorAll('.plan-block-wrap')].find(el=>el.dataset.planOwnerId===owner.id&&el.dataset.planKey===key);if(board)openPlanMiniEditor(owner,key,null,board.querySelector('.plan-block-add'));}));
     menu.append(makeItem('设为关联起点',()=>{stagedPlanBlockSource={ownerId:owner.id,key,blockId:block.id};render();notify('已记录关联起点，去点另一个小块右键即可建立关联');}));
@@ -6043,7 +6478,7 @@ function toggleDoc35Plan(owner,key,block){
   }
   function endPlanMiniDrag(commit=false){
     const d=planMiniDrag;if(!d)return;
-    planMiniDrag=null;clearTimeout(d.timer);
+    planMiniDrag=null;clearTimeout(d.timer);clearTimeout(d.menuTimer);
     window.removeEventListener('pointermove',d.onMove,true);
     window.removeEventListener('pointerup',d.onUp,true);
     window.removeEventListener('pointercancel',d.onCancel,true);
@@ -6062,7 +6497,7 @@ function toggleDoc35Plan(owner,key,block){
     if(d.target.type==='quadrant'){
       const owner=topicById(d.ownerId),list=owner?.kind==='plan'?planBlockList(owner,d.key):[];
       if(v54PlanDescendants(list,d.blockId).size>1){notify('请先展开分组，单独拖动其中的事项到四象限');return;}
-      const item=list.find(x=>x.id===d.blockId);if(item)delete item.groupParentId;
+      const item=list.find(x=>x.id===d.blockId);if(item){if(item.groupParentId)item.groupDetached=true;delete item.groupParentId;}
       planToQuadrant(d.ownerId,d.key,d.blockId,d.target);
       return;
     }
@@ -6087,6 +6522,7 @@ function toggleDoc35Plan(owner,key,block){
     if(sameCell&&insert===sourceIndex&&!item.groupParentId)return;
     // 单块/整条下级分支移动时，所有下级都一起跟随，不留下悬空 groupParentId。
     for(let i=from.length-1;i>=0;i--)if(subtree.has(from[i].id))from.splice(i,1);
+    if(item.groupParentId)item.groupDetached=true;
     delete item.groupParentId;
     to.splice(insert,0,...cluster);
     planSyncCellTextFromBlocks(source,d.key,false);
@@ -6108,8 +6544,9 @@ function toggleDoc35Plan(owner,key,block){
   function cancelPlanMiniDrag(){endPlanMiniDrag(false);}
   function startPlanMiniDrag(e,row,owner,key,blockId){
     if(planMiniDrag||e.button!==0||e.target.closest('button,textarea,input,[contenteditable]'))return;
+    const touch=e.pointerType==='touch';
     const d={pointerId:e.pointerId,ownerId:owner.id,key,blockId,row,
-      startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,target:null,ghost:null,timer:null};
+      startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,armed:false,target:null,ghost:null,timer:null,menuTimer:null};
     planMiniDrag=d;
     const begin=()=>{
       if(planMiniDrag!==d||anySurfacePinch||!row.isConnected)return;
@@ -6209,7 +6646,14 @@ function toggleDoc35Plan(owner,key,block){
     d.onMove=ev=>{
       if(ev.pointerId!==d.pointerId)return;
       d.x=ev.clientX;d.y=ev.clientY;
-      if(!d.active){if(Math.hypot(d.x-d.startX,d.y-d.startY)>10)cancelPlanMiniDrag();return;}
+      if(!d.active){
+        if(Math.hypot(d.x-d.startX,d.y-d.startY)<=10)return;
+        clearTimeout(d.menuTimer);
+        // 手机短滑沿用画布平移；先长按约 0.43 秒再移动则是拖动事项。
+        if(!touch||!d.armed){cancelPlanMiniDrag();return;}
+        begin();
+        if(!d.active)return;
+      }
       if(ev.cancelable)ev.preventDefault();ev.stopPropagation();d.hasMoved=true;reposition();
     };
     d.onUp=ev=>{
@@ -6221,7 +6665,19 @@ function toggleDoc35Plan(owner,key,block){
     window.addEventListener('pointermove',d.onMove,true);
     window.addEventListener('pointerup',d.onUp,true);
     window.addEventListener('pointercancel',d.onCancel,true);
-    d.timer=setTimeout(begin,e.pointerType==='touch'?430:420);
+    if(touch){
+      // 待命时尚不出现拖动虚影；驻留约 0.7 秒才显示操作菜单。
+      // 若 0.43 秒后开始移动，则优先正常拖动，菜单自动取消。
+      d.timer=setTimeout(()=>{if(planMiniDrag===d)d.armed=true;},430);
+      d.menuTimer=setTimeout(()=>{
+        if(planMiniDrag!==d||d.active||anySurfacePinch||!row.isConnected)return;
+        planMiniIgnoreClickUntil=Date.now()+850;
+        cancelPlanMiniDrag();
+        const latest=topicById(owner.id);
+        const item=latest?.kind==='plan'?findPlanBlock(latest,key,blockId):null;
+        if(item)openPlanBlockMenu(latest,key,item,d.startX,d.startY);
+      },720);
+    }else d.timer=setTimeout(begin,420);
   }
   // V54: plan.blockCells 中的原对象拥有 groupParentId。下级仍是正常计划小块，
   // 因而沿用文字编辑、关联、标注、跨格移动与同步，无额外副本。
@@ -6297,7 +6753,7 @@ function toggleDoc35Plan(owner,key,block){
     const remainingDesc=v54PlanDescendants(destList,targetId);
     for(let i=insert;i<destList.length;i++)if(remainingDesc.has(destList[i].id))insert=i+1;
     for(const {rootId,group} of clusters){
-      const root=group.find(x=>x.id===rootId);if(root){root.groupParentId=targetId;if(layout==='branch')root.groupLayout='branch';else delete root.groupLayout;}
+      const root=group.find(x=>x.id===rootId);if(root){root.groupParentId=targetId;delete root.groupDetached;if(layout==='branch')root.groupLayout='branch';else delete root.groupLayout;}
       destList.splice(insert,0,...group);insert+=group.length;
     }
     if(layout!=='branch')target.groupCollapsed=true;
@@ -6334,6 +6790,7 @@ function toggleDoc35Plan(owner,key,block){
 
   // V64: Width follows actual text length (and only necessary text controls). No shared fixed width.
   function planMiniNaturalWidth(item,row,maxWidth){
+    if(item?.drawing)return Math.max(86,Math.min(maxWidth,300));
     const text=String(item.text||'事项');
     const canvas=planMiniNaturalWidth.canvas||(planMiniNaturalWidth.canvas=document.createElement('canvas'));
     const ctx=canvas.getContext('2d');
@@ -6461,20 +6918,29 @@ function toggleDoc35Plan(owner,key,block){
           planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
           if(doc35Active?.kind==='plan'&&doc35Active.ownerId===owner.id&&doc35Active.key===key&&doc35Active.blockId!==item.id)closeDoc35();
         });
-        row.addEventListener('dblclick',e=>{e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;if(item.textMode)selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});else openPlanMiniEditor(owner,key,item.id,row);});
-        row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
+        row.addEventListener('dblclick',e=>{e.stopPropagation();if(item.drawing||Date.now()<planMiniIgnoreClickUntil)return;openPlanMiniEditor(owner,key,item.id,row);});
+        row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;if(e.pointerType==='touch'&&planMiniDrag?.blockId===item.id)cancelPlanMiniDrag();openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
         row.addEventListener('pointerdown',e=>startPlanMiniDrag(e,row,owner,key,item.id));
         const text=document.createElement('div');text.className='plan-mini-text';renderMarkedText(text,item.text,item.marks||[]);
-        const plus=document.createElement('button');plus.type='button';plus.className='plan-mini-plus';plus.textContent='+';
-        plus.title='在这项下方新增小块';plus.setAttribute('aria-label','在'+item.text.slice(0,25)+'之后添加一项');
-        plus.addEventListener('pointerdown',e=>e.stopPropagation());
-        plus.addEventListener('click',e=>{e.stopPropagation();openPlanMiniEditor(owner,key,null,plus,item.id);});
-        row.append(text);
-        if(item.textMode)row.append(doc37EnableIcon(makeDoc35Icon(),()=>{
+        if(item.drawing){
+          row.classList.add('plan-mini-drawing');
+          const widget=renderDrawingNode({id:item.id,drawing:item.drawing},null,
+            {embedded:true,ownerId:owner.id,key,dragRow:row});
+          row.append(widget);
+        }
+
+        const makePlus=(kind,label)=>{const b=document.createElement('button');b.type='button';
+          b.className='plan-mini-plus '+kind;b.textContent='+';b.title=label;b.setAttribute('aria-label',label);
+          b.addEventListener('pointerdown',e=>e.stopPropagation());
+          b.addEventListener('click',e=>{e.stopPropagation();openPlanMiniEditor(owner,key,null,b,item.id,kind);});
+          return b;};
+        if(!item.drawing)row.append(text);
+        if(item.textMode&&!item.drawing)row.append(doc37EnableIcon(makeDoc35Icon(),()=>{
           selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
           openDoc35({kind:'plan',ownerId:owner.id,key,blockId:item.id});
         }));
-        row.append(plus);listEl.append(row);
+        if(!item.drawing)row.append(makePlus('child','右侧：添加下级小节点'),makePlus('sibling','下方：添加同级小节点'));
+        listEl.append(row);
         v54DrawGroupChevron(row,owner,key,item,list);
         decoratePlanAssociatedRow(row,owner,key,item);
         if(row.hidden){const assoc=row.nextElementSibling?.classList.contains('plan-link-children')?row.nextElementSibling:null;if(assoc)assoc.hidden=true;}
@@ -6582,6 +7048,207 @@ function toggleDoc35Plan(owner,key,block){
     add('← 返回',()=>openPlanViewMenu(source,x,y));
     document.body.append(menu);planViewMenu=menu;
     const rect=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(x,innerWidth-rect.width-8))+'px';menu.style.top=Math.max(8,Math.min(y,innerHeight-rect.height-8))+'px';
+  }
+  // V72: 行列是表格的独立剪贴板结构，不得退化成整个矩阵节点的标题。
+  // 复制包括：行/列表头、所有单元格（含隐藏列）、富文本标记、行高或列宽。
+  const DIY_MATRIX_AXIS_MIME='application/x-diyrecord-matrix-axis+json';
+  const DIY_MATRIX_AXIS_HTML='data-diyrecord-matrix-axis';
+  let matrixAxisClipboard=null;
+  const matrixAxisEscapeHTML=value=>String(value??'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  function matrixAxisSnapshot(t,axis,index){
+    if(!t||t.kind!=='matrix'||!['row','col'].includes(axis))return null;
+    const a=tableAxes(t),max=axis==='col'?a.colNames.length:a.rowNames.length;
+    if(!Number.isInteger(index)||index<1||index>max)return null;
+    const values=axis==='col'?
+      Array.from({length:a.rowNames.length+1},(_,r)=>tableValue(t,r,index)):
+      Array.from({length:a.colNames.length+1},(_,c)=>tableValue(t,index,c));
+    const marks=values.map((v,i)=>JSON.parse(JSON.stringify(
+      validMarks(axis==='col'?activeMarks(t,i,index):activeMarks(t,index,i),v))));
+    const size=axis==='col'?ensuredMatrixWidths(t)[index]:ensuredMatrixHeights(t)[index];
+    return {app:'DIY记录',format:'matrix-axis-v1',axis,values,marks,size};
+  }
+  function matrixAxisValid(p){
+    return !!(p&&p.app==='DIY记录'&&p.format==='matrix-axis-v1'&&
+      (p.axis==='row'||p.axis==='col')&&Array.isArray(p.values)&&p.values.length>=2&&
+      p.values.length<=25&&p.values.every(v=>typeof v==='string'&&v.length<=30000)&&
+      Array.isArray(p.marks)&&p.marks.length===p.values.length);
+  }
+  function matrixAxisCopyText(t,axis,index){
+    const p=matrixAxisSnapshot(t,axis,index);return p?matrixAxisPlain(p):'';
+  }
+  function matrixAxisPlain(payload){
+    const escaped=payload.values.map(v=>/[\t\r\n"]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v);
+    return escaped.join(payload.axis==='col'?'\n':'\t');
+  }
+  function matrixAxisHtml(payload){
+    const encoded=encodeURIComponent(JSON.stringify(payload));
+    const cells=payload.values.map(v=>'<td>'+matrixAxisEscapeHTML(v).replace(/\n/g,'<br>')+'</td>');
+    return '<table '+DIY_MATRIX_AXIS_HTML+'="'+encoded+'"><tbody>'+
+      (payload.axis==='col'?cells.map(c=>'<tr>'+c+'</tr>').join(''):'<tr>'+cells.join('')+'</tr>')+
+      '</tbody></table>';
+  }
+  function matrixAxisSaveInternal(payload){
+    matrixAxisClipboard={payload,plain:matrixAxisPlain(payload),at:Date.now()};
+    // 行/列复制与“整张表格节点复制”分别维护，不能复用旧的节点复制内容。
+    diyInternalClipboard=null;
+  }
+  function matrixAxisWriteEvent(c,payload){
+    c.setData('text/plain',matrixAxisPlain(payload));
+    c.setData('text/html',matrixAxisHtml(payload));
+    try{c.setData(DIY_MATRIX_AXIS_MIME,JSON.stringify(payload));}catch{}
+  }
+  function matrixAxisReadEvent(c){
+    if(!c)return null;
+    const mime=c.getData(DIY_MATRIX_AXIS_MIME);
+    if(mime){try{const p=JSON.parse(mime);if(matrixAxisValid(p))return p;}catch{}}
+    const html=c.getData('text/html');
+    if(html&&html.includes(DIY_MATRIX_AXIS_HTML)){
+      try{const node=new DOMParser().parseFromString(html,'text/html').querySelector('['+DIY_MATRIX_AXIS_HTML+']');
+        if(node){const p=JSON.parse(decodeURIComponent(node.getAttribute(DIY_MATRIX_AXIS_HTML)));
+          if(matrixAxisValid(p))return p;}}
+      catch{}
+    }
+    const plain=c.getData('text/plain');
+    if(matrixAxisClipboard&&plain===matrixAxisClipboard.plain&&Date.now()-matrixAxisClipboard.at<300000)
+      return matrixAxisClipboard.payload;
+    return null;
+  }
+  async function matrixCopyAxis(t,axis,index){
+    const payload=matrixAxisSnapshot(t,axis,index);
+    if(!payload){notify('请选择有效的表格行或列');return;}
+    matrixAxisSaveInternal(payload);
+    let copied=false;
+    // 同时写入有结构标记的 HTML（供软件内无损粘贴）和普通文本（供外部软件使用）。
+    try{
+      if(navigator.clipboard?.write&&typeof ClipboardItem!=='undefined'){
+        await navigator.clipboard.write([new ClipboardItem({
+          'text/plain':new Blob([matrixAxisPlain(payload)],{type:'text/plain'}),
+          'text/html':new Blob([matrixAxisHtml(payload)],{type:'text/html'})
+        })]);copied=true;
+      }
+    }catch{}
+    if(!copied){try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(matrixAxisPlain(payload));copied=true;}}catch{}}
+    if(!copied){
+      const box=document.createElement('textarea');box.value=matrixAxisPlain(payload);
+      Object.assign(box.style,{position:'fixed',left:'-9999px',top:'-9999px',opacity:'0'});
+      document.body.append(box);box.focus();box.select();
+      const intercept=e=>{if(e.clipboardData){matrixAxisWriteEvent(e.clipboardData,payload);e.preventDefault();e.stopImmediatePropagation();}};
+      window.addEventListener('copy',intercept,true);
+      try{copied=!!document.execCommand('copy');}catch{}
+      window.removeEventListener('copy',intercept,true);box.remove();
+    }
+    notify('已复制整'+(axis==='col'?'列':'行')+'：'+(payload.values.length-1)+' 个单元格'+
+      (copied?'（可粘贴）':'（可用本软件菜单粘贴；系统剪贴板权限未开放）'));
+    return payload;
+  }
+  // 插入的下标按显示方向定义，转置表格仍修改正确的原始 rowHeaders/colHeaders/cells。
+  function matrixPasteAxis(t,axis,after,payload){
+    if(!matrixAxisValid(payload)||payload.axis!==axis)throw Error('请先复制对应的整行或整列');
+    if(!t||t.kind!=='matrix')throw Error('请选择目标横纵表格');
+    const a=tableAxes(t),m=t.matrix;
+    const originalLength=axis==='col'?a.colNames.length:a.rowNames.length;
+    const crossLength=axis==='col'?a.rowNames.length:a.colNames.length;
+    if(originalLength>=24)throw Error('表格最多允许 24 '+(axis==='col'?'列':'行'));
+    if(!Number.isInteger(after)||after<1||after>originalLength)throw Error('请先选中目标'+(axis==='col'?'列':'行')+'的表头');
+    if(payload.values.length!==crossLength+1)throw Error('目标表格'+(axis==='col'?'行':'列')+'数与复制内容不一致，已取消以保护数据');
+    settleMatrixEditor(true);
+    ensuredMatrixWidths(t);ensuredMatrixHeights(t);
+    const insertAt=after;  // 0-based 数组 index，插入现有第 after 条之后
+    const canonicalAxis=axis==='col'?(a.trans?'row':'col'):(a.trans?'col':'row');
+    const shifted={};
+    for(const [key,marks] of Object.entries(m.richMap||{})){
+      const parts=key.split(',').map(Number),dim=canonicalAxis==='row'?0:1;
+      if(parts.length!==2||parts.some(x=>!Number.isInteger(x))){shifted[key]=marks;continue;}
+      if(parts[dim]>after)parts[dim]++;
+      shifted[parts.join(',')]=marks;
+    }
+    m.richMap=shifted;
+    const values=payload.values;
+    if(axis==='col'){
+      if(!a.trans){m.colHeaders.splice(insertAt,0,values[0]);
+        m.cells.forEach((row,r)=>row.splice(insertAt,0,values[r+1]));}
+      else{m.rowHeaders.splice(insertAt,0,values[0]);m.cells.splice(insertAt,0,values.slice(1));}
+      (a.trans?m.colWidthsTranspose:m.colWidthsNormal).splice(insertAt+1,0,
+        Number.isFinite(payload.size)&&payload.size>=85&&payload.size<=1800?payload.size:260);
+      (a.trans?m.rowHeightsNormal:m.rowHeightsTranspose).splice(insertAt+1,0,0);
+    }else{
+      if(!a.trans){m.rowHeaders.splice(insertAt,0,values[0]);m.cells.splice(insertAt,0,values.slice(1));}
+      else{m.colHeaders.splice(insertAt,0,values[0]);
+        m.cells.forEach((row,c)=>row.splice(insertAt,0,values[c+1]));}
+      (a.trans?m.rowHeightsTranspose:m.rowHeightsNormal).splice(insertAt+1,0,
+        Number.isFinite(payload.size)&&payload.size>=0&&payload.size<=4000?payload.size:0);
+      (a.trans?m.colWidthsNormal:m.colWidthsTranspose).splice(insertAt+1,0,260);
+    }
+    const newIndex=after+1;
+    // 新复制列若插到前三列外，自动展开，避免操作成功却看不到新列。
+    if(axis==='col'&&newIndex>3)m.colsExpanded=true;
+    payload.marks.forEach((marks,i)=>putMarks(t,
+      axis==='col'?i:newIndex,axis==='col'?newIndex:i,
+      JSON.parse(JSON.stringify(validMarks(marks,values[i])))));
+    state.selected=t.id;
+    state.matrixSelection=matrixTarget(t.id,axis==='col'?0:newIndex,axis==='col'?newIndex:0);
+    scheduleSave('粘贴横纵表格 · 整'+(axis==='col'?'列':'行')+'（包含所有单元格）');
+    render();ensureVisible(t.id);
+    notify('已粘贴整'+(axis==='col'?'列':'行')+'，插入在选中'+(axis==='col'?'列':'行')+'后面');
+    return true;
+  }
+  async function matrixAxisReadSystem(){
+    if(navigator.clipboard?.read){
+      try{
+        const items=await navigator.clipboard.read();
+        for(const part of items){
+          const plain=part.types.includes('text/plain')?await (await part.getType('text/plain')).text():'';
+          const html=part.types.includes('text/html')?await (await part.getType('text/html')).text():'';
+          let mime='';
+          if(part.types.includes(DIY_MATRIX_AXIS_MIME))mime=await(await part.getType(DIY_MATRIX_AXIS_MIME)).text();
+          const c={getData:type=>type==='text/plain'?plain:type==='text/html'?html:type===DIY_MATRIX_AXIS_MIME?mime:''};
+          const payload=matrixAxisReadEvent(c);
+          if(payload)return payload;
+        }
+        // 能读取系统剪贴板且内容不是行列结构时，不粘贴过期的应用缓存。
+        return null;
+      }catch{}
+    }
+    return matrixAxisClipboard?.payload||null;
+  }
+  function matrixPasteSelectedAxis(payload){
+    const selection=state.matrixSelection;
+    const t=topicById(selection?.id);
+    if(!t||t.kind!=='matrix'||!['row','col'].includes(selection.kind)){
+      notify('请先点击目标表格的行头或列头，再粘贴');return true;
+    }
+    try{matrixPasteAxis(t,selection.kind,selection.kind==='col'?selection.col:selection.row,payload);}
+    catch(err){notify('粘贴失败：'+err.message);}
+    return true;
+  }
+  function openMatrixAxisMenu(t,axis,index,x,y){
+    hideDeleteContext();hidePlanViewMenu();
+    const menu=document.createElement('div');menu.className='plan-view-menu matrix-axis-copy-menu';menu.setAttribute('role','menu');
+    const name=axis==='col'?'列':'行';
+    const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='第 '+index+' '+name+' · 整'+name+'操作';menu.append(title);
+    if(axis==='col'){
+      const hint=document.createElement('div');hint.className='plan-menu-subtitle';
+      hint.textContent='按住列标题拖到其他主题：生成“最左列＋本列”的新表格（原表保留）';
+      menu.append(hint);
+    }
+    menu.append(makePlanButton('复制整'+name,()=>{
+      hidePlanViewMenu();selectInteractive(t.id,matrixTarget(t.id,axis==='row'?index:0,axis==='col'?index:0));
+      matrixCopyAxis(t,axis,index);
+    },'复制该'+name+'的表头和所有单元格、颜色标记及尺寸'));
+    menu.append(makePlanButton('粘贴整'+name+'到此'+name+'后',async()=>{
+      hidePlanViewMenu();
+      const payload=await matrixAxisReadSystem();
+      if(!payload){notify('请先复制整'+name);return;}
+      try{matrixPasteAxis(t,axis,index,payload);}catch(err){notify('粘贴失败：'+err.message);}
+    },'将已复制的整'+name+'完整插入到本'+name+'后面（手机也可使用）'));
+    menu.append(makePlanButton('编辑'+name+'标签',()=>{hidePlanViewMenu();startMatrixEditing(t.id,axis==='row'?index:0,axis==='col'?index:0);},'编辑当前行列的表头文字'));
+    menu.append(makePlanButton('删除整'+name,()=>{
+      hidePlanViewMenu();settleMatrixEditor(true);deleteMatrixSelection({id:t.id,kind:axis,row:axis==='row'?index:0,col:axis==='col'?index:0});
+    },'连同整行/整列单元格一起删除'));
+    document.body.append(menu);planViewMenu=menu;
+    const r=menu.getBoundingClientRect();menu.style.left=Math.max(8,Math.min(x,innerWidth-r.width-8))+'px';
+    menu.style.top=Math.max(8,Math.min(y,innerHeight-r.height-8))+'px';
   }
   function openMatrixViewMenu(t,x,y){
     hidePlanViewMenu();
@@ -6789,6 +7456,13 @@ function toggleDoc35Plan(owner,key,block){
     cell.classList.add('plan-mini-drop-cell');
     cell.dataset.planOwnerId=note.dataset.planOwnerId;
     cell.dataset.planKey=note.dataset.planKey;
+    cell.addEventListener('dblclick',e=>{
+      if(e.target.closest('.plan-mini-block,.plan-mini-editor,button,input,textarea,.plan-axis-target,.plan-link-child'))return;
+      e.preventDefault();e.stopPropagation();
+      const owner=topicById(cell.dataset.planOwnerId),key=cell.dataset.planKey;
+      const add=note.querySelector('.plan-block-add');
+      if(owner?.kind==='plan'&&add)openPlanMiniEditor(owner,key,null,add);
+    });
   }
   function renderPlanNode(t,p){
     planStableFields(t);
@@ -6849,7 +7523,7 @@ function toggleDoc35Plan(owner,key,block){
         th.classList.add('plan-cols-anchor');
         const toggle=document.createElement('button');toggle.type='button';toggle.className='plan-cols-toggle';
         const expanded=planColumnsExpanded.has(t.id);
-        toggle.textContent=expanded?'◂':'▸';
+        toggle.textContent=expanded?'▼':'▶';
         toggle.title=expanded?'收起其他列（保留当前最左三列）':'展开剩余列';
         toggle.setAttribute('aria-label',toggle.title);
         toggle.setAttribute('aria-expanded',String(expanded));
@@ -7187,10 +7861,10 @@ function toggleDoc35Plan(owner,key,block){
     const rect=stage.getBoundingClientRect();
     return {x:(clientX-rect.left-state.panX)/state.zoom,y:(clientY-rect.top-state.panY)/state.zoom};
   }
-  function prepareTopicDrag(e,id,el){
-    if((e.pointerType==='mouse'&&e.button!==0)||e.target.closest('button,input,.topic-editor'))return;
+  function prepareTopicDrag(e,id,el,allowMatrixCorner=false){
+    if((e.pointerType==='mouse'&&e.button!==0)||(!allowMatrixCorner&&e.target.closest('button,input,.topic-editor')))return;
     e.stopPropagation();
-    if(currentFreeMode()){startFreeNodeDrag(e,id,el);return;}
+    if(currentFreeMode()){startFreeNodeDrag(e,id,el,allowMatrixCorner);return;}
     if(id===activeRootId())return; // 当前画布中心主题固定；其余主题可重组。
     if(state.editing||state.matrixEditing||state.planEditing)return;
     try{el.setPointerCapture(e.pointerId);}catch{}
@@ -7240,7 +7914,7 @@ function toggleDoc35Plan(owner,key,block){
     let found=null,nearest=Infinity;
     const radius=Math.max(98,Math.min(185,145*state.zoom));
     for(const el of topicLayer.children){
-      if(!el.classList.contains('topic')&&!el.classList.contains('matrix-node'))continue;
+      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node'))continue;
       const id=el.dataset.id;if(d.ignore.has(id))continue;
       const r=el.getBoundingClientRect();
       const dx=Math.max(r.left-x,0,x-r.right),dy=Math.max(r.top-y,0,y-r.bottom);
@@ -7264,7 +7938,7 @@ function toggleDoc35Plan(owner,key,block){
     topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after'));
     d.drop=findTopicDropTarget(d,e.clientX,e.clientY);
     if(d.drop){d.drop.el.classList.add('drop-'+d.drop.mode);d.hint.textContent={child:'作为子主题',before:'插入到该主题前',after:'插入到该主题后'}[d.drop.mode];}
-    else d.hint.textContent='移动整条分支 · 靠近目标主题可放置';
+    else d.hint.textContent='移动整个表格及下级 · 靠近目标主题可归入';
     const origin=d.anchors.get(d.id);if(!origin)return;
     const toX=origin.left+dx,toY=origin.top+origin.h/2+dy;
     let anchorId=d.parentId;
@@ -7286,8 +7960,10 @@ function toggleDoc35Plan(owner,key,block){
     // 按原始次序保留整个子树，移动后不丢失任何后代。
     const moving=data.topics.filter(n=>subtree.has(n.id));
     const remaining=data.topics.filter(n=>!subtree.has(n.id));
-    const oldSignature=JSON.stringify(data.topics.map(n=>[n.id,n.parentId]));
+    const oldSignature=JSON.stringify(data.topics.map(n=>[n.id,n.parentId,!!n.detached]));
     source.parentId=newParent;
+    // 手动拖放接入真实父节点，解除独立状态。
+    delete source.detached;
     const insertAfterSubtree=(nid)=>{
       const byId=new Map(remaining.map((n,i)=>[n.id,i]));
       const nested=new Set([nid]);let changed=true;
@@ -7300,7 +7976,7 @@ function toggleDoc35Plan(owner,key,block){
     else insert=insertAfterSubtree(target.id)+1;
     if(insert<0||!Number.isFinite(insert))return false;
     remaining.splice(insert,0,...moving);
-    if(JSON.stringify(remaining.map(n=>[n.id,n.parentId]))===oldSignature)return false;
+    if(JSON.stringify(remaining.map(n=>[n.id,n.parentId,!!n.detached]))===oldSignature)return false;
     data.topics=remaining;return true;
   }
   function settleRemoteAfterDrag(){
@@ -7318,6 +7994,18 @@ function toggleDoc35Plan(owner,key,block){
       ignoreTopicClickId=d.id;setTimeout(()=>{if(ignoreTopicClickId===d.id)ignoreTopicClickId=null;},500);
       let changed=false;
       if(commit&&d.drop)changed=reorderTopicSubtree(d.id,d.drop);
+      else if(commit&&(topicById(d.id)?.detached||topicById(d.id)?.kind==='drawing')){
+        // V77: dragging the drawing frame onto blank canvas moves the whole board.
+        // Like V75 free-created topics, it becomes independently positioned only after
+        // an explicit manual drag; simply drawing inside it never changes its position.
+        const node=topicById(d.id),p=state.positions.get(d.id);
+        if(p){
+          if(node.kind==='drawing'&&!node.detached){node.parentId=activeRootId();node.detached=true;}
+          node.freeX=Math.round((p.x+(d.x-d.startX)/state.zoom)*100)/100;
+          node.freeY=Math.round((p.y+(d.y-d.startY)/state.zoom)*100)/100;
+          changed=true;
+        }
+      }
       state.selected=d.id;
       if(changed){scheduleSave('移动主题 · '+(topicById(d.id)?.text||'主题').slice(0,28));render();ensureVisible(d.id);notify('已调整主题位置');}
       else{render();if(commit&&d.drop)notify('位置未变化');}
@@ -7476,6 +8164,7 @@ function toggleDoc35Plan(owner,key,block){
     // 先收起单元格输入状态，保持现有输入内容；然后拖整行/列。
     if(document.activeElement===d.field)d.field.blur();
     if(state.matrixEditing)settleMatrixEditor(true);
+    hidePlanViewMenu();
     d.wrap.classList.add('selected');
     const sourceTd=d.field.closest('td');
     if(d.axis==='row')sourceTd?.closest('tr')?.classList.add('axis-source');
@@ -7490,6 +8179,23 @@ function toggleDoc35Plan(owner,key,block){
   function updateAxisMove(d,e){
     d.ghost.style.left=(e.clientX+18)+'px';d.ghost.style.top=(e.clientY-18)+'px';
     const node=topicById(d.id);if(!node)return;
+    // 拖到外部节点：作为一个新表格的分支/同级插入；仍只拖列，不拖原表。
+    clearMatrixColumnDropHint();
+    d.columnTarget=matrixColumnExternalTarget(d,e);
+    if(d.columnTarget){
+      d.line.hidden=true;d.dropBoundary=null;
+      d.columnTarget.el.classList.add('matrix-column-copy-target');
+      d.ghost.classList.add('matrix-copy-preview');
+      d.ghost.textContent='复制「'+(d.field.value||'该列').slice(0,24)+'」→ 新两列表格 · '+
+        ({child:'成为目标的子节点',before:'放在目标前面',after:'放在目标后面'}[d.columnTarget.mode]);
+      return;
+    }
+    d.ghost.classList.remove('matrix-copy-preview');
+    d.ghost.textContent=d.field.value||((d.axis==='row'?'行':'列')+' '+(d.from+1));
+    d.line.hidden=false;
+    const own=d.wrap.getBoundingClientRect();
+    // 已离开原表又没有指向别的节点，就取消原表排序的落点，防止松手误挪动原列。
+    if(e.clientX<own.left||e.clientX>own.right||e.clientY<own.top||e.clientY>own.bottom){d.dropBoundary=null;return;}
     const a=tableAxes(node),limit=(d.axis==='row'?a.rowNames.length:a.colNames.length);
     const table=d.wrap.querySelector('table');if(!table)return;
     let boundary=0,coords=[];
@@ -7516,6 +8222,74 @@ function toggleDoc35Plan(owner,key,block){
     }
     d.dropBoundary=boundary;
   }
+  // V73: 横纵表格“拖列到主题”创建另一张独立的两列表格。
+  // 左列包括左上角标题、所有行标题；右列包括被拖列的表头及其每行内容。
+  // 以当前可见方向取值，转置状态也输出所见即所得的新表，不改动源表。
+  function matrixCreateColumnBranch(source,displayCol,target){
+    if(!source||source.kind!=='matrix'||!target?.id)return null;
+    const targetNode=topicById(target.id),axes=tableAxes(source);
+    if(!targetNode||displayCol<1||displayCol>axes.colNames.length)return null;
+    const mode=target.mode==='before'||target.mode==='after'?target.mode:'child';
+    const parentId=mode==='child'?targetNode.id:targetNode.parentId;
+    if(parentId===null||!topicById(parentId))return null;
+    if(data.topics.length>=3999){notify('节点数量已达上限，无法生成新表格');return null;}
+    // 一律基于显示行列而非原始二维存储，避免“横纵切换”后拷错一列。
+    const rows=axes.rowNames.length;
+    const widths=ensuredMatrixWidths(source).slice(),heights=ensuredMatrixHeights(source).slice();
+    const fresh={id:makeId(),parentId,text:tableValue(source,0,0),kind:'matrix',matrix:{
+      orientation:'normal',colsExpanded:false,
+      rowHeaders:Array.from({length:rows},(_,r)=>tableValue(source,r+1,0)),
+      colHeaders:[tableValue(source,0,displayCol)],
+      cells:Array.from({length:rows},(_,r)=>[tableValue(source,r+1,displayCol)]),
+      richMap:{},
+      colWidthsNormal:[widths[0],widths[displayCol]],
+      rowHeightsNormal:heights.slice(0,rows+1),
+      colWidthsTranspose:Array.from({length:rows+1},(_,i)=>i===0?190:260),
+      rowHeightsTranspose:[0,0]
+    }};
+    // 左上角、左侧行头、右侧列标题和所有正文的颜色/背景色/删除线均保留。
+    for(let r=0;r<=rows;r++)for(const c of [0,1]){
+      const originalColumn=c===0?0:displayCol;
+      const marks=validMarks(activeMarks(source,r,originalColumn),tableValue(source,r,originalColumn));
+      if(marks.length)putMarks(fresh,r,c,JSON.parse(JSON.stringify(marks)));
+    }
+    const insertion=mode==='before'?data.topics.findIndex(n=>n.id===targetNode.id):subtreeLastIndex(targetNode.id)+1;
+    if(insertion<0)return null;
+    // 保证嵌套表格实际可见；目标折叠时仅展开目标本身，不改变别的分支。
+    if(mode==='child'&&targetNode.collapsed===true)targetNode.collapsed=false;
+    data.topics.splice(insertion,0,fresh);
+    state.selected=fresh.id;state.matrixSelection=null;
+    scheduleSave('横纵表格 · 拖动复制第'+displayCol+'列生成独立表格');
+    render();ensureVisible(fresh.id);
+    notify('已生成新表格：左侧行标题 +「'+fresh.matrix.colHeaders[0].slice(0,20)+'」整列（原表不变）');
+    return fresh;
+  }
+  // 只在拖出源表格后才查找新节点，避免原表内部列排序误触发复制。
+  function matrixColumnExternalTarget(d,e){
+    if(d.axis!=='col')return null;
+    const own=d.wrap.getBoundingClientRect(),x=e.clientX,y=e.clientY;
+    if(x>=own.left-7&&x<=own.right+7&&y>=own.top-7&&y<=own.bottom+7)return null;
+    let winner=null,nearest=Infinity;
+    const radius=Math.max(64,Math.min(175,130*state.zoom));
+    for(const el of topicLayer.children){
+      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node'))continue;
+      const id=el.dataset.id;if(!id||id===d.id||!topicById(id))continue;
+      const b=el.getBoundingClientRect();
+      const dx=Math.max(b.left-x,0,x-b.right),dy=Math.max(b.top-y,0,y-b.bottom);
+      const distance=Math.hypot(dx,dy);
+      if(distance>radius||distance>=nearest)continue;
+      let mode='child';
+      if(id!==activeRootId()){
+        if(y<b.top+b.height*.18||(y<b.top&&dy>8))mode='before';
+        else if(y>b.bottom-b.height*.18||(y>b.bottom&&dy>8))mode='after';
+      }
+      winner={id,mode,el};nearest=distance;
+    }
+    return winner;
+  }
+  function clearMatrixColumnDropHint(){
+    topicLayer.querySelectorAll('.matrix-column-copy-target').forEach(el=>el.classList.remove('matrix-column-copy-target'));
+  }
   function reorderMatrixAxis(t,axis,from,boundary){
     const a=tableAxes(t),count=(axis==='row'?a.rowNames.length:a.colNames.length);
     if(from<0||from>=count||boundary===null)return false;
@@ -7541,9 +8315,15 @@ function toggleDoc35Plan(owner,key,block){
     return true;
   }
   function finishAxisMove(d,commit){
-    d.ghost?.remove();d.line?.remove();
+    d.ghost?.remove();d.line?.remove();clearMatrixColumnDropHint();
     d.wrap.querySelectorAll('.axis-source,.axis-source-cell').forEach(el=>el.classList.remove('axis-source','axis-source-cell'));
     if(!d.moved)return;
+    if(commit&&d.axis==='col'&&d.columnTarget){
+      const source=topicById(d.id);
+      if(matrixCreateColumnBranch(source,d.from+1,d.columnTarget)){
+        settleRemoteAfterDrag();return;
+      }
+    }
     if(commit&&d.dropBoundary!==null){
       const t=topicById(d.id);
       if(t&&reorderMatrixAxis(t,d.axis,d.from,d.dropBoundary)){
@@ -8238,6 +9018,260 @@ function toggleDoc35Plan(owner,key,block){
   }
   // -------- v29 双模式结束 --------
 
+  // V76: 与普通表格、计划表一样，绘图板本身是真正的主题节点。
+  // 每一笔按 720×405 的逻辑坐标保存，重排/缩放/跨设备恢复时不会失真。
+  function renderDrawingNode(t,p,options=null){
+    if(!t.drawing)t.drawing={strokes:[],color:'#263444',tool:'pen',expanded:false};
+    const d=t.drawing,embedded=options?.embedded===true;
+    const box=document.createElement('div');box.className='drawing-node'+(embedded?' drawing-inline':'');box.dataset.id=t.id;
+    if(state.selected===t.id)box.classList.add('selected');
+    if(embedded)Object.assign(box.style,{left:'0',top:'0',width:'100%',height:d.expanded?'330px':'230px'});
+    else Object.assign(box.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+    box.addEventListener('pointerdown',e=>{
+      e.stopPropagation();
+      if(e.target.closest('.drawing-surface,.drawing-tools,button,input'))return;
+      const r=box.getBoundingClientRect(),edge=11;
+      const border=e.clientX<=r.left+edge||e.clientX>=r.right-edge||
+        e.clientY<=r.top+edge||e.clientY>=r.bottom-edge;
+      if(!border&&!e.target.closest('.drawing-head'))return;
+      if(e.pointerType==='mouse'&&e.button!==0)return;
+      e.preventDefault();
+      if(embedded){if(options.dragRow){const owner=topicById(options.ownerId);
+        if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id);}}
+      else prepareTopicDrag(e,t.id,box,true);
+    });
+    box.addEventListener('click',e=>{e.stopPropagation();state.selected=embedded?options.ownerId:t.id;state.matrixSelection=null;
+      document.querySelectorAll('.drawing-node.selected').forEach(el=>el.classList.remove('selected'));
+      box.classList.add('selected');});
+    const head=document.createElement('div');head.className='drawing-head';
+    const grip=document.createElement('button');grip.type='button';grip.className='drawing-drag';grip.textContent='⠿';grip.title='按住拖动整块绘图板';
+    grip.addEventListener('pointerdown',e=>{e.stopPropagation();
+      if(embedded){if(options.dragRow){const owner=topicById(options.ownerId);if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id);}}
+      else prepareTopicDrag(e,t.id,box,true);
+    });
+    grip.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();});
+    const title=document.createElement('span');title.className='drawing-title';title.textContent='绘图板';
+    const expand=document.createElement('button');expand.type='button';expand.textContent=d.expanded?'⤡':'⤢';
+    expand.title=d.expanded?'缩小画板':'放大画板';expand.setAttribute('aria-label',expand.title);
+    expand.addEventListener('click',e=>{e.stopPropagation();d.expanded=!d.expanded;
+      if(embedded)planReleaseFoldedRowHeight(topicById(options.ownerId),options.key);
+      scheduleSave('绘图板 · 切换大小');render();ensureVisible(embedded?options.ownerId:t.id);});
+    head.append(grip,title,expand);
+    const surface=document.createElement('div');surface.className='drawing-surface';
+    for(const name of ['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend','touchcancel']){
+      surface.addEventListener(name,e=>e.stopPropagation(),{passive:true});
+    }
+    const canvas=document.createElement('canvas');canvas.width=720;canvas.height=405;
+    canvas.setAttribute('aria-label','手指或鼠标在此绘画');surface.append(canvas);
+    const tools=document.createElement('div');tools.className='drawing-tools';
+    const makeBtn=(txt,aria,onClick)=>{const b=document.createElement('button');b.type='button';b.textContent=txt;b.title=aria;b.setAttribute('aria-label',aria);b.addEventListener('pointerdown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();onClick();});tools.append(b);return b;};
+    const pen=makeBtn('✎','铅笔',()=>{d.tool='pen';refreshTools();});
+    const eraser=makeBtn('⌫','橡皮擦',()=>{d.tool='eraser';refreshTools();});
+    const divider=document.createElement('span');divider.className='drawing-divider';tools.append(divider);
+    const swatches=['#263444','#9aa2af','#f04452','#f5a623','#28ac76','#2398ed','#8057da'];
+    const choices=[];
+    for(const color of swatches){
+      const btn=makeBtn('','画笔颜色 '+color,()=>{d.color=color;d.tool='pen';refreshTools();});
+      btn.classList.add('drawing-swatch');btn.style.backgroundColor=color;choices.push([color,btn]);
+    }
+    const colorPicker=document.createElement('input');colorPicker.type='color';colorPicker.className='drawing-color';
+    colorPicker.setAttribute('aria-label','自定义颜色');colorPicker.title='自定义画笔颜色';
+    colorPicker.value=/^#[a-f0-9]{6}$/i.test(d.color)?d.color:'#263444';
+    colorPicker.addEventListener('pointerdown',e=>e.stopPropagation());
+    colorPicker.addEventListener('input',e=>{e.stopPropagation();d.color=colorPicker.value;d.tool='pen';refreshTools();});tools.append(colorPicker);
+    const secondDivider=document.createElement('span');secondDivider.className='drawing-divider';tools.append(secondDivider);
+    makeBtn('↶','撤销上一笔',()=>{if(!d.strokes?.length)return;d.strokes.pop();redraw();scheduleSave('绘图板 · 撤销上一笔');});
+    makeBtn('1:1','重置画板内部缩放和位置',()=>{d.view={zoom:1,x:0,y:0};redraw();scheduleSave('绘图板 · 重置视图');});
+    makeBtn('×','清空绘图板',()=>{if(!d.strokes?.length)return;if(!confirm('清空绘图板里的所有画迹吗？可以使用软件的撤销恢复。'))return;
+      d.strokes=[];redraw();scheduleSave('绘图板 · 清空');});
+    function refreshTools(){pen.classList.toggle('is-active',d.tool!=='eraser');eraser.classList.toggle('is-active',d.tool==='eraser');
+      for(const [color,btn] of choices)btn.classList.toggle('is-active',d.tool!=='eraser'&&d.color===color);
+      colorPicker.value=/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#263444';}
+    function paintStroke(ctx,stroke){
+      if(!stroke.points?.length)return;
+      ctx.save();ctx.globalCompositeOperation=stroke.mode==='eraser'?'destination-out':'source-over';
+      ctx.strokeStyle=stroke.color||'#263444';ctx.fillStyle=stroke.color||'#263444';
+      ctx.lineWidth=Math.max(1,Number(stroke.width)||3);ctx.lineCap='round';ctx.lineJoin='round';
+      const points=stroke.points;ctx.beginPath();ctx.moveTo(points[0].x,points[0].y);
+      if(points.length===1){ctx.lineTo(points[0].x+0.02,points[0].y+0.02);}else for(let i=1;i<points.length;i++)ctx.lineTo(points[i].x,points[i].y);
+      ctx.stroke();ctx.restore();
+    }
+    // V77: the board is a separate gesture domain. The outer stage never pans or zooms
+    // when touching its drawing surface. Two fingers manipulate only d.view here.
+    if(!d.view||typeof d.view!=='object')d.view={zoom:1,x:0,y:0};
+    function currentView(){
+      return {zoom:Math.max(1,Math.min(5,Number(d.view.zoom)||1)),
+        x:Number.isFinite(Number(d.view.x))?Number(d.view.x):0,
+        y:Number.isFinite(Number(d.view.y))?Number(d.view.y):0};
+    }
+    function boundView(zoom,x,y){
+      const z=Math.max(1,Math.min(5,zoom));
+      const marginX=80,marginY=55;
+      return {zoom:z,x:Math.max(720-720*z-marginX,Math.min(marginX,x)),
+        y:Math.max(405-405*z-marginY,Math.min(marginY,y))};
+    }
+    function redraw(){const ctx=canvas.getContext('2d');if(!ctx)return;
+      ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+      const v=currentView();ctx.save();ctx.translate(v.x,v.y);ctx.scale(v.zoom,v.zoom);
+      for(const st of d.strokes||[])paintStroke(ctx,st);
+      ctx.restore();
+    }
+    const touches=new Map();
+    const pointer={id:null,stroke:null};
+    let pinch=null,pinchHadMovement=false,skipUntilTouchRelease=false;
+    const screenPoint=e=>{const r=canvas.getBoundingClientRect();return {
+      x:(e.clientX-r.left)*720/Math.max(1,r.width),
+      y:(e.clientY-r.top)*405/Math.max(1,r.height)};};
+    const point=e=>{const p=screenPoint(e),v=currentView();return {
+      x:Math.max(0,Math.min(720,(p.x-v.x)/v.zoom)),
+      y:Math.max(0,Math.min(405,(p.y-v.y)/v.zoom))};};
+    const gesturePoints=()=>{
+      const pts=[...touches.values()].slice(0,2);
+      if(pts.length<2)return null;
+      const a=screenPoint(pts[0]),b=screenPoint(pts[1]);
+      return {x:(a.x+b.x)/2,y:(a.y+b.y)/2,
+        distance:Math.max(1,Math.hypot(a.x-b.x,a.y-b.y))};
+    };
+    function cancelIncompleteStroke(){
+      if(pointer.stroke&&d.strokes?.at(-1)===pointer.stroke)d.strokes.pop();
+      pointer.id=null;pointer.stroke=null;redraw();
+    }
+    canvas.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='mouse'&&e.button!==0)return;
+      e.preventDefault();e.stopPropagation();
+      if(e.pointerType==='touch'){
+        touches.set(e.pointerId,{clientX:e.clientX,clientY:e.clientY});
+        try{canvas.setPointerCapture(e.pointerId);}catch{}
+        if(touches.size>=2){
+          cancelIncompleteStroke();skipUntilTouchRelease=true;
+          const g=gesturePoints(),v=currentView();
+          if(g){pinch={distance:g.distance,zoom:v.zoom,
+            anchorX:(g.x-v.x)/v.zoom,anchorY:(g.y-v.y)/v.zoom};}
+          return;
+        }
+        if(skipUntilTouchRelease)return;
+      }
+      if(pointer.id!==null)return;
+      if(!Array.isArray(d.strokes))d.strokes=[];
+      if(d.strokes.length>=700){notify('画迹已达到单块绘图板上限，请新建一块绘图板');return;}
+      pointer.id=e.pointerId;pointer.stroke={mode:d.tool==='eraser'?'eraser':'pen',
+        color:d.color||'#263444',width:d.tool==='eraser'?30:3.4,points:[point(e)]};
+      d.strokes.push(pointer.stroke);try{canvas.setPointerCapture(e.pointerId);}catch{}
+      redraw();
+    });
+    canvas.addEventListener('pointermove',e=>{
+      if(e.pointerType==='touch'&&touches.has(e.pointerId)){
+        touches.set(e.pointerId,{clientX:e.clientX,clientY:e.clientY});
+        if(pinch&&touches.size>=2){
+          e.preventDefault();e.stopPropagation();
+          const g=gesturePoints();if(!g)return;
+          const z=Math.max(1,Math.min(5,pinch.zoom*g.distance/pinch.distance));
+          d.view=boundView(z,g.x-pinch.anchorX*z,g.y-pinch.anchorY*z);
+          pinchHadMovement=true;redraw();return;
+        }
+      }
+      if(pointer.id!==e.pointerId||!pointer.stroke)return;
+      e.preventDefault();e.stopPropagation();
+      if(pointer.stroke.points.length>=1500)return;
+      const p=point(e),last=pointer.stroke.points.at(-1);
+      if(Math.hypot(p.x-last.x,p.y-last.y)<0.75)return;
+      pointer.stroke.points.push(p);redraw();
+    });
+    const finishStroke=e=>{
+      if(e.pointerType==='touch'&&touches.has(e.pointerId)){
+        touches.delete(e.pointerId);
+        if(pinch&&touches.size<2){
+          pinch=null;if(pinchHadMovement)scheduleSave('绘图板 · 双指移动缩放');
+          pinchHadMovement=false;
+        }
+        if(!touches.size)skipUntilTouchRelease=false;
+      }
+      if(pointer.id===e.pointerId){
+        const changed=!!pointer.stroke;
+        pointer.id=null;pointer.stroke=null;
+        if(changed){
+          if(e.type==='pointercancel'){d.strokes.pop();redraw();}
+          else scheduleSave('绘图板 · 完成一笔');
+        }
+      }
+      try{canvas.releasePointerCapture(e.pointerId);}catch{}
+      if(e.cancelable)e.preventDefault();e.stopPropagation();
+    };
+    canvas.addEventListener('pointerup',finishStroke);
+    canvas.addEventListener('pointercancel',finishStroke);
+    refreshTools();redraw();box.append(head,surface,tools);return box;
+  }
+  // 点击计划表某一格之后，插入菜单可以直接往这一格放入画板。
+  let v76LastPlanCell=null;
+  stage.addEventListener('pointerdown',e=>{
+    const cell=e.target.closest('.plan-mini-drop-cell[data-plan-key][data-plan-owner-id]');
+    if(cell){v76LastPlanCell={ownerId:cell.dataset.planOwnerId,key:cell.dataset.planKey};}
+    else if(e.target.closest('.topic,.matrix-node,.quadrant-node,.inline-outline-node,.drawing-node'))v76LastPlanCell=null;
+  },true);
+  function insertDrawing(){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const focused=selectedPlanFocus&&state.selected===selectedPlanFocus.planId
+      ?{ownerId:selectedPlanFocus.ownerId,key:selectedPlanFocus.key,afterId:selectedPlanFocus.blockId}:null;
+    // 最新点击的单元格优先，防止沿用上一格的旧选中小节点。
+    const chosen=v76LastPlanCell&&(!focused||focused.ownerId!==v76LastPlanCell.ownerId||focused.key!==v76LastPlanCell.key)
+      ?v76LastPlanCell:(focused||v76LastPlanCell);
+    const cellOwner=chosen&&topicById(chosen.ownerId);
+    if(cellOwner?.kind==='plan'&&cellOwner.plan){
+      const list=planBlockList(cellOwner,chosen.key);
+      const item={id:makeId(),text:'绘图板',linkId:null,
+        drawing:{strokes:[],color:'#263444',tool:'pen',expanded:false}};
+      const after=chosen.afterId?list.findIndex(x=>x.id===chosen.afterId):-1;
+      const family=after>=0?v54PlanDescendants(list,chosen.afterId):null;
+      let index=after<0?list.length:after+1;
+      while(family&&index<list.length&&family.has(list[index].id))index++;
+      list.splice(index,0,item);
+      planSyncCellTextFromBlocks(cellOwner,chosen.key,false);
+      planReleaseFoldedRowHeight(cellOwner,chosen.key);
+      state.selected=cellOwner.id;
+      scheduleSave('计划表单元格 · 插入绘图板');render();ensureVisible(cellOwner.id);
+      notify('已在所选单元格插入绘图板');
+      return;
+    }
+    const parent=topicById(state.selected)?.id||activeRootId();
+    const t={id:makeId(),parentId:parent,text:'绘图板',kind:'drawing',
+      drawing:{strokes:[],color:'#263444',tool:'pen',expanded:false}};
+    data.topics.splice(subtreeLastIndex(parent)+1,0,t);
+    state.selected=t.id;state.matrixSelection=null;
+    scheduleSave('插入绘图板');render();ensureVisible(t.id);
+    notify('已插入绘图板：鼠标或手指绘制，下方切换颜色、铅笔和橡皮擦');
+  }
+
+  function reconcileRenderedPlanHeights(){
+    if(currentFreeMode())return;
+    let changed=false;
+    for(const el of topicLayer.querySelectorAll(':scope > .plan-node.plan-inline[data-id]')){
+      const id=el.dataset.id,t=topicById(id),table=el.querySelector('.plan-table-live');
+      if(!t?.plan||!table)continue;
+      const tableRect=table.getBoundingClientRect();
+      if(tableRect.height<1)continue;
+      // Visible card/fold content can overflow its estimated table row without
+      // increasing the <tr> box. Account for it before positioning other tables.
+      let bottom=tableRect.bottom;
+      for(const child of table.querySelectorAll('.plan-block-list,.plan-mini-block,.plan-mini-tree-branches,.drawing-inline')){
+        if(child.getClientRects().length===0)continue;
+        const box=child.getBoundingClientRect();
+        if(box.width>0&&box.height>0)bottom=Math.max(bottom,box.bottom);
+      }
+      const measured=Math.ceil((bottom-tableRect.top)/Math.max(.1,state.zoom)+7);
+      const predicted=getPlanMetrics(t).height;
+      const required=Math.max(predicted,measured);
+      const old=planRenderedMinHeights.get(id)||0;
+      if(Math.abs(required-old)>2){planRenderedMinHeights.set(id,required);changed=true;}
+    }
+    if(!changed)return;
+    computeLayout();drawConnections();
+    for(const node of topicLayer.children){
+      const p=state.positions.get(node.dataset.id);if(!p)continue;
+      Object.assign(node.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
+    }
+  }
   function render() {
     refreshMapStyleControls();
     stage.classList.toggle('layout-logic',currentMapLayout()==='logic');
@@ -8268,6 +9302,10 @@ function toggleDoc35Plan(owner,key,block){
         topicLayer.append(renderMatrixNode(t,p));
         continue;
       }
+      if(t.kind==='drawing'){
+        topicLayer.append(renderDrawingNode(t,p));
+        continue;
+      }
       const el=document.createElement('div'); el.className='topic'; el.dataset.id=t.id;
       if(children(t.id).length)el.classList.add('has-fold-children');
       el.tabIndex=0; el.setAttribute('role','button');
@@ -8289,17 +9327,18 @@ function toggleDoc35Plan(owner,key,block){
         if(state.editing!==t.id)selectInteractive(t.id);
         e.stopPropagation();
       });
-      el.addEventListener('dblclick',e=>{e.stopPropagation();hideDeleteContext();if(!t.textMode)startEditing(t.id);});
+      el.addEventListener('dblclick',e=>{e.preventDefault();e.stopPropagation();hideDeleteContext();startEditing(t.id);});
       el.addEventListener('contextmenu',e=>{
         e.preventDefault();e.stopPropagation();selectInteractive(t.id);showDeleteContext(e.clientX,e.clientY);
       });
-      if(t.id===state.selected && state.editing!==t.id) {
-        el.append(createButton('child','添加子主题（Tab）',()=>addChild(t.id)));
-        if(t.parentId!==null && t.id!==activeRootId()) el.append(createButton('sibling','添加同级主题（Enter）',()=>addSibling(t.id)));
-        attachTopicResizeHandles(el,t.id);
+      if(state.editing!==t.id){
+        el.append(createButton('child','右侧：添加下级节点（Tab）',()=>addChild(t.id)));
+        if(t.parentId!==null && t.id!==activeRootId())el.append(createButton('sibling','下方：添加同级节点（Enter）',()=>addSibling(t.id)));
+        if(t.id===state.selected)attachTopicResizeHandles(el,t.id);
       }
       topicLayer.append(el);
     }
+    reconcileRenderedPlanHeights();
     applyTransform();renderBoards();
     highlightCopySelection();
     redrawExpandedPlan();
@@ -8446,6 +9485,9 @@ function toggleDoc35Plan(owner,key,block){
     const current=topicById(id);if(!current)return;
     if(current.id===activeRootId()||current.parentId===null){notify('中心主题没有同级主题，请添加子主题');return;}
     const t={id:makeId(),parentId:current.parentId,text:'新主题'};
+    if(current.detached){const p=state.positions.get(id),s=getSize(current);
+      t.detached=true;t.freeX=Number.isFinite(current.freeX)?current.freeX:(p?.x||0);
+      t.freeY=(Number.isFinite(current.freeY)?current.freeY:(p?.y||0))+s.height+24;}
     // 子树应作为整体插入，保证以后继续添加时同级节点顺序稳定。
     const end=subtreeLastIndex(id);
     data.topics.splice(end+1,0,t);
@@ -8493,6 +9535,12 @@ function toggleDoc35Plan(owner,key,block){
     render();notify('已删除选中的'+(s.kind==='row'?'行':'列'));
   }
   function deleteCurrentSelection(){
+    if(v54SelectedPlanBlocks.size){v70DeleteSelectedPlanBlocks();return;}
+    if(multiCopyIds.size){v70DeleteSelectedTopics();return;}
+    if(selectedPlanFocus&&state.selected===selectedPlanFocus.planId&&!selectedPlanAxis&&planBlockByRef(selectedPlanFocus)){
+      v54SelectedPlanBlocks.add(v54Ref(selectedPlanFocus.ownerId,selectedPlanFocus.key,selectedPlanFocus.blockId));
+      v70DeleteSelectedPlanBlocks();return;
+    }
     hideDeleteContext();
     if(state.editing||state.matrixEditing)return;
     if(state.matrixSelection?.id===state.selected){deleteMatrixSelection(state.matrixSelection);return;}
@@ -8937,7 +9985,7 @@ function toggleDoc35Plan(owner,key,block){
   // 空白画布拖动（主题节点由思维导图布局自动排列）。
   const pointers=new Map();let gesture=null;
   function down(e) {
-    if(e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node,.zoom-tools'))return;
+    if(e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node,.drawing-node,.zoom-tools'))return;
     if(e.pointerType==='mouse'&&e.button!==0&&e.button!==1)return;
     stage.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -8994,6 +10042,7 @@ function toggleDoc35Plan(owner,key,block){
   // 保留表头排序、行列边框调整、按钮、正文输入；小块仍由长按启动跨格移动。
   let mouseTablePan=null,mouseTablePanBlockClickUntil=0;
   function mouseTablePanCanStart(e){
+    if(e.target.closest('.drawing-node'))return false;
     if(e.pointerType!=='mouse'||(e.button!==0&&e.button!==1)||e.ctrlKey||e.metaKey)return false;
     const inTable=!!e.target.closest('.plan-node.plan-inline .plan-scroll,.matrix-node .matrix-table');
     if(!inTable)return false;
@@ -9007,7 +10056,7 @@ function toggleDoc35Plan(owner,key,block){
     if(e.target.closest('button,[contenteditable="true"],input:not([readonly]),textarea:not([readonly]),'+
       '.plan-axis-label,.plan-axis-target,.plan-corner,.matrix-header.axis-handle,'+
       '.plan-col-resizer,.plan-row-resizer,.matrix-col-resizer,.matrix-row-resizer,'+
-      '.plan-axis-input,.plan-mini-editor,.plan-category-inline-actions,'+
+      '.plan-axis-input,.plan-mini-editor,.plan-category-inline-actions,.matrix-corner,'+
       '.doc35-icon,.textnode-docicon,.plan-resizer,.matrix-plus,.plan-plus'))return false;
     if(state.editing||state.matrixEditing||state.planEditing||
        columnResize||rowResize||axisDrag||topicDrag?.moved||
@@ -9064,8 +10113,9 @@ function toggleDoc35Plan(owner,key,block){
   // 捕获阶段能收到表格内文字、卡片和表头的移动事件；拖动超过阈值后平移画布。
   let tablePointerPan=null;
   function tablePanExcluded(target){
+    if(target.closest('.drawing-node'))return true;
     return !!target.closest('textarea:not([readonly]):not([aria-hidden="true"]),input:not([readonly]),[contenteditable="true"],'+
-      '.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer,.plan-axis-input,'+
+      '.matrix-col-resizer,.matrix-row-resizer,.plan-col-resizer,.plan-row-resizer,.plan-axis-input,.matrix-corner,'+
       '.plan-plus,.plan-mini-plus,.plan-block-add,.plan-category-inline-actions,.doc35-icon,'+
       '.plan-col-head .plan-axis-input,.plan-row-head .plan-axis-input');
   }
@@ -9095,9 +10145,12 @@ function toggleDoc35Plan(owner,key,block){
   stage.addEventListener('pointercancel',finishTablePointerPan,true);
   stage.addEventListener('touchstart',e=>{
     if(e.touches.length<2||anySurfacePinch)return;
+    // Both fingers inside a drawing board are handled by that board, not the whole page.
+    if(e.target.closest('.drawing-surface')||[...e.touches].some(touch=>
+      document.elementFromPoint(touch.clientX,touch.clientY)?.closest('.drawing-surface')))return;
     tablePointerPan=null;cancelPlanMiniDrag();
     if(e.cancelable)e.preventDefault();
-    cancelMatrixTouchHold();
+    cancelMatrixTouchHold();v71CancelHeaderHold();v71CancelCornerHold();
     // 禁止原有空白画布手势在同一轮触摸中重复缩放。
     pointers.clear();gesture=null;stage.classList.remove('panning');
     if(columnResize){const d=columnResize;columnResize=null;finishColumnResize(d,false);}
@@ -9137,6 +10190,42 @@ function toggleDoc35Plan(owner,key,block){
   stage.addEventListener('pointermove',move);
   stage.addEventListener('pointerup',up);
   stage.addEventListener('pointercancel',up);
+  // V74: 双击真实的画布空白区域，创建一个普通主题；双击已有主题则只编辑。
+  // 所有表格、计划小块、按钮、大纲、浮层均保持自身原来的双击行为。
+  const v74BlankLayers='#stage,#world,#topicLayer,#connections,#freeWireLayer,#branchFoldLayer';
+  function v74IsBlankCanvasTarget(target){
+    if(!(target instanceof Element)||!target.matches(v74BlankLayers))return false;
+    return !target.closest('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node,.hud,.zoom-tools,button,input,textarea,[contenteditable]');
+  }
+  function v74CreateBlankTopic(clientX,clientY){
+    const rootId=activeRootId(),root=topicById(rootId);
+    if(!root)return;
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const t={id:makeId(),parentId:rootId,text:'新主题',detached:true};
+    // 两种布局都严格留在用户双击位置：不依附中心主题，也不触发自动重排。
+    const rect=stage.getBoundingClientRect();
+    const worldX=(clientX-rect.left-state.panX)/state.zoom;
+    const worldY=(clientY-rect.top-state.panY)/state.zoom;
+    const s=getSize(t);
+    t.freeX=Math.round((worldX-s.width/2)*100)/100;
+    t.freeY=Math.round((worldY-s.height/2)*100)/100;
+    clearCopySelection();v54ClearSelection();
+    data.topics.splice(subtreeLastIndex(rootId)+1,0,t);
+    state.selected=t.id;state.matrixSelection=null;
+    hideDeleteContext();
+    scheduleSave('画布空白处双击新建主题');
+    render();
+    // 不执行 ensureVisible：否则画布会把新节点自动挪回中心。
+    startEditing(t.id,false,true);
+  }
+  stage.addEventListener('dblclick',e=>{
+    if(e.button!==0||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey||!v74IsBlankCanvasTarget(e.target))return;
+    if(v53Marquee?.active||v53GroupDrag||v54PlanMarquee?.active||v54GroupDrag||topicDrag||freeNodeDrag||axisDrag||planMiniDrag?.active)return;
+    e.preventDefault();e.stopPropagation();
+    v74CreateBlankTopic(e.clientX,e.clientY);
+  });
   // V39：无论光标位于计划表、横纵表格、文本节点还是画布空白处，
   // Ctrl/⌘+滚轮（含触控板双指缩放产生的 ctrl+wheel）都只更新 world 的缩放。
   // 必须先拦截缩放，再判断内层滚动容器；否则表格上方会触发浏览器页面缩放，
@@ -9221,6 +10310,7 @@ function toggleDoc35Plan(owner,key,block){
     if(!e.target.matches('#stage,#world,#topicLayer,#connections,#freeWireLayer,#branchFoldLayer'))return;
     if(state.editing||state.matrixEditing||state.planEditing||freeNodeDrag||freeWireDrag||topicDrag||planMiniDrag?.active)return;
     e.preventDefault();e.stopImmediatePropagation();
+    v54ClearSelection(); // V69: 新的普通节点框选覆盖旧的计划小块框选。
     const overlay=document.createElement('div');overlay.className='v53-marquee';
     Object.assign(overlay.style,{left:'0px',top:'0px',width:'0px',height:'0px'});
     stage.append(overlay);
@@ -9362,6 +10452,7 @@ function toggleDoc35Plan(owner,key,block){
     const cell=e.target.closest('.plan-mini-drop-cell[data-plan-key][data-plan-owner-id]');
     if(!cell||!stage.contains(cell)||e.target.closest('button,input,textarea,[contenteditable],.plan-mini-block,.plan-axis-label,.plan-axis-input,.plan-resizer,.plan-row-resizer,.plan-col-resizer,.plan-category-inline-actions'))return;
     e.preventDefault();e.stopImmediatePropagation();
+    clearCopySelection(); // V69: 新的计划小块框选覆盖旧的主题框选。
     const overlay=document.createElement('div');overlay.className='v54-plan-marquee';document.body.append(overlay);
     v54PlanMarquee={pointerId:e.pointerId,startX:e.clientX,startY:e.clientY,overlay,active:false,before:new Set(v54SelectedPlanBlocks)};
     window.addEventListener('pointermove',v54MarqueeMove,{capture:true,passive:false});
@@ -9374,6 +10465,7 @@ function toggleDoc35Plan(owner,key,block){
     if(e.target.closest('button,textarea,input,[contenteditable]'))return;
     const row=e.target.closest('.plan-mini-block[data-block-id]');if(!row)return;
     e.preventDefault();e.stopImmediatePropagation();
+    clearCopySelection();
     const ref=v54RefFromRow(row);
     if(v54SelectedPlanBlocks.has(ref))v54SelectedPlanBlocks.delete(ref);else v54SelectedPlanBlocks.add(ref);
     v54MarkSelection();
@@ -9457,6 +10549,7 @@ function toggleDoc35Plan(owner,key,block){
     const el=e.target.closest('.topic,.matrix-node,.plan-node,.inline-outline-node');if(!el||!topicLayer.contains(el))return;
     const id=el.dataset.id;if(!id||!insideActiveBoard(id))return;
     e.preventDefault();e.stopImmediatePropagation();
+    v54ClearSelection();
     if(!multiCopyIds.size&&state.selected&&state.selected!==activeRootId()&&insideActiveBoard(state.selected))multiCopyIds.add(state.selected);
     if(multiCopyIds.has(id))multiCopyIds.delete(id);else multiCopyIds.add(id);
     highlightCopySelection();notify('已选中 '+multiCopyIds.size+' 个主题，按 Ctrl+C 复制完整内容');
@@ -9471,8 +10564,82 @@ function toggleDoc35Plan(owner,key,block){
   document.addEventListener('keydown',e=>{
     if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&e.key.toLowerCase()==='a'&&!isTextEditingTarget(e.target)){
       e.preventDefault();
+      v54ClearSelection();
       multiCopyIds=new Set(children(activeRootId()).map(x=>x.id));
       highlightCopySelection();notify('已选中当前画布 '+multiCopyIds.size+' 条顶层分支（包含表格），可 Ctrl+C 复制');
+    }
+  },true);
+  // V70：删除的是“选中的整条分支”，而非仅移除选中的父节点。
+  // 小块以 groupParentId 形成树；同时涵盖折叠/展开、右侧 branch、任意嵌套深度。
+  // 每个计划格分别求子树闭包，不碰其它格子与其它计划。
+  function v70DeleteSelectedPlanBlocks(){
+    const groups=new Map();
+    for(const ref of v54SelectedPlanBlocks){
+      const entry=v54ByRef(ref);if(!entry)continue;
+      const groupKey=JSON.stringify([entry.owner.id,entry.key]);
+      if(!groups.has(groupKey))groups.set(groupKey,{owner:entry.owner,key:entry.key,roots:new Set()});
+      groups.get(groupKey).roots.add(entry.block.id);
+    }
+    let removed=0;
+    for(const {owner,key,roots} of groups.values()){
+      const list=planBlockList(owner,key);
+      const existingIds=new Set(list.map(item=>item.id));
+      const deleting=new Set();
+      for(const rootId of roots){
+        if(!existingIds.has(rootId))continue;
+        // 包括那些因为祖先折叠而未在画面上显示出来的子孙。
+        for(const id of v54PlanDescendants(list,rootId))deleting.add(id);
+      }
+      if(!deleting.size)continue;
+      // 真正删除的是 ID 闭包；不允许把删掉的父节点的孩子提升成根节点。
+      // 原地修改数组，未选中分支的顺序、关联、样式、折叠状态完全不动。
+      for(let i=list.length-1;i>=0;i--)if(deleting.has(list[i].id))list.splice(i,1);
+      removed+=deleting.size;
+      if(selectedPlanFocus?.ownerId===owner.id&&selectedPlanFocus.key===key&&deleting.has(selectedPlanFocus.blockId))selectedPlanFocus=null;
+      if(stagedPlanBlockSource?.ownerId===owner.id&&stagedPlanBlockSource.key===key&&deleting.has(stagedPlanBlockSource.blockId))stagedPlanBlockSource=null;
+      if(doc35Active?.kind==='plan'&&doc35Active.ownerId===owner.id&&doc35Active.key===key&&deleting.has(doc35Active.blockId))closeDoc35();
+      planSyncCellTextFromBlocks(owner,key,false);
+      planReleaseFoldedRowHeight(owner,key);
+    }
+    v54ClearSelection();clearCopySelection();
+    if(!removed)return false;
+    selectedPlanAxis=null;state.selected=null;state.matrixSelection=null;activePlanLinkId=null;
+    hideDeleteContext();
+    scheduleSave('删除选中的计划节点及全部下级 · '+removed+' 项');
+    render();notify('已删除所选节点及其全部下级，共 '+removed+' 项；其它节点保留');
+    return true;
+  }
+  // 普通思维导图同理：每个选中的主题都连同下级整条分支删除。
+  function v70DeleteSelectedTopics(){
+    const selected=[...multiCopyIds].filter(id=>{
+      const node=topicById(id);
+      return node&&id!==activeRootId()&&!node.boardRoot&&insideActiveBoard(id);
+    });
+    clearCopySelection();v54ClearSelection();
+    if(!selected.length)return false;
+    const deleting=new Set();
+    for(const id of selected)for(const childId of descendantsOf(id))deleting.add(childId);
+    if(doc35Active?.kind==='topic'&&deleting.has(doc35Active.id))closeDoc35();
+    data.topics=data.topics.filter(node=>!deleting.has(node.id));
+    state.selected=null;state.matrixSelection=null;selectedPlanAxis=null;hideDeleteContext();
+    scheduleSave('删除选中主题及其全部子主题 · '+deleting.size+' 项');
+    render();notify('已删除所选主题及其全部下级，共 '+deleting.size+' 项；其它主题保留');
+    return true;
+  }
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Delete'&&e.key!=='Backspace')return;
+    if(e.isComposing||e.keyCode===229||e.altKey||e.ctrlKey||e.metaKey||
+       isTextEditingTarget(e.target)||v53Marquee||v54PlanMarquee||v53GroupDrag||v54GroupDrag)return;
+    const singleMini=selectedPlanFocus&&state.selected===selectedPlanFocus.planId&&
+      !selectedPlanAxis&&!!planBlockByRef(selectedPlanFocus);
+    if(!v54SelectedPlanBlocks.size&&!multiCopyIds.size&&!singleMini)return;
+    // Capture phase: stop the old bubbling handlers for plan-axis and whole-topic Delete.
+    e.preventDefault();e.stopImmediatePropagation();
+    if(v54SelectedPlanBlocks.size)v70DeleteSelectedPlanBlocks();
+    else if(multiCopyIds.size)v70DeleteSelectedTopics();
+    else if(singleMini){
+      v54SelectedPlanBlocks.add(v54Ref(selectedPlanFocus.ownerId,selectedPlanFocus.key,selectedPlanFocus.blockId));
+      v70DeleteSelectedPlanBlocks();
     }
   },true);
   function clipboardRoots(){
@@ -9598,6 +10765,10 @@ function toggleDoc35Plan(owner,key,block){
   function clipboardTextField(el){
     const field=el?.closest?.('textarea,input');
     return field instanceof HTMLTextAreaElement||field instanceof HTMLInputElement?field:null;
+  }
+  function isMatrixCellActivelyEditing(target){
+    const input=clipboardTextField(target);
+    return !!(input?.matches('.matrix-cell-input:not([readonly])'));
   }
   function copiedSelectedText(e){
     const field=clipboardTextField(e.target);
@@ -9747,6 +10918,11 @@ function toggleDoc35Plan(owner,key,block){
   }
   document.addEventListener('paste',e=>{
     const c=e.clipboardData;if(!c)return;
+    const axisPayload=matrixAxisReadEvent(c);
+    if(axisPayload&&!isMatrixCellActivelyEditing(e.target)){
+      e.preventDefault();e.stopImmediatePropagation();nativePasteSerial++;
+      matrixPasteSelectedAxis(axisPayload);return;
+    }
     const field=clipboardTextField(e.target);
     if(field?.matches('.matrix-cell-input[readonly]')){
       e.preventDefault();e.stopImmediatePropagation();nativePasteSerial++;
@@ -9782,16 +10958,28 @@ function toggleDoc35Plan(owner,key,block){
         }
         if(!internal&&diyInternalClipboard&&plain===diyInternalClipboard.plain&&Date.now()-diyInternalClipboard.at<300000)internal=diyInternalClipboard.payload;
         if(internal)try{internalPaste(internal);}catch(error){notify('完整节点粘贴失败：'+error.message);}
-        else fromExternalClipboard(plain,html,part.types);
+        else{
+          const axisPayload=matrixAxisReadEvent({getData:type=>type==='text/plain'?plain:type==='text/html'?html:''});
+          if(axisPayload)matrixPasteSelectedAxis(axisPayload);
+          else fromExternalClipboard(plain,html,part.types);
+        }
       }catch{ /* 没权限时不猜结构；正常原生 paste 事件仍然生效 */ }
     },100);
   },true);
   document.addEventListener('copy',e=>{
     if(!e.clipboardData)return;
     const chosen=copiedSelectedText(e);
+    // Ctrl+C：当真实选中的是行头/列头，优先复制该轴，而非整张表格节点的标题。
+    const s=state.matrixSelection,t=topicById(s?.id);
+    if(chosen===null&&s?.id===state.selected&&t?.kind==='matrix'&&
+       (s.kind==='row'||s.kind==='col')&&!state.matrixEditing){
+      const payload=matrixAxisSnapshot(t,s.kind,s.kind==='col'?s.col:s.row);
+      if(payload){matrixAxisSaveInternal(payload);matrixAxisWriteEvent(e.clipboardData,payload);
+        e.preventDefault();notify('已复制整'+(s.kind==='col'?'列':'行')+'（含全部单元格及标记）');return;}
+    }
     if(chosen!==null){
       // 永远优先复制用户选中的原文，保留空格、换行和标点，清掉旧节点缓存。
-      diyInternalClipboard=null;
+      diyInternalClipboard=null;matrixAxisClipboard=null;
       e.clipboardData.clearData();e.clipboardData.setData('text/plain',chosen);
       e.preventDefault();return;
     }
@@ -9799,6 +10987,7 @@ function toggleDoc35Plan(owner,key,block){
     // 真正在编辑的输入框永远按普通文字复制。
     if(isTextEditingTarget(e.target)&&!clipboardTextField(e.target)?.matches('.matrix-cell-input[readonly]'))return;
     const payload=buildInternalCopy();if(!payload)return;
+    matrixAxisClipboard=null;
     const plain=copyTextForInternal(payload);
     const encoded=encodeURIComponent(JSON.stringify(payload));
     e.clipboardData.setData('text/plain',plain);
@@ -9896,7 +11085,7 @@ function toggleDoc35Plan(owner,key,block){
   document.addEventListener('keydown',e=>{
     if(state.editing||state.matrixEditing||state.planEditing||e.isComposing||e.altKey||e.ctrlKey||e.metaKey)return;
     if(e.target.closest('[contenteditable=true]')||(e.target.matches('input,textarea')&&!e.target.readOnly))return;
-    if(e.key==='Escape'){hideDeleteContext();state.selected=null;state.matrixSelection=null;render();return;}
+    if(e.key==='Escape'){v54ClearSelection();clearCopySelection();hideDeleteContext();state.selected=null;state.matrixSelection=null;render();return;}
     if(!state.selected)return;
     if(e.key==='Delete'||e.key==='Backspace'){
       e.preventDefault();deleteCurrentSelection();return;
@@ -9970,6 +11159,7 @@ function toggleDoc35Plan(owner,key,block){
     $('insertMenuItem').setAttribute('aria-expanded',String(open));
   });
   $('insertMatrixItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertMatrix();});
+  $('insertDrawingItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertDrawing();});
   $('insertQuadrantItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertQuadrant();});
   $('insertWeeklyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('week');});
   $('insertMonthlyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('month');});
@@ -10080,7 +11270,7 @@ if(data.v56RecoveredPlanGroups){
 (() => {
   'use strict';
   // 版本来源统一：index.html 的 app-build 与 version.json 中 version 必须一致。
-  const BUILD = document.querySelector('meta[name="app-build"]')?.content || '1.0.64';
+  const BUILD = document.querySelector('meta[name="app-build"]')?.content || '1.0.71';
   const $ = id => document.getElementById(id);
   const installButton=$('pwaInstallBtn'),banner=$('appUpdateBanner');
   let deferredInstall=null,registration=null,waitingWorker=null,requestedUpdate=false;
