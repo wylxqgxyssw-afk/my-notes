@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#333436">
-<title>DIY记录</title>
+<title>DIY记录 V84</title>
 <style>
   :root {
     color-scheme: dark;
@@ -136,7 +136,7 @@
 .stage.v53-dragging .diy-multi-copy-selected{opacity:.58;}
 
   /* “插入”悬浮二级菜单：相对主菜单向右弹出，不再向下占位置。 */
-  .insert-submenu { position:absolute; left:calc(100% + 4px); top:0; width:215px; padding:7px 0;
+  .insert-submenu { position:absolute; left:calc(100% + 4px); top:0; width:245px; padding:7px 0;
     border:1px solid #e5e8ed; border-radius:13px; box-shadow:0 15px 34px #0005; background:#fff; z-index:18; }
   .insert-submenu[hidden] { display:none!important; }
   .insert-submenu .menu-entry { font-size:14px; padding:11px 22px; min-height:43px; }
@@ -839,6 +839,41 @@
 .plan-block-wrap .plan-mini-drawing .drawing-tools{padding:3px;gap:3px;}
 .plan-block-wrap .plan-mini-drawing .drawing-tools button{min-width:28px;}
 
+/* V80: intrinsic 16:9 drawing pixels stay proportional in any resized board. */
+.drawing-surface{display:flex!important;align-items:center!important;justify-content:center!important;position:relative;}
+.drawing-surface canvas{flex:none!important;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;}
+.drawing-node .drawing-resizer{position:absolute;bottom:1px;right:1px;z-index:90;width:25px;height:25px;
+  padding:0!important;border:0!important;border-radius:8px 0 7px 0;background:#dbeeff!important;
+  color:#167bd2!important;font-size:17px!important;line-height:1;cursor:nwse-resize;touch-action:none;}
+.drawing-node .drawing-resizer:hover{background:#b8dbff!important;}
+.topic.v80-image-drop-ready,.plan-mini-block.v80-image-drop-ready{outline:3px dashed #2397ef!important;outline-offset:3px!important;}
+/* V79: highlight external file drop target without replacing the canvas or image pixels. */
+.drawing-surface.v79-drop-ready,.v78-image-stage.v79-drop-ready{outline:3px dashed #248eff!important;outline-offset:-4px!important;
+ box-shadow:inset 0 0 0 9999px #299eff10!important;}
+.drawing-surface canvas:focus{outline:none;}
+/* V78: images are separate draggable objects within topics and drawing boards. */
+.topic.has-embedded-images{flex-direction:column!important;justify-content:flex-start!important;gap:5px;}
+.topic.has-embedded-images>.topic-text{flex:none;text-align:center;}
+.v78-image-stage{position:relative;display:block;box-sizing:border-box;flex:none;width:100%;height:158px;
+  border-radius:7px;background:#ffffff12;border:1px dashed #b7cadd66;overflow:hidden;touch-action:none;min-width:0;}
+.v78-image-stage img.v78-image-tile{position:absolute;display:block;object-fit:contain;max-width:none!important;
+  user-select:none;-webkit-user-drag:none;cursor:grab;touch-action:none;border:1px solid #b9c8da65;
+  border-radius:3px;box-sizing:border-box;background:#fff7;}
+.v78-image-stage img.v78-image-tile.v78-active{outline:2px solid #1499ff;outline-offset:-2px;cursor:grabbing;z-index:3;}
+.v78-image-stage .v78-image-remove{position:absolute;right:3px;top:3px;width:22px;height:22px;z-index:6;
+  background:#fff;color:#b22e38;border:1px solid #d3dbe5;border-radius:50%;font:bold 15px/1 system-ui;cursor:pointer;}
+.v78-image-stage .v78-image-add{position:absolute;left:3px;top:3px;z-index:6;
+  background:#eef6ff;color:#1765a5;border:1px solid #a5cdef;border-radius:5px;font:12px/1.3 system-ui;
+  padding:3px 5px;cursor:pointer;}
+.v78-image-stage .v78-image-resize{position:absolute;z-index:5;width:14px;height:14px;border:2px solid white;
+  border-radius:3px;background:#168bdf;cursor:nwse-resize;touch-action:none;}
+.plan-block-wrap .plan-mini-block.plan-mini-with-images{display:flex!important;flex-direction:column!important;
+  width:min(232px,100%)!important;
+  gap:5px!important;align-items:flex-start!important;min-width:0;}
+.plan-block-wrap .plan-mini-with-images>.plan-mini-text{width:100%;flex:0 0 auto!important;}
+.plan-block-wrap .plan-mini-with-images>.v78-image-stage{height:152px;width:min(220px,100%);max-width:100%;}
+.drawing-surface canvas{cursor:crosshair;}
+.drawing-node .drawing-tools button.v78-image-move.is-active{color:#086eac;background:#d9f1ff;border-color:#4aa2e6;}
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -848,7 +883,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="1.0.71">
+<meta name="app-build" content="1.0.84">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -988,7 +1023,12 @@
  overflow:hidden;text-overflow:ellipsis;color:#fff;background:#295e87ed;border:1px solid #27a9ff;
  border-radius:7px;padding:7px 11px;font:600 12px system-ui;box-shadow:0 7px 19px #0007;}
 .inline-outline-node .free-node-grip{top:-15px;right:0;}
-#deleteContext{width:200px;}
+#deleteContext{width:246px;max-width:calc(100vw - 14px);}
+/* V81: 活动画板的抓手保持在可点击层级，避免被相邻节点悬停加号覆盖。 */
+.drawing-node.selected:not(.drawing-inline){z-index:8;}
+.drawing-node.drop-child{outline:3px solid #168fff;outline-offset:3px;}
+.drawing-node.drop-before{box-shadow:0 -6px 0 -3px #35baff!important;}
+.drawing-node.drop-after{box-shadow:0 6px 0 -3px #35baff!important;}
 @media(pointer:coarse){.inline-outline-grip{font-size:19px;width:23px;flex-basis:23px;}
  .inline-outline-row{min-height:39px;padding-top:7px;padding-bottom:7px;}
  .inline-outline-chevron{width:23px;flex-basis:23px;}}
@@ -1896,7 +1936,11 @@ body{color:var(--app-ink,#f5f5f6);}
       <button type="button" class="menu-entry has-arrow" id="insertMenuItem" aria-expanded="false" aria-controls="insertSubmenu">插入 <span class="menu-arrow">›</span></button>
       <div class="insert-submenu" id="insertSubmenu" hidden>
         <button type="button" class="menu-entry" id="insertMatrixItem">横纵表格</button>
-        <button type="button" class="menu-entry" id="insertDrawingItem">✎ 绘图板</button>
+        <button type="button" class="menu-entry" id="insertDrawingItem">✎ 绘图板 · 选中节点的下级</button>
+        <button type="button" class="menu-entry" id="insertDrawingSiblingItem">✎ 绘图板 · 选中节点的同级</button>
+        <button type="button" class="menu-entry" id="insertDrawingDetachedItem">✎ 绘图板 · 画布上独立放置</button>
+        <button type="button" class="menu-entry" id="insertDrawingCellItem">✎ 绘图板 · 当前计划表单元格</button>
+        <button type="button" class="menu-entry" id="insertPictureItem">▧ 图片（插入到选中节点）</button>
         <button type="button" class="menu-entry" id="insertQuadrantItem">重要紧急四象限</button>
         <button type="button" class="menu-entry" id="insertWeeklyPlan">周计划横纵表格</button>
         <button type="button" class="menu-entry" id="insertMonthlyPlan">月计划横纵表格</button>
@@ -2027,6 +2071,8 @@ body{color:var(--app-ink,#f5f5f6);}
 <div class="delete-context" id="deleteContext" role="menu" aria-label="选中项目操作" hidden>
   <button type="button" id="contextToggleOutline" role="menuitem">变换模式 · 切换为大纲块</button>
   <button type="button" id="contextToggleText" role="menuitem">变换模式 · 切换为文本节点</button>
+  <button type="button" id="contextInsertDrawingChild" role="menuitem">✎ 添加下级绘图板（右侧）</button>
+  <button type="button" id="contextInsertDrawingSibling" role="menuitem">✎ 添加同级绘图板（下方）</button>
   <button type="button" id="contextDelete" role="menuitem">删除</button>
 </div>
 <!-- 云端账号弹窗：只有通过左上角 设置 手动打开；真实冲突展示非阻断状态 -->
@@ -2582,6 +2628,69 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     return sizes;
   }
+  // V78: Preserve image objects through local save, JSON import/export, history and cloud sync.
+  // Media is compressed before storing to prevent a single phone photo exhausting localStorage.
+  function v78CleanImages(input,limit=5,kind='node'){
+    if(!Array.isArray(input))return [];
+    return input.slice(0,limit).filter(m=>m&&typeof m.src==='string'&&
+      /^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(m.src)&&m.src.length<=950000)
+      .map(m=>({id:typeof m.id==='string'&&m.id.length<140?m.id:makeId(),src:m.src,
+        x:Math.max(0,Math.min(kind==='drawing'?719:259,Number(m.x)||0)),y:Math.max(0,Math.min(kind==='drawing'?404:159,Number(m.y)||0)),
+        w:Math.max(20,Math.min(kind==='drawing'?720:260,Number(m.w)||145)),h:Math.max(20,Math.min(kind==='drawing'?405:160,Number(m.h)||115))}));
+  }
+  const v78ImageCache=new Map();
+  function v78GetImage(src,callback){
+    let img=v78ImageCache.get(src);if(img)return img;
+    img=new Image();v78ImageCache.set(src,img);
+    img.onload=()=>callback?.();img.onerror=()=>v78ImageCache.delete(src);img.src=src;
+    if(v78ImageCache.size>40)v78ImageCache.delete(v78ImageCache.keys().next().value);
+    return img;
+  }
+  function v78ReadImage(file){
+    return new Promise((resolve,reject)=>{
+      if(!file||!/^image\/(png|jpeg|webp|gif|bmp)$/i.test(file.type)){reject(Error('请选取 PNG、JPG、WebP 或 GIF 图片'));return;}
+      if(file.size>18*1024*1024){reject(Error('图片大于 18 MB，请先压缩后导入'));return;}
+      const url=URL.createObjectURL(file),img=new Image();
+      img.onload=()=>{
+        try{
+          const scale=Math.min(1,900/Math.max(img.naturalWidth,img.naturalHeight));
+          const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
+          const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+          const ctx=canvas.getContext('2d');ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
+          let src=canvas.toDataURL('image/webp',.76);
+          if(!src.startsWith('data:image/webp')){ctx.globalCompositeOperation='destination-over';ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);src=canvas.toDataURL('image/jpeg',.72);}
+          if(src.length>950000)throw Error('图片转换后仍过大，请选择较小的图片');
+          resolve({src,width:w,height:h});
+        }catch(e){reject(e);}finally{URL.revokeObjectURL(url);}
+      };
+      img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('无法读取该图片'));};img.src=url;
+    });
+  }
+  function v78ChooseImage(callback){
+    const input=document.createElement('input');input.type='file';input.accept='image/png,image/jpeg,image/webp,image/gif,image/bmp';
+    input.hidden=true;document.body.append(input);
+    input.addEventListener('change',async()=>{
+      try{if(input.files?.[0])await callback(await v78ReadImage(input.files[0]));}
+      catch(e){notify('图片导入失败：'+e.message);}
+      finally{input.remove();}
+    },{once:true});
+    input.click();
+    // Browsers do not emit change on cancelled chooser; detached input is harmless.
+  }
+  function v78PhotoObject(image,kind='node'){
+    const ratio=image.width/Math.max(1,image.height);
+    const maxW=kind==='drawing'?300:190,maxH=kind==='drawing'?220:122;
+    const w=Math.min(maxW,maxH*ratio),h=w/ratio;
+    const x=(kind==='drawing'?360:130)-w/2,y=(kind==='drawing'?202:80)-h/2;
+    return {id:makeId(),src:image.src,x:Math.round(Math.max(0,x)),y:Math.round(Math.max(0,y)),
+      w:Math.round(w),h:Math.round(h)};
+  }
+  function v78SyncNewImage(images,image,kind,max,saveLabel){
+    if(!Array.isArray(images))return false;
+    if(images.length>=max){notify('此位置最多可放 '+max+' 张图片');return false;}
+    // Images placed in drawing boards are based on a 720x405 logical surface.
+    images.push(v78PhotoObject(image,kind));scheduleSave(saveLabel);render();return true;
+  }
   function v76CleanDrawing(raw){
     const d=raw&&typeof raw==='object'?raw:{};
     const strokes=Array.isArray(d.strokes)?d.strokes:[];
@@ -2593,7 +2702,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           points:st.points.slice(0,1500).filter(pt=>pt&&Number.isFinite(Number(pt.x))&&Number.isFinite(Number(pt.y)))
             .map(pt=>({x:Math.max(0,Math.min(720,Number(pt.x))),y:Math.max(0,Math.min(405,Number(pt.y)))}))})),
       color:/^#[0-9a-fA-F]{6}$/.test(d.color||'')?d.color:'#263444',
-      tool:d.tool==='eraser'?'eraser':'pen',expanded:d.expanded===true,
+      tool:['eraser','move'].includes(d.tool)?d.tool:'pen',expanded:d.expanded===true,
+      images:v78CleanImages(d.images,12,'drawing'),
+      frameWidth:Number.isFinite(+d.frameWidth)&&+d.frameWidth>=220?Math.round(Math.min(1200,+d.frameWidth)):undefined,
+      frameHeight:Number.isFinite(+d.frameHeight)&&+d.frameHeight>=180?Math.round(Math.min(900,+d.frameHeight)):undefined,
+      inlineWidth:Number.isFinite(+d.inlineWidth)&&+d.inlineWidth>=65?Math.round(Math.min(900,+d.inlineWidth)):undefined,
+      inlineHeight:Number.isFinite(+d.inlineHeight)&&+d.inlineHeight>=155?Math.round(Math.min(850,+d.inlineHeight)):undefined,
       view:{zoom:Math.max(1,Math.min(5,Number(d.view?.zoom)||1)),
         x:Math.max(-3000,Math.min(3000,Number(d.view?.x)||0)),
         y:Math.max(-2000,Math.min(2000,Number(d.view?.y)||0))}
@@ -2644,6 +2758,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if(Number.isFinite(bh)&&bh>=44&&bh<=4000)node.boxMinHeight=Math.round(bh);
       }
       if(Array.isArray(n.marks))node.marks=validMarks(n.marks,node.text);
+      if(!n.kind&&Array.isArray(n.images))node.images=v78CleanImages(n.images,5);
       if(n.id===ROOT_ID && Array.isArray(n.formatPresets))node.formatPresets=validPresets(n.formatPresets);
       if(n.id===ROOT_ID && Number.isInteger(n.appearancePreset) && n.appearancePreset>=0 && n.appearancePreset<=5)node.appearancePreset=n.appearancePreset;
       if(n.id===ROOT_ID){
@@ -2718,7 +2833,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
               ...(Array.isArray(x.marks)?{marks:validMarks(x.marks,x.text.slice(0,30000))}:{}),
               ...(x.textMode===true?{textMode:true}:{}),
               ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{}),
-              ...(x.drawing&&typeof x.drawing==='object'?{drawing:v76CleanDrawing(x.drawing)}:{})
+              ...(x.drawing&&typeof x.drawing==='object'?{drawing:v76CleanDrawing(x.drawing)}:{}),
+              ...(Array.isArray(x.images)?{images:v78CleanImages(x.images,5)}:{})
             }));
           }
         }
@@ -3035,13 +3151,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function boardMeta(){const root=topicById(ROOT_ID);if(!root.boards)root.boards=boards().map(b=>({...b}));return root.boards;}
   function children(id) { return data.topics.filter(t=>t.parentId===id && !(id===ROOT_ID && t.boardRoot)); }
   // 折叠只隐藏下级的布局与显示，不删除节点/文字；大纲依然读取完整 children。
+  // V83: 大纲模式内部的普通内容仍按大纲展示，但外接的绘图板分支必须继续在画布渲染。
+  // V82 只向 topics 添加数据；这里却直接返回 []，所以很多“成功插入”根本看不见。
+  function v83BranchContainsExternalDrawing(id){
+    const visited=new Set(),stack=[id];
+    while(stack.length&&visited.size<4000){
+      const at=stack.pop();if(visited.has(at))continue;visited.add(at);
+      const n=topicById(at);if(n?.kind==='drawing')return true;
+      for(const c of children(at))stack.push(c.id);
+    }
+    return false;
+  }
   function visibleChildren(id){
     const n=topicById(id);
     if(doc35Active?.kind==='topic'&&!$('doc35Pane').hidden&&doc38FocusId){
       if(doc38FocusHide.has(id))return [];
       if(doc38FocusShow.has(id))return children(id);
     }
-    return n?.collapsed||n?.viewMode==='outline'?[]:children(id).filter(child=>!(id===activeRootId()&&child.detached));
+    if(n?.collapsed)return [];
+    const cs=children(id).filter(child=>!(id===activeRootId()&&child.detached));
+    if(n?.viewMode==='outline')return cs.filter(child=>v83BranchContainsExternalDrawing(child.id));
+    return cs;
   }
   function directBranchCount(id){return children(id).filter(n=>!(id===activeRootId()&&n.detached)).length;}
   function countBranchDescendants(id){
@@ -3894,8 +4024,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       planMiniMeasureProbe.textContent=String(block.text||' ')+'\u200b';
       const textHeight=Math.ceil(planMiniMeasureProbe.getBoundingClientRect().height);
       // V77: embedded sketch canvases occupy a real 230/330px box, not a 36px text card.
-      const boardHeight=block.drawing?(block.drawing.expanded?330:230)+10:0;
-      blockHeights.set(block.id,Math.max(36,textHeight+14,boardHeight));
+      const boardHeight=block.drawing?(Number(block.drawing.inlineHeight)|| (block.drawing.expanded?330:230))+10:0;
+      const imagesHeight=block.images?.length?170:0;
+      blockHeights.set(block.id,Math.max(36,textHeight+14,boardHeight,textHeight+14+imagesHeight));
     }
     if(blocks.some(x=>x.groupParentId&&x.groupLayout==='branch')){
       // Side branches use horizontal space. Counting every child vertically caused
@@ -4050,7 +4181,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // the actual table after browser layout. This is view-only; never writes row sizes or alters user data.
   const planRenderedMinHeights=new Map();
   function getSize(t) {
-    if(t.kind==='drawing')return t.drawing?.expanded===true?{width:620,height:435}:{width:384,height:298};
+    if(t.kind==='drawing')return {
+      width:t.drawing?.frameWidth||(t.drawing?.expanded===true?620:384),
+      height:t.drawing?.frameHeight||(t.drawing?.expanded===true?435:298)};
     if(t.viewMode==='outline'&&!t.kind)return getInlineOutlineMetrics(t);
     if(t.kind==='plan'&&t.plan){const d=getPlanMetrics(t);return {width:d.width,height:Math.max(d.height,planRenderedMinHeights.get(t.id)||0)};}
     if(t.kind==='matrix'&&t.matrix){
@@ -4072,7 +4205,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const paddingX=compact?9:15;
     const naturalWidth=Math.ceil(Math.max(compact?64:108,Math.min(compact?430:460,measuredWidth+paddingX*2+4+(t.textMode?27:0))));
     const userWidth=Number(t.boxWidth);
-    const width=Math.round(Number.isFinite(userWidth)&&userWidth>0?userWidth:naturalWidth);
+    const width=Math.round(Number.isFinite(userWidth)&&userWidth>0?Math.max(userWidth,t.images?.length?255:0):Math.max(naturalWidth,t.images?.length?280:0));
     if(!getSize.probe){
       const probe=document.createElement('div');
       Object.assign(probe.style,{position:'absolute',left:'-200000px',top:'0',visibility:'hidden',pointerEvents:'none',
@@ -4087,7 +4220,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     probe.style.width=Math.max(50,width-(t.textMode?24:0))+'px';probe.textContent=text+'\u200b';
     const minHeight=compact?33:46;
     const naturalHeight=Math.max(minHeight,Math.ceil(probe.getBoundingClientRect().height)+4);
-    return {width,height:Math.max(naturalHeight,Number(t.boxMinHeight)||minHeight)};
+    return {width,height:Math.max(naturalHeight+(t.images?.length?177:0),Number(t.boxMinHeight)||minHeight)};
   }
   // v19: 两种真正不同的树形布局。两者均以完整节点宽高测量，表格和长文本不裁剪。
   function currentMapLayout(){return topicById(ROOT_ID)?.mapLayout==='radial'?'radial':'logic';}
@@ -4395,7 +4528,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const sourceSide=parentCenter===null?0:(rootCenter>=parentCenter?1:-1);
     freeNodeDrag={id,pointerId:e.pointerId,element:el,startX:e.clientX,startY:e.clientY,
       initialX:p.x,initialY:p.y,initial,ids,elements,
-      parentCenter,sourceSide,mirror:false,moved:false,matrixCorner:allowMatrixCorner,connectable:allowMatrixCorner||topicById(id)?.detached===true,drop:null};
+      parentCenter,sourceSide,mirror:false,moved:false,matrixCorner:allowMatrixCorner,connectable:allowMatrixCorner||topicById(id)?.detached===true||topicById(id)?.kind==='drawing',drop:null};
     try{el.setPointerCapture(e.pointerId);}catch{}
   }
   function moveFreeGesture(e){
@@ -4510,7 +4643,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }else if(el&&t?.kind==='matrix'){
       applyMatrixSelection(el);
       showMatrixControls(el,t);
-    }else if(el&&t&&!el.classList.contains('inline-outline-node')){
+    }else if(el&&t&&!el.classList.contains('inline-outline-node')&&t.kind!=='drawing'){
       topicLayer.querySelectorAll('.matrix-node').forEach(clearMatrixSelectionVisual);
       if(state.editing!==id){
         // V75: 两个按钮已随节点生成，选中不再重复添加。
@@ -4552,7 +4685,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     modeButton.textContent=node?.viewMode==='outline'?'变换模式 · 恢复节点':'变换模式 · 切换为大纲块';
     textButton.hidden=!(node&&!node.kind&&nearestInlineOwner(node.id)===null);
     textButton.textContent=node?.textMode?'变换模式 · 恢复普通节点':'变换模式 · 切换为文本节点';
-    const width=menu.offsetWidth||240,height=menu.offsetHeight||138;
+    // V81: 节点的右键菜单直接给出绘图板的下级/同级插入位置。
+    $('contextInsertDrawingChild').hidden=!node;
+    $('contextInsertDrawingSibling').hidden=!node||node.id===activeRootId()||node.parentId===null;
+    const width=menu.offsetWidth||246,height=menu.offsetHeight||200;
     menu.style.left=Math.max(6,Math.min(x+10,innerWidth-width-7))+'px';
     menu.style.top=Math.max(6,Math.min(y+2,innerHeight-height-7))+'px';
   }
@@ -6476,6 +6612,79 @@ function toggleDoc35Plan(owner,key,block){
     document.querySelectorAll('.plan-mini-drop-before,.plan-mini-drop-after,.plan-mini-drop-empty,.plan-mini-drop-target,.v58-single-group-target,.v62-branch-drop-target,.v62-fold-drop-target')
       .forEach(el=>el.classList.remove('plan-mini-drop-before','plan-mini-drop-after','plan-mini-drop-empty','plan-mini-drop-target','v58-single-group-target','v62-branch-drop-target','v62-fold-drop-target'));
   }
+  // V84: 计划表的单元格小块不是 data.topics；拖出去必须显式提升为真正的主题节点。
+  // 复用普通节点的落点检测，但禁止抓取源表格本身，避免尚未拖出就错误关联。
+  function v84DrawingExternalDrop(d){
+    const owner=topicById(d.ownerId),block=owner?.kind==='plan'?findPlanBlock(owner,d.key,d.blockId):null;
+    if(!block?.drawing)return null;
+    const rect=stage.getBoundingClientRect();
+    if(d.x<rect.left||d.x>rect.right||d.y<rect.top||d.y>rect.bottom)return null;
+    const hit=document.elementFromPoint(d.x,d.y);
+    // 落在单元格时优先使用原有的表格内部拖动逻辑，绝不意外抽出。
+    if(hit?.closest('.plan-mini-drop-cell[data-plan-key][data-plan-owner-id]'))return null;
+    const ignore=new Set([d.ownerId]);
+    const found=findTopicDropTarget({ignore},d.x,d.y);
+    if(found&&insideActiveBoard(found.id))return {type:'external-topic',id:found.id,mode:found.mode,el:found.el};
+    // 松在画布空白处：先成为独立的普通绘图板主题；随后可像普通节点那样拖到任何目标。
+    if(hit?.closest('.plan-node,.matrix-node,.quadrant-node,.drawing-node,.topic,.inline-outline-node'))return null;
+    return {type:'external-canvas'};
+  }
+  function v84LiftDrawingFromCell(d){
+    const owner=topicById(d.ownerId);
+    if(owner?.kind!=='plan'||!owner.plan||!d.target?.type?.startsWith('external-'))return false;
+    const list=planBlockList(owner,d.key),root=list.find(x=>x.id===d.blockId);
+    if(!root?.drawing)return false;
+    let target=null,parentId=activeRootId(),insertAt=subtreeLastIndex(parentId)+1;
+    if(d.target.type==='external-topic'){
+      target=topicById(d.target.id);
+      if(!target||!insideActiveBoard(target.id))return false;
+      const mode=d.target.mode;
+      parentId=mode==='child'?target.id:target.parentId;
+      if(!parentId||!insideActiveBoard(parentId))return false;
+      insertAt=mode==='before'?data.topics.findIndex(t=>t.id===target.id):subtreeLastIndex(target.id)+1;
+      if(insertAt<0)return false;
+    }
+    // 同一个单元格里的分组后代跟着绘图板一起搬走，避免留下孤儿节点。
+    const groupIds=v54PlanDescendants(list,root.id);
+    const group=list.filter(item=>groupIds.has(item.id));
+    const idMap=new Map(group.map(item=>[item.id,makeId()]));
+    const lifted=group.map(item=>{
+      const isRoot=item.id===root.id;
+      const node={id:idMap.get(item.id),parentId:isRoot?parentId:(idMap.get(item.groupParentId)||idMap.get(root.id)),
+        text:String(item.text||'绘图板')};
+      if(item.drawing){node.kind='drawing';node.drawing=v76CleanDrawing(item.drawing);}
+      else {
+        if(Array.isArray(item.marks))node.marks=JSON.parse(JSON.stringify(item.marks));
+        if(item.textMode===true)node.textMode=true;
+        if(typeof item.docHTML==='string')node.docHTML=item.docHTML;
+        if(Array.isArray(item.images))node.images=JSON.parse(JSON.stringify(item.images));
+      }
+      if(isRoot&&d.target.type==='external-canvas'){
+        const bounds=stage.getBoundingClientRect(),ghost=d.lastGhostRect;
+        const zoom=Math.max(.001,state.zoom||1),p=pointerToWorld(d.x,d.y);
+        node.detached=true;
+        node.freeX=Math.round(((ghost?.left??d.x)-bounds.left-state.panX)/zoom*100)/100;
+        node.freeY=Math.round(((ghost?.top??d.y)-bounds.top-state.panY)/zoom*100)/100;
+        if(!Number.isFinite(node.freeX))node.freeX=p.x;
+        if(!Number.isFinite(node.freeY))node.freeY=p.y;
+      }
+      return node;
+    });
+    if(!lifted.length||lifted[0].kind!=='drawing')return false;
+    // 校验完目标后再一次性提交；原表格其他小块、画迹、图片及尺寸均不改动。
+    for(let i=list.length-1;i>=0;i--)if(groupIds.has(list[i].id))list.splice(i,1);
+    planSyncCellTextFromBlocks(owner,d.key,false);
+    planReleaseFoldedRowHeight(owner,d.key);
+    data.topics.splice(insertAt,0,...lifted);
+    if(target)v83RevealParentChain(parentId);
+    selectedPlanFocus=null;v76LastPlanCell=null;state.matrixSelection=null;
+    state.selected=lifted[0].id;
+    scheduleSave('绘图板 · 从表格拖出并连接为普通节点');
+    render();
+    ensureVisible(lifted[0].id);
+    notify(d.target.type==='external-topic'?'绘图板已拖出表格，并连接到目标主题':'绘图板已拖出表格，可再拖动连接任意节点');
+    return true;
+  }
   function endPlanMiniDrag(commit=false){
     const d=planMiniDrag;if(!d)return;
     planMiniDrag=null;clearTimeout(d.timer);clearTimeout(d.menuTimer);
@@ -6483,8 +6692,14 @@ function toggleDoc35Plan(owner,key,block){
     window.removeEventListener('pointerup',d.onUp,true);
     window.removeEventListener('pointercancel',d.onCancel,true);
     if(d.frame)cancelAnimationFrame(d.frame);
+    d.lastGhostRect=d.ghost?.getBoundingClientRect();
     d.ghost?.remove();clearPlanGroupWire();d.row.classList.remove('plan-mini-dragging');clearPlanMiniDropHint();clearQuadrantDropHints();
+    topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after'));
     if(!d.active||!commit||!d.target)return;
+    if(d.target.type==='external-topic'||d.target.type==='external-canvas'){
+      if(!v84LiftDrawingFromCell(d))notify('没有找到有效的目标，绘图板仍保留在原单元格');
+      return;
+    }
     // V58：单个计划小块可以直接拖到另一个小块中央进行归组，
     // 与 V54 的多选归组共用同一套“移动原对象 + 设定父子关系”的逻辑。
     if(d.target.type==='group'){
@@ -6542,10 +6757,12 @@ function toggleDoc35Plan(owner,key,block){
     scheduleSave('计划小块 · 长按移动 · '+item.text.slice(0,20));render();
   }
   function cancelPlanMiniDrag(){endPlanMiniDrag(false);}
-  function startPlanMiniDrag(e,row,owner,key,blockId){
-    if(planMiniDrag||e.button!==0||e.target.closest('button,textarea,input,[contenteditable]'))return;
+  function startPlanMiniDrag(e,row,owner,key,blockId,fromDrawingGrip=false){
+    if(planMiniDrag||(e.pointerType==='mouse'&&e.button!==0)||
+        (!fromDrawingGrip&&e.target.closest('button,textarea,input,[contenteditable]')))return;
     const touch=e.pointerType==='touch';
-    const d={pointerId:e.pointerId,ownerId:owner.id,key,blockId,row,
+    if(fromDrawingGrip&&e.cancelable)e.preventDefault();
+    const d={pointerId:e.pointerId,ownerId:owner.id,key,blockId,row,fromDrawingGrip,
       startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,armed:false,target:null,ghost:null,timer:null,menuTimer:null};
     planMiniDrag=d;
     const begin=()=>{
@@ -6576,6 +6793,15 @@ function toggleDoc35Plan(owner,key,block){
       if(!d.active)return;
       moveExactBlockDragGhost(d.ghost,d.x,d.y,d.ghostOffsetX,d.ghostOffsetY);
       clearPlanMiniDropHint();clearQuadrantDropHints();clearPlanGroupWire();d.target=null;
+      topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after'));
+      if(d.fromDrawingGrip){
+        const external=v84DrawingExternalDrop(d);
+        if(external){
+          d.target=external;
+          if(external.el)external.el.classList.add('drop-'+(external.mode||'child'));
+          return;
+        }
+      }
       const quadrant=quadrantDropInfo(d.x,d.y);
       if(quadrant){
         d.target={type:'quadrant',topicId:quadrant.topicId,x:quadrant.x,y:quadrant.y};
@@ -6677,7 +6903,8 @@ function toggleDoc35Plan(owner,key,block){
         const item=latest?.kind==='plan'?findPlanBlock(latest,key,blockId):null;
         if(item)openPlanBlockMenu(latest,key,item,d.startX,d.startY);
       },720);
-    }else d.timer=setTimeout(begin,420);
+    }else if(fromDrawingGrip)begin();
+    else d.timer=setTimeout(begin,420);
   }
   // V54: plan.blockCells 中的原对象拥有 groupParentId。下级仍是正常计划小块，
   // 因而沿用文字编辑、关联、标注、跨格移动与同步，无额外副本。
@@ -6791,6 +7018,7 @@ function toggleDoc35Plan(owner,key,block){
   // V64: Width follows actual text length (and only necessary text controls). No shared fixed width.
   function planMiniNaturalWidth(item,row,maxWidth){
     if(item?.drawing)return Math.max(86,Math.min(maxWidth,300));
+    if(item?.images?.length)return Math.max(100,Math.min(maxWidth,232));
     const text=String(item.text||'事项');
     const canvas=planMiniNaturalWidth.canvas||(planMiniNaturalWidth.canvas=document.createElement('canvas'));
     const ctx=canvas.getContext('2d');
@@ -6921,6 +7149,7 @@ function toggleDoc35Plan(owner,key,block){
         row.addEventListener('dblclick',e=>{e.stopPropagation();if(item.drawing||Date.now()<planMiniIgnoreClickUntil)return;openPlanMiniEditor(owner,key,item.id,row);});
         row.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();if(Date.now()<planMiniIgnoreClickUntil)return;if(e.pointerType==='touch'&&planMiniDrag?.blockId===item.id)cancelPlanMiniDrag();openPlanBlockMenu(owner,key,item,e.clientX,e.clientY);});
         row.addEventListener('pointerdown',e=>startPlanMiniDrag(e,row,owner,key,item.id));
+        if(!item.drawing)v80InstallNodeDrop(row,item,'计划表小节点');
         const text=document.createElement('div');text.className='plan-mini-text';renderMarkedText(text,item.text,item.marks||[]);
         if(item.drawing){
           row.classList.add('plan-mini-drawing');
@@ -6935,6 +7164,7 @@ function toggleDoc35Plan(owner,key,block){
           b.addEventListener('click',e=>{e.stopPropagation();openPlanMiniEditor(owner,key,null,b,item.id,kind);});
           return b;};
         if(!item.drawing)row.append(text);
+        if(!item.drawing&&item.images?.length){row.classList.add('plan-mini-with-images');row.append(v78RenderImageStage(item,'计划表小节点'));}
         if(item.textMode&&!item.drawing)row.append(doc37EnableIcon(makeDoc35Icon(),()=>{
           selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
           openDoc35({kind:'plan',ownerId:owner.id,key,blockId:item.id});
@@ -7914,7 +8144,7 @@ function toggleDoc35Plan(owner,key,block){
     let found=null,nearest=Infinity;
     const radius=Math.max(98,Math.min(185,145*state.zoom));
     for(const el of topicLayer.children){
-      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node'))continue;
+      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node,.drawing-node:not(.drawing-inline)'))continue;
       const id=el.dataset.id;if(d.ignore.has(id))continue;
       const r=el.getBoundingClientRect();
       const dx=Math.max(r.left-x,0,x-r.right),dy=Math.max(r.top-y,0,y-r.bottom);
@@ -7938,7 +8168,7 @@ function toggleDoc35Plan(owner,key,block){
     topicLayer.querySelectorAll('.drop-child,.drop-before,.drop-after').forEach(el=>el.classList.remove('drop-child','drop-before','drop-after'));
     d.drop=findTopicDropTarget(d,e.clientX,e.clientY);
     if(d.drop){d.drop.el.classList.add('drop-'+d.drop.mode);d.hint.textContent={child:'作为子主题',before:'插入到该主题前',after:'插入到该主题后'}[d.drop.mode];}
-    else d.hint.textContent='移动整个表格及下级 · 靠近目标主题可归入';
+    else d.hint.textContent=topicById(d.id)?.kind==='drawing'?'移动绘图板 · 拖到节点上归为下级，靠下松开为同级':'移动整条分支 · 靠近目标主题可归入';
     const origin=d.anchors.get(d.id);if(!origin)return;
     const toX=origin.left+dx,toY=origin.top+origin.h/2+dy;
     let anchorId=d.parentId;
@@ -8272,7 +8502,7 @@ function toggleDoc35Plan(owner,key,block){
     let winner=null,nearest=Infinity;
     const radius=Math.max(64,Math.min(175,130*state.zoom));
     for(const el of topicLayer.children){
-      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node'))continue;
+      if(!el.matches('.topic,.matrix-node,.plan-node,.quadrant-node,.inline-outline-node,.drawing-node:not(.drawing-inline)'))continue;
       const id=el.dataset.id;if(!id||id===d.id||!topicById(id))continue;
       const b=el.getBoundingClientRect();
       const dx=Math.max(b.left-x,0,x-b.right),dy=Math.max(b.top-y,0,y-b.bottom);
@@ -9018,6 +9248,228 @@ function toggleDoc35Plan(owner,key,block){
   }
   // -------- v29 双模式结束 --------
 
+  // V79: clipboard/drop picture pipeline. Images are stored using the same loss-limited
+  // V78 objects as the picker, so PWA backups and cloud data contain actual picture bytes.
+  let v79BoardFocus=null;
+  let v79CopiedImage=null;
+  function v79BoardFocusOn(t,d,ownerId=null){
+    v79BoardFocus={id:t.id,ownerId,update:image=>{
+      if(!Array.isArray(d.images))d.images=[];
+      if(d.images.length>=12){notify('绘图板最多可放 12 张图片');return false;}
+      d.images.push(v78PhotoObject(image,'drawing'));
+      d.tool='move';scheduleSave('绘图板 · 粘贴或拖入图片');render();
+      notify('已插入图片；选择「↔」后可拖动');return true;
+    },getSelected:()=>{const id=v79BoardFocus?.selectedId;
+      return (d.images||[]).find(x=>x.id===id)||null;}};
+  }
+  function v79IsImageFile(file){return !!file&&(/^image\//i.test(file.type)||/\.(png|jpg|jpeg|webp|gif|bmp)$/i.test(file.name||''));}
+  async function v79ReadTransferredImage(dt){
+    if(!dt)return null;
+    const readFile=f=>{
+      if(!f.type&&/\.(png|jpg|jpeg|webp|gif|bmp)$/i.test(f.name||'')){
+        const ext=f.name.split('.').pop().toLowerCase();
+        const type=ext==='jpg'?'image/jpeg':ext==='bmp'?'image/bmp':'image/'+ext;
+        return v78ReadImage(new File([f],f.name,{type}));
+      }
+      return v78ReadImage(f);
+    };
+    const files=[...(dt.files||[])];
+    for(const f of files)if(v79IsImageFile(f))return readFile(f);
+    for(const it of (dt.items||[])){
+      if(it.kind==='file'&&/^image\//i.test(it.type||'')){
+        const f=it.getAsFile();if(f)return v78ReadImage(f);
+      }
+    }
+    const html=dt.getData?.('text/html')||'';
+    let source='';
+    if(html){const dom=new DOMParser().parseFromString(html,'text/html');source=dom.querySelector('img[src]')?.getAttribute('src')||'';}
+    if(!source){const uri=(dt.getData?.('text/uri-list')||dt.getData?.('text/plain')||'').trim().split(/\r?\n/)[0];
+      if(/^https?:\/\//i.test(uri)||/^data:image\//i.test(uri))source=uri;}
+    if(source){
+      if(!/^data:image\//i.test(source)&&!/^https?:\/\//i.test(source))return null;
+      if(source.length>2000000)throw Error('图片地址过长');
+      const response=await fetch(source,{mode:'cors'});
+      if(!response.ok)throw Error('无法下载拖入的图片');
+      const blob=await response.blob();
+      if(blob.size>18*1024*1024)throw Error('图片太大，请先保存到本地后导入');
+      const file=new File([blob],'drag-image.png',{type:blob.type||'image/png'});
+      return v78ReadImage(file);
+    }
+    return null;
+  }
+  function v79InstallDrop(target,accept){
+    let depth=0;
+    target.addEventListener('dragenter',e=>{e.preventDefault();e.stopPropagation();depth++;target.classList.add('v79-drop-ready');});
+    target.addEventListener('dragover',e=>{e.preventDefault();e.stopPropagation();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';target.classList.add('v79-drop-ready');});
+    target.addEventListener('dragleave',e=>{e.stopPropagation();depth=Math.max(0,depth-1);if(!depth)target.classList.remove('v79-drop-ready');});
+    target.addEventListener('drop',async e=>{
+      e.preventDefault();e.stopPropagation();depth=0;target.classList.remove('v79-drop-ready');
+      try{const image=await v79ReadTransferredImage(e.dataTransfer);
+        if(!image){notify('请拖入图片文件；部分软件的专有对象需先复制成图片');return;}
+        await accept(image);
+      }catch(err){notify('拖入图片失败：'+err.message);}
+    });
+  }
+  // V80: add pictures directly to an ordinary node (even when it has no picture stage yet).
+  let v80SelectedNodePicture=null;
+  function v80NodeImageTarget(){
+    const f=selectedPlanFocus;
+    if(f&&state.selected===f.planId){
+      const entry=planBlockByRef(f),block=entry?.block;
+      if(block&&!block.drawing)return {item:block,label:'计划表小节点'};
+    }
+    const topic=topicById(state.selected);
+    return topic&&!topic.kind?{item:topic,label:'普通节点'}:null;
+  }
+  function v80AddNodeImage(item,image,label){
+    if(!item)return false;
+    if(!Array.isArray(item.images))item.images=[];
+    const ok=v78SyncNewImage(item.images,image,'node',5,label+' · 粘贴或拖入图片');
+    if(ok)notify('图片已添加到'+label+'，可单独拖动并等比例缩放');
+    return ok;
+  }
+  function v80IsImageTransfer(dt){
+    return !!dt&&([...(dt.types||[])].some(t=>t==='Files'||t==='text/html'||t==='text/uri-list'||t==='text/plain'));
+  }
+  function v80InstallNodeDrop(el,item,label){
+    el.addEventListener('dragenter',e=>{if(!v80IsImageTransfer(e.dataTransfer))return;
+      e.preventDefault();e.stopPropagation();el.classList.add('v80-image-drop-ready');});
+    el.addEventListener('dragover',e=>{if(!v80IsImageTransfer(e.dataTransfer))return;
+      e.preventDefault();e.stopPropagation();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';});
+    el.addEventListener('dragleave',e=>{if(!el.contains(e.relatedTarget))el.classList.remove('v80-image-drop-ready');});
+    el.addEventListener('drop',async e=>{
+      if(!v80IsImageTransfer(e.dataTransfer))return;
+      e.preventDefault();e.stopPropagation();el.classList.remove('v80-image-drop-ready');
+      try{const image=await v79ReadTransferredImage(e.dataTransfer);
+        if(!image){notify('请拖入图片文件或可读取的图片');return;}
+        v80AddNodeImage(item,image,label);
+      }catch(err){notify('拖入图片失败：'+err.message);}
+    });
+  }
+  // Capture image paste before generic mind-map node paste.
+  document.addEventListener('paste',async e=>{
+    if(e.target.closest?.('input,textarea,[contenteditable="true"]'))return;
+    const nodeTarget=v79BoardFocus?null:v80NodeImageTarget();
+    if(!v79BoardFocus&&!nodeTarget)return;
+    const c=e.clipboardData;if(!c)return;
+    const imageItem=[...(c.items||[])].find(i=>i.kind==='file'&&/^image\//i.test(i.type||''));
+    let file=imageItem?.getAsFile()||[...(c.files||[])].find(v79IsImageFile)||null;
+    const html=c.getData('text/html')||'';
+    const marker=c.getData('text/plain')||'';
+    const sameImage=v79CopiedImage&&marker===v79CopiedImage.marker;
+    if(!file&&!sameImage&&!/<img\b[^>]*src=["']data:image\//i.test(html))return;
+    e.preventDefault();e.stopImmediatePropagation();nativePasteSerial++;
+    try{
+      let image;
+      if(file)image=await v78ReadImage(file);
+      else if(sameImage)image={src:v79CopiedImage.src,width:v79CopiedImage.w,height:v79CopiedImage.h};
+      else image=await v79ReadTransferredImage(c);
+      if(image){
+        if(v79BoardFocus)await v79BoardFocus.update(image);
+        else if(nodeTarget)v80AddNodeImage(nodeTarget.item,image,nodeTarget.label);
+      }else notify('剪贴板中没有可识别的图片');
+    }catch(err){notify('粘贴图片失败：'+err.message);}
+  },true);
+  document.addEventListener('copy',e=>{
+    if(!e.clipboardData||e.target.closest?.('input,textarea,[contenteditable="true"]'))return;
+    const selected=v79BoardFocus?.getSelected()||
+      (v80SelectedNodePicture?.item?.images||[]).find(im=>im.id===v80SelectedNodePicture.id);
+    if(!selected)return;
+    const marker='DIY-IMAGE:'+selected.id+':'+Date.now();
+    v79CopiedImage={...selected,marker};
+    e.clipboardData.setData('text/html','<img src="'+selected.src+'">');
+    e.clipboardData.setData('text/plain',marker);
+    e.preventDefault();e.stopImmediatePropagation();
+    notify('已复制选中图片，可在普通节点或绘图板中 Ctrl+V 粘贴');
+  },true);
+  // Clicking outside drawing area clears the picture-specific clipboard focus.
+  document.addEventListener('pointerdown',e=>{
+    if(!e.target.closest?.('.drawing-node,.drawing-inline'))v79BoardFocus=null;
+    if(!e.target.closest?.('.v78-image-tile,.v78-image-resize'))v80SelectedNodePicture=null;
+  },true);
+  // V78: independently movable pictures embedded inside a text node (normal/plan-mini).
+  function v78RenderImageStage(item,saveLabel){
+    const stage=document.createElement('div');stage.className='v78-image-stage';stage.setAttribute('aria-label','节点内图片：拖动图片调整位置');
+    stage.addEventListener('pointerdown',e=>{e.stopPropagation();
+      if(!e.target.closest('.v78-image-tile,.v78-image-resize'))v80SelectedNodePicture=null;});
+    stage.addEventListener('dblclick',e=>e.stopPropagation());
+    stage.addEventListener('click',e=>e.stopPropagation());
+    stage.addEventListener('contextmenu',e=>e.stopPropagation());
+    v79InstallDrop(stage,image=>{if(!Array.isArray(item.images))item.images=[];
+      v78SyncNewImage(item.images,image,'node',5,saveLabel+' · 拖入图片');});
+    function styleTile(el,im){el.style.left=(im.x/260*100)+'%';el.style.top=(im.y/160*100)+'%';
+      el.style.width=(im.w/260*100)+'%';el.style.height=(im.h/160*100)+'%';}
+    for(const im of (item.images||[])){
+      const tile=document.createElement('img');tile.className='v78-image-tile';tile.src=im.src;tile.alt='导入的图片';tile.draggable=false;
+      styleTile(tile,im);stage.append(tile);
+      // Drag or resize the actual image, not its parent topic/plan node.
+      const move=(e,resizing=false)=>{
+        if(e.pointerType==='mouse'&&e.button!==0)return;
+        e.preventDefault();e.stopPropagation();
+        const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+        const orig={x:im.x,y:im.y,w:im.w,h:im.h},sx=e.clientX,sy=e.clientY;
+        const target=e.currentTarget;tile.classList.add('v78-active');
+        try{target.setPointerCapture(e.pointerId);}catch{}
+        let changed=false;
+        const onmove=ev=>{if(ev.pointerId!==e.pointerId)return;ev.preventDefault();ev.stopPropagation();
+          const dx=(ev.clientX-sx)*260/r.width,dy=(ev.clientY-sy)*160/r.height;
+          if(resizing){
+            const change=Math.abs(dx/orig.w)>=Math.abs(dy/orig.h)?dx/orig.w:dy/orig.h;
+            const factor=Math.max(Math.max(20/orig.w,20/orig.h),
+              Math.min((260-orig.x)/orig.w,(160-orig.y)/orig.h,1+change));
+            im.w=orig.w*factor;im.h=orig.h*factor;
+          }
+          else {im.x=Math.max(0,Math.min(260-orig.w,orig.x+dx));im.y=Math.max(0,Math.min(160-orig.h,orig.y+dy));}
+          changed=true;styleTile(tile,im);resize.style.left=`${(im.x+im.w)/260*100}%`;resize.style.top=`${(im.y+im.h)/160*100}%`;
+        };
+        const onend=ev=>{if(ev.pointerId!==e.pointerId)return;
+          target.removeEventListener('pointermove',onmove);target.removeEventListener('pointerup',onend);target.removeEventListener('pointercancel',onend);
+          try{target.releasePointerCapture(ev.pointerId);}catch{}tile.classList.remove('v78-active');
+          if(changed)scheduleSave(saveLabel+' · 移动或缩放图片');ev.stopPropagation();};
+        target.addEventListener('pointermove',onmove);target.addEventListener('pointerup',onend);target.addEventListener('pointercancel',onend);
+      };
+      tile.addEventListener('pointerdown',e=>{v80SelectedNodePicture={item,id:im.id};move(e);});
+      const resize=document.createElement('div');resize.className='v78-image-resize';resize.title='拖动缩放图片';
+      resize.style.left=(im.x+im.w)/260*100+'%';resize.style.top=(im.y+im.h)/160*100+'%';
+      resize.addEventListener('pointerdown',e=>{v80SelectedNodePicture={item,id:im.id};move(e,true);});stage.append(resize);
+    }
+    const add=document.createElement('button');add.className='v78-image-add';add.type='button';add.textContent='＋ 图片';
+    add.title='继续导入图片';add.addEventListener('pointerdown',e=>e.stopPropagation());
+    add.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
+      v78ChooseImage(image=>{if(!Array.isArray(item.images))item.images=[];
+        if(v78SyncNewImage(item.images,image,'node',5,saveLabel+' · 导入图片'))notify('图片已导入，可单独拖动');});});
+    stage.append(add);
+    const remove=document.createElement('button');remove.className='v78-image-remove';remove.type='button';remove.textContent='×';
+    remove.title='删除节点内最后一张图片';remove.addEventListener('pointerdown',e=>e.stopPropagation());
+    remove.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();
+      if(!item.images?.length)return;item.images.pop();scheduleSave(saveLabel+' · 删除图片');render();});stage.append(remove);
+    return stage;
+  }
+  function v78InsertPicture(){
+    if(state.editing)endEditing(true);if(state.matrixEditing)settleMatrixEditor(true);settlePlanEditor();
+    const focus=selectedPlanFocus&&state.selected===selectedPlanFocus.planId?selectedPlanFocus:null;
+    const owner=focus&&topicById(focus.ownerId);let target=null,label='节点';
+    if(owner?.kind==='plan'&&focus.blockId){target=planBlockList(owner,focus.key).find(x=>x.id===focus.blockId);label='计划小节点';}
+    const chosen=v76LastPlanCell&&topicById(v76LastPlanCell.ownerId);
+    if(!target&&chosen?.kind==='plan'){
+      const blocks=planBlockList(chosen,v76LastPlanCell.key);
+      if(blocks.length){target=blocks.at(-1);label='计划小节点';}
+    }
+    if(!target){target=topicById(state.selected);label='思维导图节点';}
+    if(!target||target.kind==='matrix'||target.kind==='plan'||target.kind==='quadrant'){
+      notify('请先选中普通节点或计划表内的小节点，再插入图片');return;
+    }
+    if(target.kind==='drawing'||target.drawing){
+      v78ChooseImage(image=>{target.drawing=v76CleanDrawing(target.drawing);
+        if(target.drawing.images.length>=12){notify('单块绘图板最多可插入 12 张图片');return;}
+        target.drawing.images.push(v78PhotoObject(image,'drawing'));
+        target.drawing.tool='move';scheduleSave('绘图板 · 导入图片');render();notify('图片已添加，使用移动图片工具拖动');});return;
+    }
+    const imageTarget=target;v78ChooseImage(image=>{
+      if(!Array.isArray(imageTarget.images))imageTarget.images=[];
+      if(v78SyncNewImage(imageTarget.images,image,'node',5,label+' · 导入图片'))notify('已插入图片：拖动图片移动，右下角可缩放');
+    });
+  }
   // V76: 与普通表格、计划表一样，绘图板本身是真正的主题节点。
   // 每一笔按 720×405 的逻辑坐标保存，重排/缩放/跨设备恢复时不会失真。
   function renderDrawingNode(t,p,options=null){
@@ -9025,7 +9477,8 @@ function toggleDoc35Plan(owner,key,block){
     const d=t.drawing,embedded=options?.embedded===true;
     const box=document.createElement('div');box.className='drawing-node'+(embedded?' drawing-inline':'');box.dataset.id=t.id;
     if(state.selected===t.id)box.classList.add('selected');
-    if(embedded)Object.assign(box.style,{left:'0',top:'0',width:'100%',height:d.expanded?'330px':'230px'});
+    if(embedded){Object.assign(box.style,{left:'0',top:'0',height:(d.inlineHeight|| (d.expanded?330:230))+'px'});
+      if(d.inlineWidth)box.style.setProperty('width',Math.round(d.inlineWidth)+'px','important');}
     else Object.assign(box.style,{left:p.x+'px',top:p.y+'px',width:p.w+'px',height:p.h+'px'});
     box.addEventListener('pointerdown',e=>{
       e.stopPropagation();
@@ -9037,16 +9490,20 @@ function toggleDoc35Plan(owner,key,block){
       if(e.pointerType==='mouse'&&e.button!==0)return;
       e.preventDefault();
       if(embedded){if(options.dragRow){const owner=topicById(options.ownerId);
-        if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id);}}
+        if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id,true);}}
       else prepareTopicDrag(e,t.id,box,true);
     });
     box.addEventListener('click',e=>{e.stopPropagation();state.selected=embedded?options.ownerId:t.id;state.matrixSelection=null;
       document.querySelectorAll('.drawing-node.selected').forEach(el=>el.classList.remove('selected'));
       box.classList.add('selected');});
+    if(!embedded)box.addEventListener('contextmenu',e=>{
+      e.preventDefault();e.stopPropagation();selectInteractive(t.id);
+      showDeleteContext(e.clientX,e.clientY);
+    });
     const head=document.createElement('div');head.className='drawing-head';
     const grip=document.createElement('button');grip.type='button';grip.className='drawing-drag';grip.textContent='⠿';grip.title='按住拖动整块绘图板';
     grip.addEventListener('pointerdown',e=>{e.stopPropagation();
-      if(embedded){if(options.dragRow){const owner=topicById(options.ownerId);if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id);}}
+      if(embedded){if(options.dragRow){const owner=topicById(options.ownerId);if(owner)startPlanMiniDrag(e,options.dragRow,owner,options.key,t.id,true);}}
       else prepareTopicDrag(e,t.id,box,true);
     });
     grip.addEventListener('click',e=>{e.stopPropagation();e.preventDefault();});
@@ -9054,38 +9511,107 @@ function toggleDoc35Plan(owner,key,block){
     const expand=document.createElement('button');expand.type='button';expand.textContent=d.expanded?'⤡':'⤢';
     expand.title=d.expanded?'缩小画板':'放大画板';expand.setAttribute('aria-label',expand.title);
     expand.addEventListener('click',e=>{e.stopPropagation();d.expanded=!d.expanded;
-      if(embedded)planReleaseFoldedRowHeight(topicById(options.ownerId),options.key);
+      if(embedded){d.inlineHeight=d.expanded?330:230;d.inlineWidth=undefined;
+        planReleaseFoldedRowHeight(topicById(options.ownerId),options.key);}
+      else {d.frameWidth=d.expanded?620:384;d.frameHeight=d.expanded?435:298;}
       scheduleSave('绘图板 · 切换大小');render();ensureVisible(embedded?options.ownerId:t.id);});
     head.append(grip,title,expand);
+    // Only the bottom-right grip resizes the frame; pen/image gestures never move it.
+    const resizer=document.createElement('button');resizer.type='button';resizer.className='drawing-resizer';
+    resizer.textContent='◢';resizer.title='拖动调节绘图板的宽度和高度';resizer.setAttribute('aria-label',resizer.title);
+    resizer.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+    resizer.addEventListener('pointerdown',e=>{
+      if(e.pointerType==='mouse'&&e.button!==0)return;
+      e.preventDefault();e.stopPropagation();
+      const id=e.pointerId,startX=e.clientX,startY=e.clientY,scale=Math.max(.1,state.zoom||1);
+      const r=box.getBoundingClientRect(),startW=r.width/scale,startH=r.height/scale;
+      const parent=embedded?box.parentElement:null;
+      const parentW=parent?parent.getBoundingClientRect().width/scale:1200;
+      const minW=embedded?Math.min(90,Math.max(65,parentW)):220;
+      const maxW=embedded?Math.max(minW,parentW):1200;
+      const minH=embedded?155:180,maxH=embedded?850:900;
+      try{resizer.setPointerCapture(id);}catch{}
+      let changed=false;
+      const move=ev=>{
+        if(ev.pointerId!==id)return;ev.preventDefault();ev.stopPropagation();
+        const width=Math.round(Math.max(minW,Math.min(maxW,startW+(ev.clientX-startX)/scale)));
+        const height=Math.round(Math.max(minH,Math.min(maxH,startH+(ev.clientY-startY)/scale)));
+        if(embedded){d.inlineWidth=width;d.inlineHeight=height;}
+        else {d.frameWidth=width;d.frameHeight=height;}
+        if(embedded)box.style.setProperty('width',width+'px','important');
+        else box.style.width=width+'px';
+        box.style.height=height+'px';
+        changed=true;fitDrawingCanvas();
+      };
+      const done=ev=>{
+        if(ev.pointerId!==id)return;ev.preventDefault();ev.stopPropagation();
+        resizer.removeEventListener('pointermove',move);
+        resizer.removeEventListener('pointerup',done);resizer.removeEventListener('pointercancel',done);
+        try{resizer.releasePointerCapture(id);}catch{}
+        if(changed){if(embedded)planReleaseFoldedRowHeight(topicById(options.ownerId),options.key);
+          scheduleSave('绘图板 · 调整宽高');render();}
+      };
+      resizer.addEventListener('pointermove',move);resizer.addEventListener('pointerup',done);
+      resizer.addEventListener('pointercancel',done);
+    });
     const surface=document.createElement('div');surface.className='drawing-surface';
     for(const name of ['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend','touchcancel']){
       surface.addEventListener(name,e=>e.stopPropagation(),{passive:true});
     }
     const canvas=document.createElement('canvas');canvas.width=720;canvas.height=405;
-    canvas.setAttribute('aria-label','手指或鼠标在此绘画');surface.append(canvas);
+    canvas.setAttribute('aria-label','手指或鼠标在此绘画');canvas.tabIndex=0;surface.append(canvas);
+    // Never stretch the 720×405 pixel backing store, even inside a narrow plan cell.
+    function fitDrawingCanvas(){
+      const w=Math.max(1,surface.clientWidth-2),h=Math.max(1,surface.clientHeight-2);
+      const factor=Math.min(w/720,h/405);
+      const cw=Math.max(1,720*factor),ch=Math.max(1,405*factor);
+      if(canvas.style.width!==cw+'px')canvas.style.width=cw+'px';
+      if(canvas.style.height!==ch+'px')canvas.style.height=ch+'px';
+    }
+    const drawingObserver=new ResizeObserver(()=>{
+      if(!canvas.isConnected){drawingObserver.disconnect();return;}
+      fitDrawingCanvas();
+    });
+    drawingObserver.observe(surface);
+    requestAnimationFrame(()=>{if(canvas.isConnected)fitDrawingCanvas();});
+    const focusBoard=()=>v79BoardFocusOn(t,d,embedded?options.ownerId:null);
+    canvas.addEventListener('focus',focusBoard);
+    surface.addEventListener('pointerdown',focusBoard,true);
+    v79InstallDrop(surface,image=>{focusBoard();return v79BoardFocus.update(image);});
     const tools=document.createElement('div');tools.className='drawing-tools';
     const makeBtn=(txt,aria,onClick)=>{const b=document.createElement('button');b.type='button';b.textContent=txt;b.title=aria;b.setAttribute('aria-label',aria);b.addEventListener('pointerdown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();onClick();});tools.append(b);return b;};
-    const pen=makeBtn('✎','铅笔',()=>{d.tool='pen';refreshTools();});
-    const eraser=makeBtn('⌫','橡皮擦',()=>{d.tool='eraser';refreshTools();});
+    const pen=makeBtn('✎','铅笔',()=>{d.tool='pen';refreshTools();redraw();});
+    const eraser=makeBtn('⌫','橡皮擦',()=>{d.tool='eraser';refreshTools();redraw();});
+    const selectImage=makeBtn('↔','移动图片（点击或拖动图片，不影响画布）',()=>{d.tool='move';refreshTools();redraw();});
+    selectImage.classList.add('v78-image-move');
+    makeBtn('▧','导入图片到绘图板',()=>{focusBoard();v78ChooseImage(image=>{
+      if(!Array.isArray(d.images))d.images=[];
+      if(d.images.length>=12){notify('单块绘图板最多可插入 12 张图片');return;}
+      d.images.push(v78PhotoObject(image,'drawing'));d.tool='move';
+      scheduleSave('绘图板 · 导入图片');render();notify('图片已导入，拖动即可移动；切换铅笔可以在图片上绘画');
+    });});
     const divider=document.createElement('span');divider.className='drawing-divider';tools.append(divider);
     const swatches=['#263444','#9aa2af','#f04452','#f5a623','#28ac76','#2398ed','#8057da'];
     const choices=[];
     for(const color of swatches){
-      const btn=makeBtn('','画笔颜色 '+color,()=>{d.color=color;d.tool='pen';refreshTools();});
+      const btn=makeBtn('','画笔颜色 '+color,()=>{d.color=color;d.tool='pen';refreshTools();redraw();});
       btn.classList.add('drawing-swatch');btn.style.backgroundColor=color;choices.push([color,btn]);
     }
     const colorPicker=document.createElement('input');colorPicker.type='color';colorPicker.className='drawing-color';
     colorPicker.setAttribute('aria-label','自定义颜色');colorPicker.title='自定义画笔颜色';
     colorPicker.value=/^#[a-f0-9]{6}$/i.test(d.color)?d.color:'#263444';
     colorPicker.addEventListener('pointerdown',e=>e.stopPropagation());
-    colorPicker.addEventListener('input',e=>{e.stopPropagation();d.color=colorPicker.value;d.tool='pen';refreshTools();});tools.append(colorPicker);
+    colorPicker.addEventListener('input',e=>{e.stopPropagation();d.color=colorPicker.value;d.tool='pen';refreshTools();redraw();});tools.append(colorPicker);
     const secondDivider=document.createElement('span');secondDivider.className='drawing-divider';tools.append(secondDivider);
+    makeBtn('⌦','删除选中的图片',()=>{if(!selectedImageId)return;
+      d.images=(d.images||[]).filter(im=>im.id!==selectedImageId);selectedImageId=null;
+      scheduleSave('绘图板 · 删除图片');redraw();});
     makeBtn('↶','撤销上一笔',()=>{if(!d.strokes?.length)return;d.strokes.pop();redraw();scheduleSave('绘图板 · 撤销上一笔');});
     makeBtn('1:1','重置画板内部缩放和位置',()=>{d.view={zoom:1,x:0,y:0};redraw();scheduleSave('绘图板 · 重置视图');});
-    makeBtn('×','清空绘图板',()=>{if(!d.strokes?.length)return;if(!confirm('清空绘图板里的所有画迹吗？可以使用软件的撤销恢复。'))return;
-      d.strokes=[];redraw();scheduleSave('绘图板 · 清空');});
-    function refreshTools(){pen.classList.toggle('is-active',d.tool!=='eraser');eraser.classList.toggle('is-active',d.tool==='eraser');
-      for(const [color,btn] of choices)btn.classList.toggle('is-active',d.tool!=='eraser'&&d.color===color);
+    makeBtn('×','清空绘图板',()=>{if(!d.strokes?.length&&!d.images?.length)return;if(!confirm('清空这块绘图板的全部画迹和图片吗？可以使用软件的撤销恢复。'))return;
+      d.strokes=[];d.images=[];selectedImageId=null;redraw();scheduleSave('绘图板 · 清空');});
+    function refreshTools(){pen.classList.toggle('is-active',d.tool==='pen');eraser.classList.toggle('is-active',d.tool==='eraser');selectImage.classList.toggle('is-active',d.tool==='move');
+      for(const [color,btn] of choices)btn.classList.toggle('is-active',d.tool==='pen'&&d.color===color);
       colorPicker.value=/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#263444';}
     function paintStroke(ctx,stroke){
       if(!stroke.points?.length)return;
@@ -9110,12 +9636,26 @@ function toggleDoc35Plan(owner,key,block){
       return {zoom:z,x:Math.max(720-720*z-marginX,Math.min(marginX,x)),
         y:Math.max(405-405*z-marginY,Math.min(marginY,y))};
     }
+    let selectedImageId=null;
+    const inkLayer=document.createElement('canvas');inkLayer.width=720;inkLayer.height=405;
+    const inkCtx=inkLayer.getContext('2d');
     function redraw(){const ctx=canvas.getContext('2d');if(!ctx)return;
+      if(inkCtx){inkCtx.setTransform(1,0,0,1,0,0);inkCtx.globalCompositeOperation='source-over';
+        inkCtx.clearRect(0,0,720,405);for(const st of d.strokes||[])paintStroke(inkCtx,st);}
       ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
       const v=currentView();ctx.save();ctx.translate(v.x,v.y);ctx.scale(v.zoom,v.zoom);
-      for(const st of d.strokes||[])paintStroke(ctx,st);
+      for(const im of (d.images||[])){
+        const img=v78GetImage(im.src,()=>{if(canvas.isConnected)redraw();});
+        if(img.complete&&img.naturalWidth)ctx.drawImage(img,im.x,im.y,im.w,im.h);
+      }
+      if(inkCtx)ctx.drawImage(inkLayer,0,0,720,405);
+      if(d.tool==='move'&&selectedImageId){const im=(d.images||[]).find(x=>x.id===selectedImageId);
+        if(im){ctx.save();ctx.lineWidth=2/v.zoom;ctx.strokeStyle='#258fff';ctx.setLineDash([5/v.zoom,3/v.zoom]);
+          ctx.strokeRect(im.x,im.y,im.w,im.h);ctx.restore();}}
       ctx.restore();
     }
+    const hitImage=p=>(d.images||[]).slice().reverse().find(im=>p.x>=im.x&&p.y>=im.y&&p.x<=im.x+im.w&&p.y<=im.y+im.h);
+    let movingImage=null;
     const touches=new Map();
     const pointer={id:null,stroke:null};
     let pinch=null,pinchHadMovement=false,skipUntilTouchRelease=false;
@@ -9143,7 +9683,7 @@ function toggleDoc35Plan(owner,key,block){
         touches.set(e.pointerId,{clientX:e.clientX,clientY:e.clientY});
         try{canvas.setPointerCapture(e.pointerId);}catch{}
         if(touches.size>=2){
-          cancelIncompleteStroke();skipUntilTouchRelease=true;
+          cancelIncompleteStroke();movingImage=null;skipUntilTouchRelease=true;
           const g=gesturePoints(),v=currentView();
           if(g){pinch={distance:g.distance,zoom:v.zoom,
             anchorX:(g.x-v.x)/v.zoom,anchorY:(g.y-v.y)/v.zoom};}
@@ -9152,6 +9692,12 @@ function toggleDoc35Plan(owner,key,block){
         if(skipUntilTouchRelease)return;
       }
       if(pointer.id!==null)return;
+      if(d.tool==='move'){
+        const p=point(e),im=hitImage(p);selectedImageId=im?.id||null;
+        focusBoard();if(v79BoardFocus)v79BoardFocus.selectedId=selectedImageId;
+        movingImage=im?{pointerId:e.pointerId,id:im.id,dx:p.x-im.x,dy:p.y-im.y,moved:false}:null;
+        try{canvas.setPointerCapture(e.pointerId);}catch{}redraw();return;
+      }
       if(!Array.isArray(d.strokes))d.strokes=[];
       if(d.strokes.length>=700){notify('画迹已达到单块绘图板上限，请新建一块绘图板');return;}
       pointer.id=e.pointerId;pointer.stroke={mode:d.tool==='eraser'?'eraser':'pen',
@@ -9170,6 +9716,13 @@ function toggleDoc35Plan(owner,key,block){
           pinchHadMovement=true;redraw();return;
         }
       }
+      if(movingImage?.pointerId===e.pointerId){
+        e.preventDefault();e.stopPropagation();const im=(d.images||[]).find(x=>x.id===movingImage.id);
+        if(im){const p=point(e),x=Math.max(0,Math.min(720-im.w,p.x-movingImage.dx)),
+          y=Math.max(0,Math.min(405-im.h,p.y-movingImage.dy));
+          if(Math.abs(x-im.x)+Math.abs(y-im.y)>0.01){im.x=x;im.y=y;movingImage.moved=true;redraw();}}
+        return;
+      }
       if(pointer.id!==e.pointerId||!pointer.stroke)return;
       e.preventDefault();e.stopPropagation();
       if(pointer.stroke.points.length>=1500)return;
@@ -9186,6 +9739,10 @@ function toggleDoc35Plan(owner,key,block){
         }
         if(!touches.size)skipUntilTouchRelease=false;
       }
+      if(movingImage?.pointerId===e.pointerId){
+        if(movingImage.moved)scheduleSave('绘图板 · 移动图片');
+        movingImage=null;redraw();
+      }
       if(pointer.id===e.pointerId){
         const changed=!!pointer.stroke;
         pointer.id=null;pointer.stroke=null;
@@ -9199,24 +9756,97 @@ function toggleDoc35Plan(owner,key,block){
     };
     canvas.addEventListener('pointerup',finishStroke);
     canvas.addEventListener('pointercancel',finishStroke);
-    refreshTools();redraw();box.append(head,surface,tools);return box;
+    refreshTools();redraw();box.append(head,surface,tools,resizer);return box;
   }
   // 点击计划表某一格之后，插入菜单可以直接往这一格放入画板。
   let v76LastPlanCell=null;
   stage.addEventListener('pointerdown',e=>{
     const cell=e.target.closest('.plan-mini-drop-cell[data-plan-key][data-plan-owner-id]');
     if(cell){v76LastPlanCell={ownerId:cell.dataset.planOwnerId,key:cell.dataset.planKey};}
-    else if(e.target.closest('.topic,.matrix-node,.quadrant-node,.inline-outline-node,.drawing-node'))v76LastPlanCell=null;
+    else if(!e.target.closest('.plan-node'))v76LastPlanCell=null;
   },true);
-  function insertDrawing(){
+  // V83: 与只检查“数据创建成功”的 V82 不同，插入时需保证画布真的显示新绘图板。
+  // 收起节点、大纲型节点、宽计划表旁边，以及其他画布都采用同一套可见性规则。
+  function v83RevealParentChain(id){
+    let t=topicById(id),steps=0;
+    while(t&&steps++<4000){
+      if(t.collapsed)t.collapsed=false;
+      t=t.parentId?topicById(t.parentId):null;
+    }
+  }
+  function v83ShowDrawingCompletely(id){
+    const p=state.positions.get(id);
+    if(!p)return false;
+    const viewW=stage.clientWidth,viewH=stage.clientHeight;
+    if(viewW<=0||viewH<=0)return true;
+    const margin=Math.min(34,viewW*.05,viewH*.07);
+    const maxW=Math.max(150,viewW-2*margin),maxH=Math.max(150,viewH-2*margin);
+    const fit=Math.min(1,maxW/(p.w*state.zoom),maxH/(p.h*state.zoom));
+    if(fit<1){
+      state.zoom=Math.max(MIN_ZOOM,state.zoom*fit);
+      state.panX=viewW/2-(p.x+p.w/2)*state.zoom;
+      state.panY=viewH/2-(p.y+p.h/2)*state.zoom;
+    }else{
+      const left=state.panX+p.x*state.zoom,right=left+p.w*state.zoom;
+      const top=state.panY+p.y*state.zoom,bottom=top+p.h*state.zoom;
+      if(left<margin)state.panX+=margin-left;
+      else if(right>viewW-margin)state.panX-=right-(viewW-margin);
+      if(top<margin)state.panY+=margin-top;
+      else if(bottom>viewH-margin)state.panY-=bottom-(viewH-margin);
+    }
+    applyTransform();return true;
+  }
+  // 下级：连到选中的真实节点；同级：排在它的整个分支之后。
+  function v81InsertDrawingAt(targetId,mode='child'){
+    // 先捕获真正的目标 ID。结束输入等操作可能改写 state.selected。
+    const fixedId=targetId;
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const target=topicById(fixedId);
+    if(!target||!insideActiveBoard(target.id)){
+      notify('请先点击当前画布上想连接的节点，再插入绘图板');return null;
+    }
+    if(mode==='sibling'&&(target.parentId===null||target.id===activeRootId())){
+      notify('中心节点不能添加同级绘图板，请选择下级');return null;
+    }
+    if(mode!=='sibling'&&mode!=='child')return null;
+    const parentId=mode==='child'?target.id:target.parentId;
+    const board={id:makeId(),parentId,text:'绘图板',kind:'drawing',
+      drawing:{strokes:[],images:[],color:'#263444',tool:'pen',expanded:false}};
+    if(mode==='sibling'&&target.detached){
+      const position=state.positions.get(target.id),size=getSize(target);
+      board.detached=true;
+      board.freeX=Number.isFinite(target.freeX)?target.freeX:(position?.x||0);
+      board.freeY=(Number.isFinite(target.freeY)?target.freeY:(position?.y||0))+size.height+24;
+    }
+    const at=subtreeLastIndex(target.id)+1;
+    data.topics.splice(at,0,board);
+    // 新增下级时展开所选父节点；否则它的 collapsed 属性会把刚插入的画板隐藏。
+    v83RevealParentChain(mode==='child'?target.id:parentId);
+    v76LastPlanCell=null;selectedPlanFocus=null;
+    state.selected=board.id;state.matrixSelection=null;
+    scheduleSave('插入'+(mode==='sibling'?'同级':'下级')+'绘图板');
+    render();
+    if(!state.positions.has(board.id)){
+      // 这才是真正的渲染失败，而不只是静默显示“已插入”。
+      data.topics=data.topics.filter(n=>n.id!==board.id);
+      state.selected=target.id;render();
+      notify('绘图板未能显示：目标层级不可见，已取消本次插入');return null;
+    }
+    v83ShowDrawingCompletely(board.id);
+    notify(mode==='sibling'?'已在所选节点下方添加同级绘图板':'已在所选节点右侧添加下级绘图板');
+    return board;
+  }
+  // V82: 只有显式点击“当前计划表单元格”才插入内嵌画板，
+  // 绝不让 V76 缓存的最后点击单元格劫持表外的插入操作。
+  function v82InsertDrawingInPlanCell(){
     if(state.editing)endEditing(true);
     if(state.matrixEditing)settleMatrixEditor(true);
     settlePlanEditor();
     const focused=selectedPlanFocus&&state.selected===selectedPlanFocus.planId
       ?{ownerId:selectedPlanFocus.ownerId,key:selectedPlanFocus.key,afterId:selectedPlanFocus.blockId}:null;
-    // 最新点击的单元格优先，防止沿用上一格的旧选中小节点。
-    const chosen=v76LastPlanCell&&(!focused||focused.ownerId!==v76LastPlanCell.ownerId||focused.key!==v76LastPlanCell.key)
-      ?v76LastPlanCell:(focused||v76LastPlanCell);
+    const chosen=focused||v76LastPlanCell;
     const cellOwner=chosen&&topicById(chosen.ownerId);
     if(cellOwner?.kind==='plan'&&cellOwner.plan){
       const list=planBlockList(cellOwner,chosen.key);
@@ -9232,15 +9862,51 @@ function toggleDoc35Plan(owner,key,block){
       state.selected=cellOwner.id;
       scheduleSave('计划表单元格 · 插入绘图板');render();ensureVisible(cellOwner.id);
       notify('已在所选单元格插入绘图板');
-      return;
+      return item;
     }
-    const parent=topicById(state.selected)?.id||activeRootId();
-    const t={id:makeId(),parentId:parent,text:'绘图板',kind:'drawing',
-      drawing:{strokes:[],color:'#263444',tool:'pen',expanded:false}};
-    data.topics.splice(subtreeLastIndex(parent)+1,0,t);
-    state.selected=t.id;state.matrixSelection=null;
-    scheduleSave('插入绘图板');render();ensureVisible(t.id);
-    notify('已插入绘图板：鼠标或手指绘制，下方切换颜色、铅笔和橡皮擦');
+    notify('请先点击计划表中的目标单元格，再选择“当前计划表单元格”');
+    return null;
+  }
+  // V83: 无论先前点过哪个计划单元格，此入口只操作真实画布主题。
+  function insertDrawing(){
+    const target=topicById(state.selected);
+    if(target&&!insideActiveBoard(target.id)){
+      notify('请先选中当前画布的目标节点，或选择独立绘图板');return null;
+    }
+    return v81InsertDrawingAt(target?.id||activeRootId(),'child');
+  }
+  // 无须选中任何已有节点：在当前屏幕的空白处创建一块独立绘图板。
+  function v82InsertDetachedDrawing(){
+    if(state.editing)endEditing(true);
+    if(state.matrixEditing)settleMatrixEditor(true);
+    settlePlanEditor();
+    const rootId=activeRootId();
+    if(!topicById(rootId))return null;
+    const board={id:makeId(),parentId:rootId,text:'绘图板',kind:'drawing',detached:true,
+      drawing:{strokes:[],images:[],color:'#263444',tool:'pen',expanded:false}};
+    const rect=stage.getBoundingClientRect(),size=getSize(board),zoom=Math.max(.05,state.zoom||1);
+    const middleX=(rect.width*.5-state.panX)/zoom,middleY=(rect.height*.5-state.panY)/zoom;
+    // 避开当前可见节点占用的区域，防止新绘图板盖在表格上。
+    const positions=[...state.positions.entries()].filter(([id])=>insideActiveBoard(id));
+    let xy=null;
+    for(let ring=0;ring<6&&!xy;ring++){
+      const dist=ring*100;
+      const offsets=ring===0?[[0,0]]:[[-dist,0],[dist,0],[0,dist],[0,-dist],[dist,dist],[-dist,dist]];
+      for(const [dx,dy] of offsets){
+        const x=Math.round(middleX-size.width/2+dx),y=Math.round(middleY-size.height/2+dy);
+        const overlaps=positions.some(([,pos])=>x<pos.x+pos.w+18&&x+size.width+18>pos.x&&y<pos.y+pos.h+18&&y+size.height+18>pos.y);
+        if(!overlaps){xy={x,y};break;}
+      }
+    }
+    const fallback={x:Math.round(middleX-size.width/2),y:Math.round(middleY-size.height/2)};
+    board.freeX=(xy||fallback).x;board.freeY=(xy||fallback).y;
+    data.topics.splice(subtreeLastIndex(rootId)+1,0,board);
+    v76LastPlanCell=null;selectedPlanFocus=null;
+    state.selected=board.id;state.matrixSelection=null;
+    scheduleSave('画布空白处新增独立绘图板');render();
+    v83ShowDrawingCompletely(board.id);
+    notify('已在表格外创建独立绘图板，可抓住标题拖动并接到其他主题');
+    return board;
   }
 
   function reconcileRenderedPlanHeights(){
@@ -9307,6 +9973,7 @@ function toggleDoc35Plan(owner,key,block){
         continue;
       }
       const el=document.createElement('div'); el.className='topic'; el.dataset.id=t.id;
+      if(t.images?.length)el.classList.add('has-embedded-images');
       if(children(t.id).length)el.classList.add('has-fold-children');
       el.tabIndex=0; el.setAttribute('role','button');
       el.setAttribute('aria-label',t.text||'新主题');
@@ -9316,10 +9983,12 @@ function toggleDoc35Plan(owner,key,block){
       const title=document.createElement('span');title.className='topic-text';renderMarkedText(title,t.text||'新主题',t.marks||[]);
       if(t.textMode)el.classList.add('topic-text-mode');
       el.append(title);
+      if(t.images?.length)el.append(v78RenderImageStage(t,'节点'));
       if(t.textMode)el.append(doc37EnableIcon(makeDoc35Icon(),()=>{
         selectInteractive(t.id);
         openDoc35({kind:'topic',id:t.id});
       }));
+      v80InstallNodeDrop(el,t,'普通节点');
       el.addEventListener('pointerdown',e=>prepareTopicDrag(e,t.id,el));
       el.addEventListener('click',e=>{
         if(Date.now()<freeIgnoreClickUntil){e.preventDefault();e.stopPropagation();return;}
@@ -11114,6 +11783,12 @@ function toggleDoc35Plan(owner,key,block){
   $('contextToggleText').addEventListener('click',e=>{
     e.preventDefault();e.stopPropagation();const id=state.selected;hideDeleteContext();toggleDoc35Topic(id);
   });
+  $('contextInsertDrawingChild').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();const id=state.selected;hideDeleteContext();v81InsertDrawingAt(id,'child');
+  });
+  $('contextInsertDrawingSibling').addEventListener('click',e=>{
+    e.preventDefault();e.stopPropagation();const id=state.selected;hideDeleteContext();v81InsertDrawingAt(id,'sibling');
+  });
   $('contextDelete').addEventListener('click',e=>{e.stopPropagation();deleteCurrentSelection();});
   $('deleteContext').addEventListener('pointerdown',e=>e.stopPropagation());
   $('newBtn').addEventListener('click',createBoard);
@@ -11160,6 +11835,16 @@ function toggleDoc35Plan(owner,key,block){
   });
   $('insertMatrixItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertMatrix();});
   $('insertDrawingItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertDrawing();});
+  $('insertDrawingSiblingItem').addEventListener('click',e=>{
+    e.stopPropagation();setMenu(false);v81InsertDrawingAt(state.selected,'sibling');
+  });
+  $('insertDrawingDetachedItem').addEventListener('click',e=>{
+    e.stopPropagation();setMenu(false);v82InsertDetachedDrawing();
+  });
+  $('insertDrawingCellItem').addEventListener('click',e=>{
+    e.stopPropagation();setMenu(false);v82InsertDrawingInPlanCell();
+  });
+  $('insertPictureItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);v78InsertPicture();});
   $('insertQuadrantItem').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertQuadrant();});
   $('insertWeeklyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('week');});
   $('insertMonthlyPlan').addEventListener('click',e=>{e.stopPropagation();setMenu(false);insertPlan('month');});
