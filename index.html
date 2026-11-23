@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#333436">
-<title>DIY记录 V84</title>
+<title>DIY记录 V92</title>
 <style>
   :root {
     color-scheme: dark;
@@ -789,7 +789,7 @@
 .plan-block-wrap .plan-block-list{min-height:30px;}
 .plan-block-wrap .plan-mini-block{overflow:visible!important;position:relative;padding-right:31px!important;}
 .plan-block-wrap .plan-mini-plus{opacity:0;visibility:hidden;pointer-events:none;z-index:50!important;}
-.plan-block-wrap .plan-mini-block{margin-bottom:27px!important;}
+.plan-block-wrap .plan-mini-block{margin-bottom:0!important;}
 .plan-block-wrap .plan-mini-plus.child{right:3px;top:50%;bottom:auto;left:auto;transform:translateY(-50%);}
 .plan-block-wrap .plan-mini-plus.sibling{top:calc(100% - 14px);bottom:auto;left:50%;right:auto;transform:translateX(-50%);}
 .plan-block-wrap .plan-mini-block:hover>.plan-mini-plus,
@@ -874,6 +874,24 @@
 .plan-block-wrap .plan-mini-with-images>.v78-image-stage{height:152px;width:min(220px,100%);max-width:100%;}
 .drawing-surface canvas{cursor:crosshair;}
 .drawing-node .drawing-tools button.v78-image-move.is-active{color:#086eac;background:#d9f1ff;border-color:#4aa2e6;}
+
+/* V91: The text, not hidden + / resize buttons, owns the card width. */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:not(.plan-mini-drawing):not(.is-editing){
+  padding:4px 8px!important;
+  min-width:0!important;
+  gap:0!important;
+}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:not(.plan-mini-drawing)>.plan-mini-text{
+  padding:0!important;margin:0!important;min-width:0!important;
+  width:100%!important;box-sizing:border-box!important;
+}
+/* Inline editing overlay has its own 9px padding and remains full-width. */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing{padding:0!important;}
+/* V92: The in-progress editor must never inherit the narrow final card width. */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing{max-width:none!important;min-width:138px!important;overflow:visible!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing .plan-mini-live-wrap{min-width:0!important;width:100%!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing .plan-mini-editor{min-width:0!important;width:100%!important;white-space:pre!important;overflow-wrap:normal!important;word-break:normal!important;overflow-x:auto!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing .plan-mini-live-visual{white-space:pre!important;overflow-wrap:normal!important;word-break:normal!important;}
 </style>
 <!-- PWA 应用：在 HTTPS 网站安装后可独立打开 -->
 <link rel="manifest" href="./manifest.webmanifest">
@@ -883,7 +901,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="1.0.84">
+<meta name="app-build" content="1.0.92">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -1591,6 +1609,15 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-block-wrap .plan-mini-block.is-source{border-color:#2a87e3!important;border-style:solid!important;}
 .plan-block-wrap .plan-mini-block.is-editing{padding:0;outline:2px solid #3098ef;outline-offset:1px;}
 .plan-mini-editor{box-sizing:border-box;display:block;width:100%;min-width:0;min-height:35px;resize:none;padding:7px 9px;background:var(--matrix-bg,#fff);border:0;border-radius:9px;outline:0;color:var(--matrix-ink,#17191e);font:500 14px/1.45 system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;overflow:hidden;white-space:pre-wrap;overflow-wrap:anywhere;}
+/* V88：计划小节点默认按内容宽度显示，并支持右下角拖动调宽高。 */
+.plan-block-wrap .plan-block-list{align-items:flex-start;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block{align-self:flex-start!important;width:auto;max-width:100%!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-text{width:100%;flex:1 1 auto;min-width:0;}
+.plan-mini-resizer{position:absolute;right:4px;bottom:4px;width:16px;height:16px;border-radius:5px;border:1px solid #6fb7f2;background:rgba(42,141,230,.12);opacity:0;pointer-events:none;cursor:nwse-resize;touch-action:none;z-index:66;}
+.plan-mini-resizer::before{content:'';position:absolute;right:2px;bottom:2px;width:8px;height:8px;border-right:2px solid #238fe7;border-bottom:2px solid #238fe7;border-radius:1px;}
+.plan-mini-block:hover>.plan-mini-resizer,.plan-mini-block.is-active>.plan-mini-resizer,.plan-mini-block.is-editing>.plan-mini-resizer{opacity:1;pointer-events:auto;}
+.plan-mini-block.is-editing{align-self:flex-start!important;max-width:100%!important;}
+.plan-mini-block.is-editing .plan-mini-live-wrap{width:100%;}
 .plan-block-wrap .plan-block-empty{display:none!important;}
 .plan-block-wrap .plan-block-add{position:absolute;right:0;bottom:0;z-index:3;min-height:22px!important;height:22px;width:22px;padding:0!important;border:1px solid #61a8ef;border-radius:50%;display:grid;place-items:center;background:var(--matrix-bg,#fff);color:#2786da;font:700 18px/1 system-ui;box-shadow:0 1px 5px #00000014;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .13s ease;}
 .plan-block-wrap:hover .plan-block-add,.plan-block-wrap:focus-within .plan-block-add,.plan-block-wrap .plan-block-add:focus-visible{opacity:1;visibility:visible;pointer-events:auto;}
@@ -1630,6 +1657,30 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-block-wrap .plan-link-child.is-link-current{border-color:var(--blue,#2388e8);}
 @media(pointer:coarse){.plan-block-wrap .plan-link-chevron{width:27px;min-width:27px;height:32px;}}
 
+/* V86: 表格内事项紧凑排列：消除旧版每个小块强制 27px 下边距。
+   保留浮动「同级 +」的悬停行为，不需要为隐藏按钮预留一整行。 */
+.plan-node.plan-inline .plan-note-wrap.plan-block-wrap{padding:5px!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-block-board{padding:0 0 4px!important;min-height:28px!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-block-list{gap:4px;min-height:0!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:not(.plan-mini-drawing){min-height:30px;padding-top:4px;padding-bottom:4px;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block{margin-bottom:0!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-main{gap:3px;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-branches{gap:4px;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-fold{gap:4px;margin-top:3px;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-line{gap:10px;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-line.tree-stack{gap:5px;}
+/* 同级加号移到卡片底部略靠内处：避开文字双击中心与表格横线抓手。 */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-plus.sibling{
+  left:50%!important;right:auto!important;top:calc(100% - 11px)!important;bottom:auto!important;
+  transform:translateX(-50%)!important;
+}
+/* 抓手依附真实单元格分界线，蓝色反馈不再画在空白位置。 */
+.plan-node.plan-inline .plan-row-resizer{z-index:35;}
+.plan-node.plan-inline .plan-row-resizer:hover:before,
+.plan-node.plan-inline .plan-row-resizer.resizing:before{top:7px;height:2px;}
+@media(pointer:coarse){
+ .plan-node.plan-inline .plan-block-wrap .plan-block-board{padding-bottom:4px!important;}
+}
 </style>
 
 <style id="v35-text-node-style">
@@ -1907,6 +1958,74 @@ body{color:var(--app-ink,#f5f5f6);}
   /* 触屏长按优先拖动小块；要选择文字时先双击进入原位编辑。 */
   .plan-block-wrap .plan-mini-text{user-select:none!important;-webkit-user-select:none!important;-webkit-touch-callout:none;}
 }
+
+/* V89: plans use intrinsic card widths just like regular topics. The table column expands when necessary. */
+.plan-node.plan-inline .plan-block-wrap .plan-block-list{align-items:flex-start!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:not(.plan-mini-drawing){flex:none!important;min-width:0!important;max-width:none!important;box-sizing:border-box!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-tree-main>.plan-mini-block:not(.plan-mini-drawing){max-width:100%!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-text{width:auto!important;min-width:0!important;flex:1 1 auto!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-editing{padding:0!important;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-live-wrap{width:100%!important;min-width:0!important;flex:1 1 auto!important;}
+.plan-node.plan-inline .plan-mini-live-wrap>.plan-mini-editor{box-sizing:border-box!important;width:100%!important;min-width:0!important;}
+/* V90: Use the EXACT interaction geometry of ordinary topic nodes: X on right border,
+   Y on bottom border. No blue floating controls covering the text. */
+.plan-node.plan-inline .plan-mini-resizer{
+  position:absolute!important;box-sizing:border-box!important;z-index:80!important;
+  display:block!important;background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;margin:0!important;padding:0!important;color:transparent!important;
+  touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;
+  opacity:0;pointer-events:none;
+}
+.plan-node.plan-inline .plan-mini-resizer-x{
+  right:-11px!important;left:auto!important;top:4px!important;bottom:4px!important;
+  width:22px!important;height:auto!important;cursor:col-resize!important;
+}
+.plan-node.plan-inline .plan-mini-resizer-y{
+  bottom:-11px!important;top:auto!important;left:8px!important;right:8px!important;
+  height:22px!important;width:auto!important;cursor:row-resize!important;
+}
+.plan-node.plan-inline .plan-mini-resizer::before{
+  content:''!important;position:absolute!important;pointer-events:none!important;
+  background:#20b9ff!important;opacity:0!important;
+}
+.plan-node.plan-inline .plan-mini-resizer-x::before{left:10px!important;top:0!important;bottom:0!important;width:3px!important;}
+.plan-node.plan-inline .plan-mini-resizer-y::before{top:10px!important;left:0!important;right:0!important;height:3px!important;}
+.plan-node.plan-inline .plan-mini-resizer::after{
+  position:absolute!important;pointer-events:none!important;box-sizing:border-box!important;
+  background:#168fc9!important;border:1px solid #68c7ff!important;border-radius:6px!important;
+  color:#fff!important;font:700 16px/21px system-ui!important;text-align:center!important;
+  white-space:nowrap!important;
+}
+.plan-node.plan-inline .plan-mini-resizer-x::after{
+  content:'↔'!important;left:50%!important;top:50%!important;
+  transform:translate(-50%,-50%)!important;padding:1px 5px!important;
+}
+.plan-node.plan-inline .plan-mini-resizer-y::after{
+  content:'↕'!important;top:50%!important;left:50%!important;
+  transform:translate(-50%,-50%)!important;padding:0 8px!important;
+}
+.plan-node.plan-inline .plan-mini-block:hover>.plan-mini-resizer,
+.plan-node.plan-inline .plan-mini-block.is-active>.plan-mini-resizer,
+.plan-node.plan-inline .plan-mini-resizer.resizing{
+  opacity:1!important;pointer-events:auto!important;
+}
+.plan-node.plan-inline .plan-mini-resizer:hover::before,
+.plan-node.plan-inline .plan-mini-resizer.resizing::before{opacity:1!important;}
+.plan-node.plan-inline .plan-mini-resizer.resizing{cursor:grabbing!important;}
+/* Keep the add-child/add-sibling controls away from the border resize handles. */
+.plan-node.plan-inline .plan-mini-block:not(.plan-mini-drawing)>.plan-mini-plus.child{
+  right:-34px!important;left:auto!important;top:50%!important;bottom:auto!important;
+  transform:translateY(-50%)!important;
+}
+.plan-node.plan-inline .plan-mini-block:not(.plan-mini-drawing)>.plan-mini-plus.sibling{
+  top:calc(100% + 12px)!important;bottom:auto!important;left:50%!important;right:auto!important;
+  transform:translateX(-50%)!important;
+}
+/* Put active card grips above the category header's hover-only +/-/delete toolbar. */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:hover,
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-active,
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block:has(.plan-mini-resizer.resizing){z-index:100!important;}
+
 </style>
 </head>
 <body>
@@ -2812,8 +2931,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const categories=cleanAxis(p.categories,20),periods=cleanAxis(p.periods,40);
         if(!categories.length||!periods.length||new Set(categories.map(x=>x.id)).size!==categories.length||new Set(periods.map(x=>x.id)).size!==periods.length)return null;
         const validKeys=new Set(categories.flatMap(c=>periods.map(d=>c.id+'|'+d.id)));
-        // 独立周分类事项不属于周一~周日，专供月周分类一对一关联。
-        if(p.periodKind!=='month')for(const c of categories)validKeys.add(c.id+'|__categoryMemo__');
+        // V85：月、周计划的分类表头都可以拆成独立小块；该专属单元格必须经过导入/保存校验。
+        for(const c of categories)validKeys.add(c.id+'|__categoryMemo__');
         const cells={};
         for(const [k,v] of Object.entries(p.cells))if(validKeys.has(k)&&typeof v==='string')cells[k]=v.slice(0,30000);
         const blockCells={};
@@ -2834,7 +2953,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
               ...(x.textMode===true?{textMode:true}:{}),
               ...(typeof x.docHTML==='string'?{docHTML:x.docHTML.slice(0,300000)}:{}),
               ...(x.drawing&&typeof x.drawing==='object'?{drawing:v76CleanDrawing(x.drawing)}:{}),
-              ...(Array.isArray(x.images)?{images:v78CleanImages(x.images,5)}:{})
+              ...(Array.isArray(x.images)?{images:v78CleanImages(x.images,5)}:{}),
+              // V89: block width and min-height survive local import/export and cloud normalization.
+              ...(Number.isFinite(Number(x.boxWidth))&&Number(x.boxWidth)>=88&&Number(x.boxWidth)<=1100?{boxWidth:Math.round(Number(x.boxWidth))}:{}),
+              ...(Number.isFinite(Number(x.boxMinHeight))&&Number(x.boxMinHeight)>=30&&Number(x.boxMinHeight)<=2000?{boxMinHeight:Math.round(Number(x.boxMinHeight))}:{})
             }));
           }
         }
@@ -4004,6 +4126,36 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const hasHiddenChildren=visible.length<all.length;
     return {visible,hasHiddenChildren};
   }
+  let planMiniWidthProbeCanvas=null;
+  // V91: The width of a plan note is its longest REAL text line plus the SAME 8px
+  // inset used by the rendered CSS. Add controls OUTSIDE the node border, never as
+  // phantom right padding. No longer force a wide 104px minimum for short notes.
+  const PLAN_MINI_TEXT_INSET=8;
+  const PLAN_MINI_MIN_WIDTH=38;
+  const PLAN_MINI_AUTO_MAX_WIDTH=950;
+  function planMiniTextNaturalPx(text){
+    if(!planMiniWidthProbeCanvas)planMiniWidthProbeCanvas=document.createElement('canvas');
+    const ctx=planMiniWidthProbeCanvas.getContext('2d');
+    ctx.font='500 14px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
+    let longest=0;
+    for(const line of String(text||'事项').split(/\r?\n/))longest=Math.max(longest,ctx.measureText(line||' ').width);
+    return Math.ceil(longest+PLAN_MINI_TEXT_INSET*2+2+2); // padding, borders, 2px rounding margin
+  }
+  function planMiniRenderWidth(block,cellWidth){
+    const available=Math.max(PLAN_MINI_MIN_WIDTH,Math.round((Number(cellWidth)||220)-14));
+    if(block?.drawing)return Math.max(88,Math.min(available,Number(block.drawing.inlineWidth)||(block.drawing.expanded?420:300)));
+    const custom=Number(block?.boxWidth);
+    if(Number.isFinite(custom)&&custom>=PLAN_MINI_MIN_WIDTH)return Math.round(Math.min(1200,custom));
+    let natural=planMiniTextNaturalPx(block?.text||'事项');
+    if(block?.images?.length)natural=Math.max(natural,170);
+    // The owning column is expanded by getPlanMetrics BEFORE this function renders.
+    return Math.round(Math.max(PLAN_MINI_MIN_WIDTH,Math.min(available,PLAN_MINI_AUTO_MAX_WIDTH,natural)));
+  }
+  function planMiniRenderHeight(block,rowHeight=0){
+    const custom=Number(block?.boxMinHeight)||0;
+    return Math.round(Math.max(30,custom,rowHeight||0));
+  }
+
   function planBlockAutoHeight(owner,key,width,header=false){
     const blocks=planVisibleBlockInfo(owner,key).visible;
     if(!planMiniMeasureProbe){
@@ -4015,18 +4167,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
       document.body.append(planMiniMeasureProbe);
     }
-    // 两侧格子内边距 + 卡片内部边距，按真实可用宽度测量换行。
-    planMiniMeasureProbe.style.width=Math.max(54,width-65)+'px';
-    let content=16+23;
-    if(!blocks.length)return header?Math.max(52,content+10):Math.max(64,content+10);
+    // V88：每个小节点都按自己的实际宽度测量，不再一律套用整格宽度。
+    let content=10+4;
+    if(!blocks.length)return header?48:46;
     const blockHeights=new Map();
     for(const block of blocks){
-      planMiniMeasureProbe.textContent=String(block.text||' ')+'\u200b';
+      const renderWidth=planMiniRenderWidth(block,width);
+      planMiniMeasureProbe.style.width=Math.max(10,renderWidth-PLAN_MINI_TEXT_INSET*2-2)+'px';
+      planMiniMeasureProbe.textContent=String(block.text||' ')+'​';
       const textHeight=Math.ceil(planMiniMeasureProbe.getBoundingClientRect().height);
-      // V77: embedded sketch canvases occupy a real 230/330px box, not a 36px text card.
       const boardHeight=block.drawing?(Number(block.drawing.inlineHeight)|| (block.drawing.expanded?330:230))+10:0;
       const imagesHeight=block.images?.length?170:0;
-      blockHeights.set(block.id,Math.max(36,textHeight+14,boardHeight,textHeight+14+imagesHeight));
+      blockHeights.set(block.id,Math.max(30,textHeight+10,boardHeight,textHeight+10+imagesHeight,Number(block.boxMinHeight)||0));
     }
     if(blocks.some(x=>x.groupParentId&&x.groupLayout==='branch')){
       // Side branches use horizontal space. Counting every child vertically caused
@@ -4056,18 +4208,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         const sideHeight=side.reduce((sum,item,index)=>sum+branchHeight(item,sideAvail,depth+1)+(index?8:0),0);
         const belowAvail=Math.max(68,available-23);
         const belowHeight=below.reduce((sum,item,index)=>sum+branchHeight(item,belowAvail,depth+1)+(index?6:0),0);
-        const ownHeight=Math.max(blockHeights.get(block.id)||36,
-          36+Math.max(0,Math.ceil(String(block.text||'').length*14/Math.max(55,width-39))-1)*20);
+        const ownHeight=Math.max(blockHeights.get(block.id)||30,
+          30+Math.max(0,Math.ceil(String(block.text||'').length*14/Math.max(55,width-39))-1)*20);
         return (horizontal?Math.max(ownHeight,sideHeight):ownHeight+(side.length?sideHeight+9:0))+(belowHeight?belowHeight+5:0);
       }
       const available=Math.max(80,width-32);
       const roots=blocks.filter(x=>!x.groupParentId||!ids.has(x.groupParentId));
       const heights=roots.map(x=>branchHeight(x,available));
       for(const block of blocks)if(!visited.has(block.id))heights.push(branchHeight(block,available));
-      content+=heights.reduce((sum,v)=>sum+v,0)+Math.max(0,heights.length-1)*6;
+      content+=heights.reduce((sum,v)=>sum+v,0)+Math.max(0,heights.length-1)*4;
     }else{
       for(const value of blockHeights.values())content+=value;
-      content+=Math.max(0,blocks.length-1)*6;
+      content+=Math.max(0,blocks.length-1)*4;
     }
     // V57: 收起状态只算可见内容，展开时必须按所有可见事项完整撑高。
     // 不再使用 V56 的 520px 人为上限，防止内容看起来“丢失”。
@@ -4112,15 +4264,45 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const widthMap=t.plan.colSizes[group],heightMap=t.plan.rowSizes[group];
     const widths=[Math.max(100,Number(widthMap.__corner__)||MATRIX_LABEL_WIDTH),
       ...axes.cols.map(col=>Math.max(100,Number(widthMap[col.id])||MATRIX_CONTENT_WIDTH))];
-    let headerAuto=Math.max(MATRIX_MIN_HEAD_HEIGHT,
+    // V90: Fit normal text cards BEFORE measuring the table. V89 only widened columns
+    // while typing/resizing, so already-saved cards still wrapped on first display.
+    // Explicitly resized nodes keep their chosen width, including intentional wrapping.
+    function desiredCellWidth(owner,key){
+      let wanted=0;
+      for(const block of planVisibleBlockInfo(owner,key).visible){
+        const explicit=Number(block.boxWidth);
+        let cardWidth;
+        if(block.drawing)cardWidth=Number(block.drawing.inlineWidth)||(block.drawing.expanded?420:300);
+        else cardWidth=Number.isFinite(explicit)&&explicit>=88
+          ?explicit:Math.max(PLAN_MINI_MIN_WIDTH,planMiniTextNaturalPx(block.text||'事项'),block.images?.length?170:0);
+        wanted=Math.max(wanted,Math.min(1100,cardWidth+36));
+      }
+      return wanted;
+    }
+    if(axes.rowAxis==='categories')for(const row of axes.rows){
+      const slot=planCategoryHeaderSlot(t,row);
+      widths[0]=Math.max(widths[0],desiredCellWidth(slot.owner,planCellKey(slot.cat,slot.period)));
+    }
+    for(let j=0;j<axes.cols.length;j++){
+      const col=axes.cols[j];
+      if(axes.colAxis==='categories'){
+        const slot=planCategoryHeaderSlot(t,col);
+        widths[j+1]=Math.max(widths[j+1],desiredCellWidth(slot.owner,planCellKey(slot.cat,slot.period)));
+      }
+      for(const row of axes.rows){
+        const cat=group==='date'?row:col,period=group==='date'?col:row;
+        widths[j+1]=Math.max(widths[j+1],desiredCellWidth(t,planCellKey(cat,period)));
+      }
+    }
+    let headerAuto=Math.max(58,
       measureCellHeight(t.plan.periodKind==='month'?'分类 / 周':'分类 / 日期',widths[0],true));
     let headerFolded=false;
     for(let j=0;j<axes.cols.length;j++){
       const col=axes.cols[j];
-      if(t.plan.periodKind==='week'&&axes.colAxis==='categories'){
-        // 周计划分类表头和正文格使用同一套“只算可见事项”规则。
-        const slot=weekCategorySlot(t,col),key=planCellKey(slot.cat,slot.period);
-        headerAuto=Math.max(headerAuto,52,planBlockAutoHeight(slot.owner,key,widths[j+1],true));
+      if(axes.colAxis==='categories'){
+        // V85：月、周分类表头均使用小块树测量（仅计算展开后可见的小块）。
+        const slot=planCategoryHeaderSlot(t,col),key=planCellKey(slot.cat,slot.period);
+        headerAuto=Math.max(headerAuto,48,planBlockAutoHeight(slot.owner,key,widths[j+1],true));
         if(planVisibleBlockInfo(slot.owner,key).hasHiddenChildren)headerFolded=true;
       }else headerAuto=Math.max(headerAuto,measureCellHeight(col.name,widths[j+1],true));
     }
@@ -4128,13 +4310,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     for(const row of axes.rows){
       let labelHeight=measureCellHeight(row.name,widths[0],true);
       let rowFolded=false;
-      if(t.plan.periodKind==='week'&&axes.rowAxis==='categories'){
-        // 横纵切换后，分类表头也只保留同一份分类事项。
-        const slot=weekCategorySlot(t,row),key=planCellKey(slot.cat,slot.period);
-        labelHeight=Math.max(52,planBlockAutoHeight(slot.owner,key,widths[0],true));
+      if(axes.rowAxis==='categories'){
+        // V85：横纵切换后月、周分类表头仍然显示同一组小块。
+        const slot=planCategoryHeaderSlot(t,row),key=planCellKey(slot.cat,slot.period);
+        labelHeight=Math.max(48,planBlockAutoHeight(slot.owner,key,widths[0],true));
         if(planVisibleBlockInfo(slot.owner,key).hasHiddenChildren)rowFolded=true;
       }
-      let autoHeight=Math.max(MATRIX_MIN_ROW_HEIGHT,labelHeight);
+      let autoHeight=Math.max(50,labelHeight);
       for(let c=0;c<axes.cols.length;c++){
         const col=axes.cols[c];
         const cat=group==='date'?row:col,period=group==='date'?col:row;
@@ -4146,6 +4328,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       heights.push(planAutoHeightRow(t,row.id,rowFolded,autoHeight,heightMap));
     }
     return {axes,widths,heights,width:widths.reduce((a,b)=>a+b,0),height:heights.reduce((a,b)=>a+b,0)+2};
+  }
+  // V86：抓手必须与浏览器真正绘出的横线重合。之前使用预测高度的累计值，
+  // 当单元格被内容撑高时，第 2、3、4 行抓手会逐行偏离，造成无法抓住原线和假横线。
+  function syncPlanDividerPositions(wrap){
+    if(!wrap?.isConnected)return;
+    const table=wrap.querySelector('.plan-table-live');if(!table)return;
+    const rows=Array.from(table.rows);
+    const root=wrap.getBoundingClientRect();
+    if(!root.width||!root.height)return;
+    const scaleY=root.height/Math.max(1,wrap.offsetHeight);
+    const scaleX=root.width/Math.max(1,wrap.offsetWidth);
+    for(const handle of wrap.querySelectorAll(':scope > .plan-row-resizer')){
+      const i=Number(handle.dataset.boundary)-1;
+      if(!rows[i])continue;
+      const line=rows[i].getBoundingClientRect().bottom;
+      handle.style.top=((line-root.top)/scaleY)+'px';
+    }
+    // 列边界也按表格表头真实几何位置，不受自动列宽和缩放误差影响。
+    const head=rows[0];
+    if(head)for(const handle of wrap.querySelectorAll(':scope > .plan-col-resizer')){
+      const i=Number(handle.dataset.boundary)-1;
+      const cell=head.cells[i];if(!cell)continue;
+      handle.style.left=((cell.getBoundingClientRect().right-root.left)/scaleX)+'px';
+    }
+  }
+  // V87：上一版虽然有“按真实几何重定位”的函数，但正常打开表格时没有立即执行，
+  // 导致用户第一次看到/操作的仍是旧算法摆出来的假横线。这里统一把初次渲染、
+  // 二次布局、窗口缩放后的重定位都排队到下一帧，确保“显示的线”和“可拖的线”永远同一条。
+  function queuePlanDividerSync(wrap){
+    if(!wrap)return;
+    if(wrap.__planDividerSyncQueued)return;
+    wrap.__planDividerSyncQueued=true;
+    requestAnimationFrame(()=>{
+      wrap.__planDividerSyncQueued=false;
+      if(!wrap.isConnected)return;
+      syncPlanDividerPositions(wrap);
+      requestAnimationFrame(()=>{if(wrap.isConnected)syncPlanDividerPositions(wrap);});
+    });
   }
   let planGeometryQueued=false;
   function schedulePlanGeometry(){
@@ -4171,9 +4391,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         el.querySelectorAll('.plan-col-resizer').forEach(handle=>{
           const index=Number(handle.dataset.boundary);handle.style.left=d.widths.slice(0,index).reduce((a,b)=>a+b,0)+'px';
         });
-        el.querySelectorAll('.plan-row-resizer').forEach(handle=>{
-          const index=Number(handle.dataset.boundary);handle.style.top=d.heights.slice(0,index).reduce((a,b)=>a+b,0)+'px';
-        });
+        // DOM 已更新行高：马上用真实 tr 边界重定位，而不是预测值累加。
+        syncPlanDividerPositions(el);
+        queuePlanDividerSync(el);
       }
     });
   }
@@ -4235,6 +4455,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     }
   }
+
+  window.addEventListener('resize',()=>{
+    document.querySelectorAll('.plan-node.plan-inline').forEach(wrap=>queuePlanDividerSync(wrap));
+  });
 
   function currentMapDensity(){
     const value=Number(topicById(ROOT_ID)?.mapDensity);
@@ -5159,6 +5383,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return b?{owner:b.month,cat:b.monthCat,period:b.period,linked:true}:
       {owner:week,cat,period:WEEK_CATEGORY_PERIOD,linked:false};
   }
+  // V85：月计划的左侧分类标题原本只有一个不可拆分的文字轴，现在与周计划一样
+  // 使用 blockCells 中的小块树。保留各分类的原文字作为首个小块，不覆盖任意周的真实进度格。
+  function planCategoryHeaderSlot(t,cat){
+    if(t.plan.periodKind==='week')return weekCategorySlot(t,cat);
+    planStableFields(t);
+    const key=planCellKey(cat,WEEK_CATEGORY_PERIOD);
+    if(!Object.hasOwn(t.plan.blockCells,key)&&!Object.hasOwn(t.plan.cells,key)){
+      const label=String(cat.name||'分类').trim()||'分类';
+      t.plan.blockCells[key]=[{id:makeId(),text:label,linkId:null}];
+      t.plan.cells[key]=label;
+    }
+    return {owner:t,cat,period:WEEK_CATEGORY_PERIOD,linked:false};
+  }
   function matchPlanCategories(month,week){
     const monthCats=month.plan.categories,weekCats=week.plan.categories;
     const used=new Set(),map={};
@@ -5298,12 +5535,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const box=document.querySelector('#planFocusOverlay .plan-node[data-id="'+t.id+'"]')||document.querySelector('.plan-node[data-id="'+t.id+'"]');
     const title=[...box?.querySelectorAll('.plan-axis-target')||[]].find(x=>x.dataset.axis===axis&&x.dataset.axisId===next.id);
     if(title)startPlanAxisEditing(t,axis,next.id,title);
-    else if(t.plan.periodKind==='week'&&axis==='categories'){
-      // 周计划的分类名不再占据可见表头，新分类直接聚焦它唯一的事项格。
-      const header=[...box?.querySelectorAll('.plan-linked-week-memo')||[]]
-        .find(x=>x.dataset.weekCategoryId===next.id);
+    else if(axis==='categories'){
+      // V85：新建月分类时直接进入该分类的首个小块；周分类则继续直接创建小块。
+      const header=[...box?.querySelectorAll('.plan-category-memo')||[]]
+        .find(x=>x.dataset.planCategoryId===next.id);
+      const slot=planCategoryHeaderSlot(t,next),key=planCellKey(slot.cat,slot.period);
+      const first=header?.querySelector('.plan-mini-block');
       const btn=header?.querySelector('.plan-block-add');
-      if(btn)openPlanMiniEditor(t,planCellKey(next,WEEK_CATEGORY_PERIOD),null,btn);
+      if(first)openPlanMiniEditor(slot.owner,key,first.dataset.blockId,first);
+      else if(btn)openPlanMiniEditor(slot.owner,key,null,btn);
     }
   }
   function planDeleteAxis(t,axis,id){
@@ -6304,15 +6544,56 @@ function toggleDoc35Plan(owner,key,block){
       if(afterNode&&afterNode.parentElement===list)afterNode.after(host);else list.append(host);
     }else host.classList.add('is-editing');
     // 镜像层与可编辑 textarea 采用同尺寸、字体、间距；默认不参与鼠标事件。
+    // V92: Editing has its own minimum horizontal width. The old node may be just
+    // 38-60px wide and a grouped/branch node has an additional frozen tree-main
+    // width and max-width:100%. Merely increasing the card's CSS width never
+    // widened the actual textarea; this is why pinyin became one character per row.
+    const cell=target.closest('td,th');
+    const cellWidth=Math.max(140,cell?.clientWidth||target.closest('.plan-block-wrap')?.clientWidth||220);
+    const editMinWidth=138,editMaxWidth=950;
+    const existingNatural=planMiniTextNaturalPx(originalText||' ');
+    const preferredWidth=Math.min(editMaxWidth,Math.max(editMinWidth,existingNatural+24,Number(existing?.boxWidth)||0));
+    host.style.minHeight=(existing?planMiniRenderHeight(existing,target.getBoundingClientRect().height/Math.max(.25,state.zoom)):35)+'px';
     const liveWrap=document.createElement('div');liveWrap.className='plan-mini-live-wrap';
     const liveVisual=document.createElement('div');liveVisual.className='plan-mini-live-visual';
     liveVisual.setAttribute('aria-hidden','true');
+    // Do not soft-wrap an unfinished Chinese IME composition or English spelling.
+    // Explicit Enter/Shift+Enter line breaks remain visible in both layers.
+    editor.wrap='off';
     liveWrap.append(liveVisual,editor);host.replaceChildren(liveWrap);
-    const grow=()=>{
+    let previewWidth=0;
+    const fitEditor=(extraComposition='')=>{
+      // Measure the entire currently composed line, not just the saved text.
+      let widthText=editor.value||' ';
+      if(extraComposition && !widthText.includes(extraComposition))widthText+=extraComposition;
+      const wanted=Math.min(editMaxWidth,Math.max(editMinWidth,planMiniTextNaturalPx(widthText)+24,Number(existing?.boxWidth)||0));
+      const targetWidth=Math.max(previewWidth,wanted);
+      if(targetWidth!==previewWidth){
+        previewWidth=targetWidth;
+        // Inline !important overrides old width:100% and max-width:100% rules.
+        host.style.setProperty('width',targetWidth+'px','important');
+        host.style.setProperty('min-width',targetWidth+'px','important');
+        host.style.setProperty('max-width','none','important');
+        // A plan branch uses a separate frozen width on .plan-mini-tree-main:
+        // expand that ancestor as well, otherwise editor and its mirror remain narrow.
+        const main=host.parentElement?.classList.contains('plan-mini-tree-main')?host.parentElement:null;
+        if(main){
+          main.style.setProperty('width',targetWidth+'px','important');
+          main.style.setProperty('min-width',targetWidth+'px','important');
+          main.style.setProperty('max-width','none','important');
+          main.style.setProperty('flex','0 0 '+targetWidth+'px','important');
+        }
+        planMiniEnsureColumnRoom(host,targetWidth);
+      }
       editor.style.height='auto';editor.style.height=Math.max(35,editor.scrollHeight+2)+'px';
       liveVisual.style.height=editor.style.height;
       syncPlanMiniLiveColor(editor);
     };
+    const grow=()=>fitEditor();
+    fitEditor();
+    // Some Chinese input methods issue compositionupdate before an input event.
+    editor.addEventListener('compositionupdate',e=>fitEditor(e.data||''));
+    editor.addEventListener('compositionend',()=>fitEditor());
     editor.addEventListener('scroll',()=>{
       liveVisual.scrollTop=editor.scrollTop;
       liveVisual.scrollLeft=editor.scrollLeft;
@@ -7015,22 +7296,14 @@ function toggleDoc35Plan(owner,key,block){
     row.insertBefore(button,row.querySelector('.plan-mini-text')||row.firstChild);
   }
 
-  // V64: Width follows actual text length (and only necessary text controls). No shared fixed width.
+  // V91: branch tree uses the same width formula as ordinary plan cards.
   function planMiniNaturalWidth(item,row,maxWidth){
     if(item?.drawing)return Math.max(86,Math.min(maxWidth,300));
     if(item?.images?.length)return Math.max(100,Math.min(maxWidth,232));
-    const text=String(item.text||'事项');
-    const canvas=planMiniNaturalWidth.canvas||(planMiniNaturalWidth.canvas=document.createElement('canvas'));
-    const ctx=canvas.getContext('2d');
-    // Nodes are still detached when measured, so getComputedStyle().font is empty here.
-    ctx.font='500 14px system-ui, "PingFang SC", "Microsoft YaHei", sans-serif';
-    let longest=0;
-    for(const line of text.split(/\r?\n/))longest=Math.max(longest,ctx.measureText(line).width);
     const leading=(row?.querySelector('.plan-group-chevron')?16:0)+(row?.querySelector('.plan-link-chevron')?21:0);
     const doc=(row?.classList.contains('plan-text-mode')?23:0);
-    // Card padding, border, plus-button slot; cap only when text itself needs wrapping.
-    const natural=Math.ceil(longest+9+22+2+leading+doc+5);
-    return Math.max(Math.min(52,maxWidth),Math.min(maxWidth,natural));
+    const natural=planMiniTextNaturalPx(item?.text||'事项')+leading+doc;
+    return Math.max(PLAN_MINI_MIN_WIDTH,Math.min(maxWidth,natural));
   }
   function planMiniFitTreeGeometry(listEl,items,slotWidth){
     const usable=Math.max(100,Math.round(slotWidth));
@@ -7044,7 +7317,9 @@ function toggleDoc35Plan(owner,key,block){
       if(!main)return;
       const row=main.querySelector(':scope > .plan-mini-block');
       const item=map.get(row?.dataset.blockId);
-      const desired=planMiniNaturalWidth(item||{text:row?.textContent||''},row,available);
+      const natural=planMiniNaturalWidth(item||{text:row?.textContent||''},row,available);
+      const stored=Number(item?.boxWidth);
+      const desired=Number.isFinite(stored)&&stored>=88?Math.min(available,stored):natural;
       const branch=line.querySelector(':scope > .plan-mini-tree-branches');
       const horizontalSpace=available-desired-16-12;
       // At least a readable child box must remain; otherwise stack inside this cell.
@@ -7135,6 +7410,11 @@ function toggleDoc35Plan(owner,key,block){
       for(const item of list){
         const row=document.createElement('div');row.className='plan-mini-block';
         row.dataset.blockId=item.id;row.dataset.planOwnerId=owner.id;row.dataset.planKey=key;
+        const columnWidth=Number(context?.columnWidth)||220;
+        const renderWidth=planMiniRenderWidth(item,columnWidth);
+        const renderHeight=planMiniRenderHeight(item);
+        if(!item.drawing)row.style.setProperty('width',renderWidth+'px','important');
+        if(!item.drawing&&renderHeight>0)row.style.minHeight=renderHeight+'px';
         if(v54SelectedPlanBlocks.has(v54Ref(owner.id,key,item.id)))row.classList.add('v54-selected');
         row.dataset.planId=context?.planId||owner.id;
         row.dataset.categoryId=context?.categoryId||key.split('|')[0];
@@ -7169,7 +7449,19 @@ function toggleDoc35Plan(owner,key,block){
           selectPlanBlockDirect(owner,key,item,{planId:row.dataset.planId,categoryId:row.dataset.categoryId,role:row.dataset.role});
           openDoc35({kind:'plan',ownerId:owner.id,key,blockId:item.id});
         }));
-        if(!item.drawing)row.append(makePlus('child','右侧：添加下级小节点'),makePlus('sibling','下方：添加同级小节点'));
+        if(!item.drawing){
+          row.append(makePlus('child','右侧：添加下级小节点'),makePlus('sibling','下方：添加同级小节点'));
+          for(const axis of ['x','y']){
+            const resize=document.createElement('button');resize.type='button';
+            resize.className='plan-mini-resizer plan-mini-resizer-'+axis;
+            resize.textContent='';
+            resize.title=axis==='x'?'左右拖动调整此节点宽度':'上下拖动调整此节点高度';
+            resize.setAttribute('aria-label',resize.title);
+            resize.addEventListener('pointerdown',e=>startPlanMiniResize(e,row,owner,key,item.id,axis,resize));
+            resize.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();});
+            row.append(resize);
+          }
+        }
         listEl.append(row);
         v54DrawGroupChevron(row,owner,key,item,list);
         decoratePlanAssociatedRow(row,owner,key,item);
@@ -7193,17 +7485,19 @@ function toggleDoc35Plan(owner,key,block){
     return renderPlanBlockCell(t,key,period.name+' · '+cat.name+' 事项',false,{planId:t.id,categoryId:cat.id,role:'progress',columnWidth:width});
   }
   function planLinkedMonthNote(month,cat,period,width=null){return planNote(month,cat,period,width);}
-  function planLinkedWeekMemo(week,cat,width=200){
-    const slot=weekCategorySlot(week,cat);
-    const wrap=document.createElement('div');wrap.className='plan-linked-week-memo';
-    wrap.dataset.weekCategoryId=cat.id;
+  function planCategoryHeaderMemo(t,cat,width=200){
+    const slot=planCategoryHeaderSlot(t,cat);
+    // 复用原有周计划小块的 DOM/CSS/拖放/连接逻辑，不做第二套简化编辑器。
+    const wrap=document.createElement('div');wrap.className='plan-linked-week-memo plan-category-memo';
+    wrap.dataset.weekCategoryId=cat.id;wrap.dataset.planCategoryId=cat.id;
     const key=planCellKey(slot.cat,slot.period);
-    const area=renderPlanBlockCell(slot.owner,key,'周计划分类 · '+cat.name,true,{planId:week.id,categoryId:cat.id,role:'category',columnWidth:width});
-    area.classList.add('linked-note');
-    wrap.append(area);
-    wrap.title=slot.linked?'分类事项 · 与月计划对应格共用文字':'分类事项 · 可直接编辑，关联月计划后同步';
+    const area=renderPlanBlockCell(slot.owner,key,(t.plan.periodKind==='month'?'月计划':'周计划')+'分类 · '+cat.name,true,
+      {planId:t.id,categoryId:cat.id,role:'category',columnWidth:width});
+    area.classList.add('linked-note');wrap.append(area);
+    wrap.title=slot.linked?'分类事项 · 与月计划对应周格共享':'分类表头 · 可独立新增、编辑、删除、拖动并关联其他小块';
     return wrap;
   }
+  function planLinkedWeekMemo(week,cat,width=200){return planCategoryHeaderMemo(week,cat,width);}
   function hidePlanViewMenu(){planViewMenu?.remove();planViewMenu=null;}
   function openPlanViewMenu(t,x,y){
     hidePlanViewMenu();settlePlanEditor();
@@ -7656,10 +7950,14 @@ function toggleDoc35Plan(owner,key,block){
       :(boundary===1?'__header__':axes.rows[boundary-2]?.id);
     if(!axisId)return;
     const sizes=orientation==='x'?t.plan.colSizes[group]:t.plan.rowSizes[group];
-    const metrics=getPlanMetrics(t),origin=orientation==='x'?metrics.widths[boundary-1]:metrics.heights[boundary-1];
+    const metrics=getPlanMetrics(t);
+    const row=orientation==='y'?handle.closest('.plan-node')?.querySelectorAll('.plan-table-live tr')[boundary-1]:null;
+    const actualRowHeight=row?row.getBoundingClientRect().height/Math.max(.25,state.zoom):0;
+    const origin=orientation==='x'?metrics.widths[boundary-1]:Math.max(metrics.heights[boundary-1],Math.round(actualRowHeight));
     const start=orientation==='x'?e.clientX:e.clientY;
     handle.classList.add('resizing');
     document.body.classList.add(orientation==='x'?'matrix-resizing':'matrix-row-resizing');
+    const previousOverride=sizes[axisId];
     const min=orientation==='x'?105:44,max=orientation==='x'?1800:4000;
     let changed=false;
     const move=ev=>{
@@ -7675,10 +7973,92 @@ function toggleDoc35Plan(owner,key,block){
       if(ev.pointerId!==e.pointerId)return;
       window.removeEventListener('pointermove',move);window.removeEventListener('pointerup',finish);window.removeEventListener('pointercancel',finish);
       handle.classList.remove('resizing');document.body.classList.remove('matrix-resizing','matrix-row-resizing');
-      if(changed){scheduleSave('计划表 · 调整'+(orientation==='x'?'列宽':'行高'));render();}
+      if(ev.type==='pointercancel'){
+        if(previousOverride===undefined)delete sizes[axisId];else sizes[axisId]=previousOverride;
+        render();return;
+      }
+      if(changed&&sizes[axisId]!==previousOverride){scheduleSave('计划表 · 调整'+(orientation==='x'?'列宽':'行高'));render();}
+      else if(changed)render();
     };
     window.addEventListener('pointermove',move,{passive:false});
     window.addEventListener('pointerup',finish);window.addEventListener('pointercancel',finish);
+  }
+  // V89: a plan card's box width is independent of its siblings. If it outgrows its own
+  // table cell, grow only that column so no neighbouring cells are overlapped.
+  function planMiniEnsureColumnRoom(row,cardWidth){
+    const cell=row?.closest('td,th');
+    const wrap=cell?.closest('.plan-node.plan-inline');
+    const t=wrap&&topicById(wrap.dataset.id);
+    if(!cell||!t?.plan)return false;
+    const i=cell.cellIndex;
+    const axes=planDisplayAxes(t);
+    const id=i===0?'__corner__':axes.cols[i-1]?.id;
+    if(!id)return false;
+    const group=t.plan.group;
+    const map=t.plan.colSizes[group];
+    const current=Math.max(100,Number(map[id])||(i===0?MATRIX_LABEL_WIDTH:MATRIX_CONTENT_WIDTH));
+    const need=Math.max(100,Math.ceil(Number(cardWidth)+36));
+    if(!Number.isFinite(need)||need<=current)return false;
+    map[id]=Math.min(1200,need);
+    const cols=wrap.querySelectorAll('.plan-table-live colgroup col');
+    if(cols[i])cols[i].style.width=map[id]+'px';
+    schedulePlanGeometry();
+    return true;
+  }
+  function startPlanMiniResize(e,row,owner,key,blockId,axis,handle){
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    e.preventDefault();e.stopPropagation();
+    const block=findPlanBlock(owner,key,blockId);if(!block)return;
+    const cell=row.closest('td,th');
+    const start=e[axis==='x'?'clientX':'clientY'];
+    const startWidth=Number.parseFloat(row.style.width)||planMiniRenderWidth(block,cell?.clientWidth||220);
+    const startHeight=Math.max(30,Number(block.boxMinHeight)||Math.round(row.getBoundingClientRect().height/Math.max(.25,state.zoom)));
+    const previousWidth=block.boxWidth,previousHeight=block.boxMinHeight;
+    const table=cell?.closest('.plan-node');
+    const t=table&&topicById(table.dataset.id);
+    const i=cell?.cellIndex||0,axisId=i===0?'__corner__':(t?.plan?planDisplayAxes(t).cols[i-1]?.id:null);
+    const widthMap=t?.plan?.colSizes?.[t.plan.group];
+    const previousColumn=widthMap&&axisId?widthMap[axisId]:undefined;
+    let changed=false;
+    handle.classList.add('resizing');
+    const move=ev=>{
+      if(ev.pointerId!==e.pointerId)return;
+      ev.preventDefault();ev.stopPropagation();
+      const delta=(ev[axis==='x'?'clientX':'clientY']-start)/Math.max(.25,state.zoom);
+      if(axis==='x'){
+        const width=Math.round(Math.max(88,Math.min(1100,startWidth+delta)));
+        block.boxWidth=width;
+        row.style.setProperty('width',width+'px','important');
+        // Tree nodes previously had a separately frozen parent width, making the edge
+        // control drift away from the actual border while dragging.
+        const treeMain=row.parentElement?.classList.contains('plan-mini-tree-main')?row.parentElement:null;
+        if(treeMain){treeMain.style.width=width+'px';treeMain.style.flex='0 0 '+width+'px';}
+        planMiniEnsureColumnRoom(row,width);
+      }else{
+        const height=Math.round(Math.max(30,Math.min(2000,startHeight+delta)));
+        block.boxMinHeight=height;
+        row.style.minHeight=height+'px';
+        schedulePlanGeometry();
+      }
+      changed=true;
+    };
+    const finish=ev=>{
+      if(ev.pointerId!==e.pointerId)return;
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('pointerup',finish);
+      window.removeEventListener('pointercancel',finish);
+      handle.classList.remove('resizing');
+      if(ev.type==='pointercancel'){
+        if(previousWidth===undefined)delete block.boxWidth;else block.boxWidth=previousWidth;
+        if(previousHeight===undefined)delete block.boxMinHeight;else block.boxMinHeight=previousHeight;
+        if(widthMap&&axisId){if(previousColumn===undefined)delete widthMap[axisId];else widthMap[axisId]=previousColumn;}
+        render();return;
+      }
+      if(changed){scheduleSave('计划小节点 · 调整'+(axis==='x'?'宽度':'高度'));render();}
+    };
+    window.addEventListener('pointermove',move,{passive:false});
+    window.addEventListener('pointerup',finish);
+    window.addEventListener('pointercancel',finish);
   }
   function registerPlanMiniDropCell(cell){
     const note=cell.querySelector('.plan-block-wrap[data-plan-owner-id][data-plan-key]');
@@ -7740,10 +8120,10 @@ function toggleDoc35Plan(owner,key,block){
     head.append(corner);
     for(const [colIndex,col] of axes.cols.entries()){
       const th=document.createElement('th');th.className='plan-col-head';
-      if(plan.periodKind==='week'&&axes.colAxis==='categories'){
-        // 仅一个可编辑表头：月计划对应事项本身，不展示独立的分类名称。
+      if(axes.colAxis==='categories'){
+        // V85：不论月/周计划，分类表头都是可以逐个编辑的独立小块。
         th.classList.add('plan-category-summary-head');
-        th.append(planLinkedWeekMemo(t,col,d.widths[axes.cols.indexOf(col)+1]));
+        th.append(planCategoryHeaderMemo(t,col,d.widths[axes.cols.indexOf(col)+1]));
         registerPlanMiniDropCell(th);
       }else th.append(makePlanAxisLabel(t,axes.colAxis,col,'span'));
       if(axes.colAxis==='categories')attachPlanCategoryControls(t,col,th);
@@ -7771,10 +8151,10 @@ function toggleDoc35Plan(owner,key,block){
       const row=axes.rows[r],tr=document.createElement('tr');tr.dataset.axisId=row.id;
       tr.style.height=d.heights[r+1]+'px';
       const heading=document.createElement('th');heading.className='plan-row-head';
-      if(plan.periodKind==='week'&&axes.rowAxis==='categories'){
-        // 转置方向也只显示月周共享的分类事项，不再堆叠双层表头。
+      if(axes.rowAxis==='categories'){
+        // V85：月计划最左侧分类格与周计划保持相同的小块编辑方式。
         heading.classList.add('plan-category-summary-head');
-        heading.append(planLinkedWeekMemo(t,row,d.widths[0]));
+        heading.append(planCategoryHeaderMemo(t,row,d.widths[0]));
         registerPlanMiniDropCell(heading);
       }else heading.append(makePlanAxisLabel(t,axes.rowAxis,row,'span'));
       if(axes.rowAxis==='categories')attachPlanCategoryControls(t,row,heading);
@@ -7807,6 +8187,8 @@ function toggleDoc35Plan(owner,key,block){
     }
     if(state.selected===t.id)showPlanControls(wrap,t);
     addFreeGrabHandle(wrap,t.id);
+    body.addEventListener('scroll',()=>queuePlanDividerSync(wrap),{passive:true});
+    queuePlanDividerSync(wrap);
     return wrap;
   }
 
@@ -9925,11 +10307,12 @@ function toggleDoc35Plan(owner,key,block){
         const box=child.getBoundingClientRect();
         if(box.width>0&&box.height>0)bottom=Math.max(bottom,box.bottom);
       }
-      const measured=Math.ceil((bottom-tableRect.top)/Math.max(.1,state.zoom)+7);
+      const measured=Math.ceil((bottom-tableRect.top)/Math.max(.1,state.zoom)+2);
       const predicted=getPlanMetrics(t).height;
       const required=Math.max(predicted,measured);
       const old=planRenderedMinHeights.get(id)||0;
       if(Math.abs(required-old)>2){planRenderedMinHeights.set(id,required);changed=true;}
+      syncPlanDividerPositions(el);
     }
     if(!changed)return;
     computeLayout();drawConnections();
