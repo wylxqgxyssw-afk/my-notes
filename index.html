@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#333436">
-<title>DIY记录 V92</title>
+<title>DIY记录 V97</title>
 <style>
   :root {
     color-scheme: dark;
@@ -901,7 +901,7 @@
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="1.0.92">
+<meta name="app-build" content="1.0.97">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -2026,6 +2026,30 @@ body{color:var(--app-ink,#f5f5f6);}
 .plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-active,
 .plan-node.plan-inline .plan-block-wrap .plan-mini-block:has(.plan-mini-resizer.resizing){z-index:100!important;}
 
+/* V95: Plan cards have one neutral default appearance. Blue edge ticks are link indicators,
+   not selection indicators. Keep link ticks independent of hover/selected states. */
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-active{
+  box-shadow:0 0 0 1px #71b4f955!important;
+}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.is-related{
+  box-shadow:0 0 0 1px #6cb5f944!important;
+}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.v54-group-child{
+  border-left-width:1px!important;
+  border-left-color:color-mix(in srgb,var(--matrix-grid,#c7cbd3) 90%,transparent)!important;
+}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block>.plan-link-edge-bar,
+.quadrant-node .quadrant-item>.plan-link-edge-bar{
+  position:absolute!important;top:50%;width:4px;height:min(22px,65%);
+  min-height:12px;transform:translateY(-50%);
+  background:#238fee;border-radius:4px;z-index:12;
+  pointer-events:none;box-shadow:0 0 0 1px #fff7;
+}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.plan-link-origin>.plan-link-edge-bar,
+.quadrant-node .quadrant-item.plan-link-origin>.plan-link-edge-bar{left:-2px;right:auto;}
+.plan-node.plan-inline .plan-block-wrap .plan-mini-block.plan-link-target>.plan-link-edge-bar,
+.quadrant-node .quadrant-item.plan-link-target>.plan-link-edge-bar{right:-2px;left:auto;}
+
 </style>
 </head>
 <body>
@@ -2755,7 +2779,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       /^data:image\/(?:webp|png|jpeg);base64,[A-Za-z0-9+/=]+$/.test(m.src)&&m.src.length<=950000)
       .map(m=>({id:typeof m.id==='string'&&m.id.length<140?m.id:makeId(),src:m.src,
         x:Math.max(0,Math.min(kind==='drawing'?719:259,Number(m.x)||0)),y:Math.max(0,Math.min(kind==='drawing'?404:159,Number(m.y)||0)),
-        w:Math.max(20,Math.min(kind==='drawing'?720:260,Number(m.w)||145)),h:Math.max(20,Math.min(kind==='drawing'?405:160,Number(m.h)||115))}));
+        w:Math.max(20,Math.min(kind==='drawing'?720:260,Number(m.w)||145)),h:Math.max(20,Math.min(kind==='drawing'?405:160,Number(m.h)||115)),
+        ...(Number.isFinite(m.layerOrder)&&Math.abs(m.layerOrder)<1000000000?{layerOrder:Math.trunc(m.layerOrder)}:{})}));
   }
   const v78ImageCache=new Map();
   function v78GetImage(src,callback){
@@ -2810,18 +2835,61 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // Images placed in drawing boards are based on a 720x405 logical surface.
     images.push(v78PhotoObject(image,kind));scheduleSave(saveLabel);render();return true;
   }
+  // V96: A white lasso mark must not remain forever above photos inserted AFTER the erase.
+  // Legacy saves have no operation chronology, so recover their visible photos by placing legacy
+  // images above legacy strokes; once migrated, all new actions receive monotonic layerOrder.
+  function v96EnsureDrawingLayers(d){
+    if(!d||typeof d!=='object')return;
+    const strokes=Array.isArray(d.strokes)?d.strokes:[];
+    const images=Array.isArray(d.images)?d.images:[];
+    const valid=item=>Number.isFinite(item?.layerOrder)&&Math.abs(item.layerOrder)<1000000000;
+    const missingS=strokes.filter(st=>st&&!valid(st));
+    const missingI=images.filter(im=>im&&!valid(im));
+    if(!missingS.length&&!missingI.length)return;
+    const preserved=[...strokes,...images].filter(valid).map(item=>item.layerOrder);
+    let floor=Math.min(0,...preserved)-missingS.length-missingI.length-1;
+    for(const item of missingS)item.layerOrder=++floor;
+    for(const item of missingI)item.layerOrder=++floor;
+  }
+  function v96NextDrawingLayer(d){
+    v96EnsureDrawingLayers(d);
+    const actions=[...(d.strokes||[]),...(d.images||[])];
+    return Math.max(0,...actions.map(item=>Number(item.layerOrder)||0))+1;
+  }
+  function v96AddDrawingImage(d,image){
+    if(!Array.isArray(d.images))d.images=[];
+    const photo=v78PhotoObject(image,'drawing');
+    photo.layerOrder=v96NextDrawingLayer(d);
+    d.images.push(photo);
+    return photo;
+  }
+  // V97: a picture may be inserted BEFORE a lasso-erase and moved AFTER it.
+  // V96 raised new imported pictures, but movement did not raise old pictures:
+  // the lasso therefore remained rendered over them even while dragging.
+  // Promote the actually moved image exactly once per drag; don't change order on a tap.
+  function v97RaiseMovedDrawingImage(d,image){
+    if(!image)return false;
+    v96EnsureDrawingLayers(d);
+    const current=Number(image.layerOrder)||0;
+    const top=Math.max(current,...(d.images||[]).map(im=>Number(im.layerOrder)||0),
+      ...(d.strokes||[]).map(st=>Number(st.layerOrder)||0));
+    if(current>=top)return false;
+    image.layerOrder=top+1;
+    return true;
+  }
   function v76CleanDrawing(raw){
     const d=raw&&typeof raw==='object'?raw:{};
     const strokes=Array.isArray(d.strokes)?d.strokes:[];
     return {
       strokes:strokes.slice(0,700).filter(st=>st&&Array.isArray(st.points)&&st.points.length>0)
-        .map(st=>({mode:st.mode==='eraser'?'eraser':'pen',
+        .map(st=>({mode:st.mode==='lasso-erase'?'lasso-erase':(st.mode==='eraser'?'eraser':'pen'),
           color:/^#[0-9a-fA-F]{6}$/.test(st.color||'')?st.color:'#263444',
           width:Math.max(1,Math.min(45,Number(st.width)||3)),
+          ...(Number.isFinite(st.layerOrder)&&Math.abs(st.layerOrder)<1000000000?{layerOrder:Math.trunc(st.layerOrder)}:{}),
           points:st.points.slice(0,1500).filter(pt=>pt&&Number.isFinite(Number(pt.x))&&Number.isFinite(Number(pt.y)))
             .map(pt=>({x:Math.max(0,Math.min(720,Number(pt.x))),y:Math.max(0,Math.min(405,Number(pt.y)))}))})),
       color:/^#[0-9a-fA-F]{6}$/.test(d.color||'')?d.color:'#263444',
-      tool:['eraser','move'].includes(d.tool)?d.tool:'pen',expanded:d.expanded===true,
+      tool:['eraser','move','lasso'].includes(d.tool)?d.tool:'pen',expanded:d.expanded===true,
       images:v78CleanImages(d.images,12,'drawing'),
       frameWidth:Number.isFinite(+d.frameWidth)&&+d.frameWidth>=220?Math.round(Math.min(1200,+d.frameWidth)):undefined,
       frameHeight:Number.isFinite(+d.frameHeight)&&+d.frameHeight>=180?Math.round(Math.min(900,+d.frameHeight)):undefined,
@@ -5873,7 +5941,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     menu.style.left=Math.max(margin,Math.min(x,window.innerWidth-rect.width-margin))+'px';
     menu.style.top=Math.max(margin,Math.min(y,window.innerHeight-rect.height-margin))+'px';
   }
+  // V95: Only an actual link group with at least two members gets a blue edge tick.
+  // Start/large category item: LEFT; linked/small destination item: RIGHT.
+  // This is orthogonal to selection, which must never invent a link indicator.
+  function planLinkEdgeRole(item,kind,ownerId,key,blockId){
+    if(!item?.linkId)return null;
+    const members=planAssociationIndex.get(item.linkId);
+    if(!members||members.length<2)return null;
+    const root=planAssociationRoots.get(item.linkId);
+    if(!root)return null;
+    const isOrigin=root.kind===kind&&root.ownerId===ownerId&&root.blockId===blockId&&
+      (kind!=='plan'||root.key===key);
+    return isOrigin?'origin':'target';
+  }
+  function setPlanLinkEdge(row,role){
+    row.classList.toggle('plan-link-origin',role==='origin');
+    row.classList.toggle('plan-link-target',role==='target');
+    let bar=row.querySelector(':scope > .plan-link-edge-bar');
+    if(!role){bar?.remove();return;}
+    if(!bar){bar=document.createElement('span');bar.className='plan-link-edge-bar';bar.setAttribute('aria-hidden','true');row.append(bar);}
+  }
   function decoratePlanAssociatedRow(row,owner,key,item){
+    setPlanLinkEdge(row,planLinkEdgeRole(item,'plan',owner.id,key,item.id));
     const root=planAssociationRoots.get(item?.linkId);
     const isOrigin=root?.kind==='plan'&&root.ownerId===owner.id&&root.key===key&&root.blockId===item.id;
     const peers=isOrigin?planAssociatedPeers(owner.id,key,item):[];
@@ -5930,6 +6019,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       const owner=topicById(row.dataset.planOwnerId);
       const item=owner?.kind==='plan'?findPlanBlock(owner,row.dataset.planKey,row.dataset.blockId):null;
       if(item)decoratePlanAssociatedRow(row,owner,row.dataset.planKey,item);
+    }
+    // Association may contain quadrant chips; they should update at the same time.
+    for(const chip of document.querySelectorAll('.quadrant-item[data-item-id]')){
+      const t=topicById(chip.closest('.quadrant-node')?.dataset.id);
+      const item=t?.kind==='quadrant'?quadrantItemById(t,chip.dataset.itemId):null;
+      setPlanLinkEdge(chip,planLinkEdgeRole(item,'quadrant',t?.id,null,item?.id));
     }
   }
 
@@ -6461,6 +6556,7 @@ function toggleDoc35Plan(owner,key,block){
     document.querySelectorAll('.quadrant-item[data-item-id]').forEach(row=>{
       const t=topicById(row.closest('.quadrant-node')?.dataset.id),item=t?.kind==='quadrant'?quadrantItemById(t,row.dataset.itemId):null;
       row.classList.toggle('quadrant-related',!!item?.linkId&&item.linkId===(focusBlock?.linkId||activePlanLinkId));
+      setPlanLinkEdge(row,planLinkEdgeRole(item,'quadrant',t?.id,null,item?.id));
     });
   }
   function selectPlanBlockDirect(owner,key,item,context){
@@ -8421,6 +8517,7 @@ function toggleDoc35Plan(owner,key,block){
       const chip=document.createElement('div');chip.className='quadrant-item';chip.dataset.itemId=item.id;
       if(quadrantItemActive?.topicId===t.id&&quadrantItemActive?.itemId===item.id)chip.classList.add('active');
       if(activePlanLinkId&&item.linkId===activePlanLinkId)chip.classList.add('quadrant-related');
+      setPlanLinkEdge(chip,planLinkEdgeRole(item,'quadrant',t.id,null,item.id));
       const x=Math.max(.05,Math.min(.95,Number(item.x)||.5)),y=Math.max(.06,Math.min(.94,Number(item.y)||.5));
       chip.style.left='calc('+(x*100).toFixed(2)+'% - 44px)';chip.style.top='calc('+(y*100).toFixed(2)+'% - 18px)';
       if(quadrantEditing?.topicId===t.id&&quadrantEditing?.itemId===item.id){
@@ -9638,7 +9735,7 @@ function toggleDoc35Plan(owner,key,block){
     v79BoardFocus={id:t.id,ownerId,update:image=>{
       if(!Array.isArray(d.images))d.images=[];
       if(d.images.length>=12){notify('绘图板最多可放 12 张图片');return false;}
-      d.images.push(v78PhotoObject(image,'drawing'));
+      v96AddDrawingImage(d,image);
       d.tool='move';scheduleSave('绘图板 · 粘贴或拖入图片');render();
       notify('已插入图片；选择「↔」后可拖动');return true;
     },getSelected:()=>{const id=v79BoardFocus?.selectedId;
@@ -9844,7 +9941,7 @@ function toggleDoc35Plan(owner,key,block){
     if(target.kind==='drawing'||target.drawing){
       v78ChooseImage(image=>{target.drawing=v76CleanDrawing(target.drawing);
         if(target.drawing.images.length>=12){notify('单块绘图板最多可插入 12 张图片');return;}
-        target.drawing.images.push(v78PhotoObject(image,'drawing'));
+        v96AddDrawingImage(target.drawing,image);
         target.drawing.tool='move';scheduleSave('绘图板 · 导入图片');render();notify('图片已添加，使用移动图片工具拖动');});return;
     }
     const imageTarget=target;v78ChooseImage(image=>{
@@ -9964,12 +10061,14 @@ function toggleDoc35Plan(owner,key,block){
     const makeBtn=(txt,aria,onClick)=>{const b=document.createElement('button');b.type='button';b.textContent=txt;b.title=aria;b.setAttribute('aria-label',aria);b.addEventListener('pointerdown',e=>e.stopPropagation());b.addEventListener('click',e=>{e.stopPropagation();onClick();});tools.append(b);return b;};
     const pen=makeBtn('✎','铅笔',()=>{d.tool='pen';refreshTools();redraw();});
     const eraser=makeBtn('⌫','橡皮擦',()=>{d.tool='eraser';refreshTools();redraw();});
+    const lasso=makeBtn('◌','圈选擦除：鼠标或手指沿区域画一圈，松开后将圈内变成白色；可撤销',()=>{d.tool='lasso';refreshTools();redraw();});
+    lasso.classList.add('drawing-lasso-tool');
     const selectImage=makeBtn('↔','移动图片（点击或拖动图片，不影响画布）',()=>{d.tool='move';refreshTools();redraw();});
     selectImage.classList.add('v78-image-move');
     makeBtn('▧','导入图片到绘图板',()=>{focusBoard();v78ChooseImage(image=>{
       if(!Array.isArray(d.images))d.images=[];
       if(d.images.length>=12){notify('单块绘图板最多可插入 12 张图片');return;}
-      d.images.push(v78PhotoObject(image,'drawing'));d.tool='move';
+      v96AddDrawingImage(d,image);d.tool='move';
       scheduleSave('绘图板 · 导入图片');render();notify('图片已导入，拖动即可移动；切换铅笔可以在图片上绘画');
     });});
     const divider=document.createElement('span');divider.className='drawing-divider';tools.append(divider);
@@ -9992,11 +10091,18 @@ function toggleDoc35Plan(owner,key,block){
     makeBtn('1:1','重置画板内部缩放和位置',()=>{d.view={zoom:1,x:0,y:0};redraw();scheduleSave('绘图板 · 重置视图');});
     makeBtn('×','清空绘图板',()=>{if(!d.strokes?.length&&!d.images?.length)return;if(!confirm('清空这块绘图板的全部画迹和图片吗？可以使用软件的撤销恢复。'))return;
       d.strokes=[];d.images=[];selectedImageId=null;redraw();scheduleSave('绘图板 · 清空');});
-    function refreshTools(){pen.classList.toggle('is-active',d.tool==='pen');eraser.classList.toggle('is-active',d.tool==='eraser');selectImage.classList.toggle('is-active',d.tool==='move');
+    function refreshTools(){pen.classList.toggle('is-active',d.tool==='pen');eraser.classList.toggle('is-active',d.tool==='eraser');lasso.classList.toggle('is-active',d.tool==='lasso');selectImage.classList.toggle('is-active',d.tool==='move');
       for(const [color,btn] of choices)btn.classList.toggle('is-active',d.tool==='pen'&&d.color===color);
       colorPicker.value=/^#[0-9a-f]{6}$/i.test(d.color)?d.color:'#263444';}
     function paintStroke(ctx,stroke){
       if(!stroke.points?.length)return;
+      if(stroke.mode==='lasso-erase'){
+        if(stroke.points.length<3)return;
+        ctx.save();ctx.globalCompositeOperation='source-over';ctx.fillStyle='#ffffff';
+        ctx.beginPath();ctx.moveTo(stroke.points[0].x,stroke.points[0].y);
+        for(let i=1;i<stroke.points.length;i++)ctx.lineTo(stroke.points[i].x,stroke.points[i].y);
+        ctx.closePath();ctx.fill();ctx.restore();return;
+      }
       ctx.save();ctx.globalCompositeOperation=stroke.mode==='eraser'?'destination-out':'source-over';
       ctx.strokeStyle=stroke.color||'#263444';ctx.fillStyle=stroke.color||'#263444';
       ctx.lineWidth=Math.max(1,Number(stroke.width)||3);ctx.lineCap='round';ctx.lineJoin='round';
@@ -10021,22 +10127,57 @@ function toggleDoc35Plan(owner,key,block){
     let selectedImageId=null;
     const inkLayer=document.createElement('canvas');inkLayer.width=720;inkLayer.height=405;
     const inkCtx=inkLayer.getContext('2d');
+    let lassoDraft=null;
     function redraw(){const ctx=canvas.getContext('2d');if(!ctx)return;
-      if(inkCtx){inkCtx.setTransform(1,0,0,1,0,0);inkCtx.globalCompositeOperation='source-over';
-        inkCtx.clearRect(0,0,720,405);for(const st of d.strokes||[])paintStroke(inkCtx,st);}
-      ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,canvas.width,canvas.height);
+      v96EnsureDrawingLayers(d);
+      ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
+      ctx.clearRect(0,0,canvas.width,canvas.height);
       const v=currentView();ctx.save();ctx.translate(v.x,v.y);ctx.scale(v.zoom,v.zoom);
-      for(const im of (d.images||[])){
-        const img=v78GetImage(im.src,()=>{if(canvas.isConnected)redraw();});
-        if(img.complete&&img.naturalWidth)ctx.drawImage(img,im.x,im.y,im.w,im.h);
+      // V96: Photos and erase commands share one chronological operation stack.
+      // Flush the pen layer before a photo or a white lasso, so later imports appear ABOVE
+      // earlier white areas; later lasso erasures can still cover photos inserted before them.
+      const operations=[
+        ...(d.images||[]).map(im=>({type:'image',value:im,layerOrder:im.layerOrder})),
+        ...(d.strokes||[]).map(st=>({type:'stroke',value:st,layerOrder:st.layerOrder}))
+      ].sort((a,b)=>a.layerOrder-b.layerOrder);
+      if(inkCtx){inkCtx.setTransform(1,0,0,1,0,0);inkCtx.globalCompositeOperation='source-over';
+        inkCtx.clearRect(0,0,720,405);}
+      let inkDirty=false;
+      const flushInk=()=>{if(!inkCtx||!inkDirty)return;
+        ctx.drawImage(inkLayer,0,0,720,405);
+        inkCtx.setTransform(1,0,0,1,0,0);inkCtx.globalCompositeOperation='source-over';
+        inkCtx.clearRect(0,0,720,405);inkDirty=false;
+      };
+      for(const op of operations){
+        if(op.type==='image'){
+          flushInk();const im=op.value;
+          const img=v78GetImage(im.src,()=>{if(canvas.isConnected)redraw();});
+          if(img.complete&&img.naturalWidth)ctx.drawImage(img,im.x,im.y,im.w,im.h);
+        }else if(op.value.mode==='lasso-erase'){
+          flushInk();paintStroke(ctx,op.value);
+        }else if(inkCtx){
+          paintStroke(inkCtx,op.value);inkDirty=true;
+        }
       }
-      if(inkCtx)ctx.drawImage(inkLayer,0,0,720,405);
+      flushInk();
+      // V93: show only a dashed freehand boundary while selecting; fill white on pointerup.
+      if(lassoDraft?.points?.length){
+        const pts=lassoDraft.points;
+        ctx.save();ctx.strokeStyle='#118bf1';ctx.lineWidth=2/Math.max(1,v.zoom);
+        ctx.setLineDash([7/Math.max(1,v.zoom),4/Math.max(1,v.zoom)]);
+        ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+        for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i].x,pts[i].y);
+        if(pts.length>=3){ctx.closePath();ctx.fillStyle='rgba(43,153,255,.16)';ctx.fill();}
+        ctx.stroke();ctx.restore();
+      }
       if(d.tool==='move'&&selectedImageId){const im=(d.images||[]).find(x=>x.id===selectedImageId);
         if(im){ctx.save();ctx.lineWidth=2/v.zoom;ctx.strokeStyle='#258fff';ctx.setLineDash([5/v.zoom,3/v.zoom]);
           ctx.strokeRect(im.x,im.y,im.w,im.h);ctx.restore();}}
       ctx.restore();
     }
-    const hitImage=p=>(d.images||[]).slice().reverse().find(im=>p.x>=im.x&&p.y>=im.y&&p.x<=im.x+im.w&&p.y<=im.y+im.h);
+    // Choose the visually topmost picture in overlapping areas, using the SAME z-order as redraw.
+    const hitImage=p=>(d.images||[]).slice().sort((a,b)=>(Number(b.layerOrder)||0)-(Number(a.layerOrder)||0))
+      .find(im=>p.x>=im.x&&p.y>=im.y&&p.x<=im.x+im.w&&p.y<=im.y+im.h);
     let movingImage=null;
     const touches=new Map();
     const pointer={id:null,stroke:null};
@@ -10056,7 +10197,7 @@ function toggleDoc35Plan(owner,key,block){
     };
     function cancelIncompleteStroke(){
       if(pointer.stroke&&d.strokes?.at(-1)===pointer.stroke)d.strokes.pop();
-      pointer.id=null;pointer.stroke=null;redraw();
+      pointer.id=null;pointer.stroke=null;lassoDraft=null;redraw();
     }
     canvas.addEventListener('pointerdown',e=>{
       if(e.pointerType==='mouse'&&e.button!==0)return;
@@ -10077,12 +10218,18 @@ function toggleDoc35Plan(owner,key,block){
       if(d.tool==='move'){
         const p=point(e),im=hitImage(p);selectedImageId=im?.id||null;
         focusBoard();if(v79BoardFocus)v79BoardFocus.selectedId=selectedImageId;
-        movingImage=im?{pointerId:e.pointerId,id:im.id,dx:p.x-im.x,dy:p.y-im.y,moved:false}:null;
+        movingImage=im?{pointerId:e.pointerId,id:im.id,dx:p.x-im.x,dy:p.y-im.y,moved:false,
+          original:{x:im.x,y:im.y,layerOrder:im.layerOrder}}:null;
         try{canvas.setPointerCapture(e.pointerId);}catch{}redraw();return;
       }
       if(!Array.isArray(d.strokes))d.strokes=[];
       if(d.strokes.length>=700){notify('画迹已达到单块绘图板上限，请新建一块绘图板');return;}
-      pointer.id=e.pointerId;pointer.stroke={mode:d.tool==='eraser'?'eraser':'pen',
+      if(d.tool==='lasso'){
+        pointer.id=e.pointerId;pointer.stroke=null;lassoDraft={points:[point(e)]};
+        focusBoard();try{canvas.setPointerCapture(e.pointerId);}catch{}
+        redraw();return;
+      }
+      pointer.id=e.pointerId;pointer.stroke={mode:d.tool==='eraser'?'eraser':'pen',layerOrder:v96NextDrawingLayer(d),
         color:d.color||'#263444',width:d.tool==='eraser'?30:3.4,points:[point(e)]};
       d.strokes.push(pointer.stroke);try{canvas.setPointerCapture(e.pointerId);}catch{}
       redraw();
@@ -10102,15 +10249,20 @@ function toggleDoc35Plan(owner,key,block){
         e.preventDefault();e.stopPropagation();const im=(d.images||[]).find(x=>x.id===movingImage.id);
         if(im){const p=point(e),x=Math.max(0,Math.min(720-im.w,p.x-movingImage.dx)),
           y=Math.max(0,Math.min(405-im.h,p.y-movingImage.dy));
-          if(Math.abs(x-im.x)+Math.abs(y-im.y)>0.01){im.x=x;im.y=y;movingImage.moved=true;redraw();}}
+          if(Math.abs(x-im.x)+Math.abs(y-im.y)>0.01){
+            // The image itself becomes the uppermost layer the moment it ACTUALLY moves.
+            // Previously completed white lasso areas can no longer cover the dragged picture.
+            if(!movingImage.moved)v97RaiseMovedDrawingImage(d,im);
+            im.x=x;im.y=y;movingImage.moved=true;redraw();}}
         return;
       }
-      if(pointer.id!==e.pointerId||!pointer.stroke)return;
+      if(pointer.id!==e.pointerId)return;
       e.preventDefault();e.stopPropagation();
-      if(pointer.stroke.points.length>=1500)return;
-      const p=point(e),last=pointer.stroke.points.at(-1);
+      const stroke=lassoDraft||pointer.stroke;
+      if(!stroke||stroke.points.length>=1500)return;
+      const p=point(e),last=stroke.points.at(-1);
       if(Math.hypot(p.x-last.x,p.y-last.y)<0.75)return;
-      pointer.stroke.points.push(p);redraw();
+      stroke.points.push(p);redraw();
     });
     const finishStroke=e=>{
       if(e.pointerType==='touch'&&touches.has(e.pointerId)){
@@ -10122,13 +10274,34 @@ function toggleDoc35Plan(owner,key,block){
         if(!touches.size)skipUntilTouchRelease=false;
       }
       if(movingImage?.pointerId===e.pointerId){
-        if(movingImage.moved)scheduleSave('绘图板 · 移动图片');
+        if(e.type==='pointercancel'){
+          const im=(d.images||[]).find(x=>x.id===movingImage.id);
+          if(im&&movingImage.original){
+            im.x=movingImage.original.x;im.y=movingImage.original.y;
+            im.layerOrder=movingImage.original.layerOrder;
+          }
+        }else if(movingImage.moved){
+          scheduleSave('绘图板 · 移动图片并更新图层顺序');
+        }
         movingImage=null;redraw();
       }
       if(pointer.id===e.pointerId){
         const changed=!!pointer.stroke;
-        pointer.id=null;pointer.stroke=null;
-        if(changed){
+        const draft=lassoDraft;
+        pointer.id=null;pointer.stroke=null;lassoDraft=null;
+        if(draft){
+          if(e.type!=='pointercancel'){
+            const points=draft.points;
+            // Reject accidental taps and near-linear gestures rather than erasing a sliver.
+            const xs=points.map(p=>p.x),ys=points.map(p=>p.y);
+            const extent=Math.min(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys));
+            if(points.length>=3&&extent>=5){
+              d.strokes.push({mode:'lasso-erase',color:'#ffffff',width:1,layerOrder:v96NextDrawingLayer(d),points});
+              scheduleSave('绘图板 · 圈选擦除');
+            }
+          }
+          redraw();
+        }else if(changed){
           if(e.type==='pointercancel'){d.strokes.pop();redraw();}
           else scheduleSave('绘图板 · 完成一笔');
         }
@@ -11732,15 +11905,25 @@ function toggleDoc35Plan(owner,key,block){
     }
     return {app:'DIY记录',format:'node-subtree-v1',roots,nodes};
   }
+  // V94: 文本剪贴板使用用户原始节点文字，而不是自动生成 Markdown 大纲。
+  // 一个节点：换行/空行/前后空格/符号原样输出，不加 "- "，不把换行换成空格。
+  // 多个节点：原有层级保存在 application/json 和 HTML 内嵌数据中；
+  // 纯文本只能以换行分隔不同节点，绝不向节点文字插入前缀或伪造缩进。
   function copyTextForInternal(payload){
-    const byParent=new Map();for(const n of payload.nodes){if(!byParent.has(n.parentId))byParent.set(n.parentId,[]);byParent.get(n.parentId).push(n);}
-    const lines=[];
-    const walk=(id,depth)=>{const n=payload.nodes.find(x=>x.id===id);if(!n)return;
-      lines.push('  '.repeat(depth)+'- '+n.text.replace(/\n/g,' '));
-      for(const c of byParent.get(id)||[])walk(c.id,depth+1);
+    const byId=new Map(payload.nodes.map(n=>[n.id,n]));
+    const byParent=new Map();
+    for(const n of payload.nodes){
+      if(!byParent.has(n.parentId))byParent.set(n.parentId,[]);
+      byParent.get(n.parentId).push(n);
+    }
+    const texts=[];
+    const visit=id=>{
+      const n=byId.get(id);if(!n)return;
+      texts.push(n.text);
+      for(const child of byParent.get(id)||[])visit(child.id);
     };
-    for(const root of payload.roots)walk(root,0);
-    return lines.join('\n');
+    for(const root of payload.roots)visit(root);
+    return texts.join('\n');
   }
   function internalPaste(payload){
     if(!payload||payload.app!=='DIY记录'||payload.format!=='node-subtree-v1'||
@@ -11958,15 +12141,21 @@ function toggleDoc35Plan(owner,key,block){
   function rejectAmbiguousPaste(){
     notify('无法确认 XMind 剪贴板的真实层级：未粘贴。请用菜单「导入 XMind 原始文件」准确还原');
   }
+  // V94: 外部文字无论是否包含回车/制表符/Markdown 符号，都视为一个节点的原文。
+  // 仅带明确结构信息的 HTML（且没有可供精确保留的纯文本）才走大纲解析。
+  // 不能把用户自己的 "- " 误识别为我们需要生成的列表符号。
   function fromExternalClipboard(plain,html,mimeTypes=[]){
+    if(typeof plain==='string'&&plain.length){
+      if(!plain.trim())return true;
+      const literal=plain.replace(/\r\n?/g,'\n');
+      try{return importStructure([{depth:0,text:literal}],'粘贴原文（保留换行）');}
+      catch(err){notify('粘贴原文失败：'+err.message);return true;}
+    }
     let outline=null;
-    try{outline=exactHtmlOutline(html)||explicitMarkdownOutline(plain);}
+    try{outline=exactHtmlOutline(html);}
     catch(err){notify('剪贴板结构读取失败：'+err.message);return true;}
-    if(outline){try{return importStructure(outline,'结构化粘贴');}catch(err){notify('粘贴已取消：'+err.message);return true;}}
-    // 单个主题无层级歧义，可以粘贴；多行普通文字的父子关系无法判定，禁止误生成。
-    const single=typeof plain==='string'&&plain.trim()&&!/[\r\n]/.test(plain.trim());
-    if(single){try{return importStructure([{depth:0,text:plain.trim()}],'粘贴单个主题');}catch(err){notify('无法粘贴：'+err.message);return true;}}
-    rejectAmbiguousPaste();return true;
+    if(outline){try{return importStructure(outline,'HTML 大纲粘贴');}catch(err){notify('粘贴已取消：'+err.message);return true;}}
+    notify('剪贴板没有可粘贴的文字');return true;
   }
   document.addEventListener('paste',e=>{
     const c=e.clipboardData;if(!c)return;
@@ -12043,7 +12232,7 @@ function toggleDoc35Plan(owner,key,block){
     const plain=copyTextForInternal(payload);
     const encoded=encodeURIComponent(JSON.stringify(payload));
     e.clipboardData.setData('text/plain',plain);
-    e.clipboardData.setData('text/html','<div '+DIY_HTML_MARKER+'="'+encoded+'"><pre>'+plain.replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre></div>');
+    e.clipboardData.setData('text/html','<div '+DIY_HTML_MARKER+'="'+encoded+'"><pre style="white-space:pre-wrap">'+plain.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</pre></div>');
     try{e.clipboardData.setData(DIY_NODE_MIME,JSON.stringify(payload));}catch{}
     diyInternalClipboard={payload,plain,at:Date.now()};
     e.preventDefault();notify('已复制完整节点：表格内容、文字标注和层级均保留');

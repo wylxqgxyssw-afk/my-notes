@@ -1,6 +1,6 @@
 /* DIY记录 PWA Service Worker。更新此版本号时会替换旧的离线壳缓存。 */
 const CACHE_PREFIX = 'graph-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + "2026.11.23.92";
+const CACHE_NAME = CACHE_PREFIX + "2026.11.24.97";
 const SHELL = ['./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
