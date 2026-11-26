@@ -1,51 +1,64 @@
-/* DIY记录 PWA Service Worker。更新此版本号时会替换旧的离线壳缓存。 */
-const CACHE_PREFIX = 'graph-notes-shell-';
-const CACHE_NAME = CACHE_PREFIX + "2026.11.25.103";
-const SHELL = ['./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+/* DIY记录 V109 — same-scope PWA cache, no cloud API caching. */
+'use strict';
+const VERSION = '1.0.109';
+const PREFIX = 'diyrecord-pwa-shell-';
+const CACHE = PREFIX + VERSION;
+const scope = new URL(self.registration.scope);
+const shell = new URL('index.html', scope).href;
+const assets = ['manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icon-192.png', 'icon-512.png'].map(p => new URL(p, scope).href);
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)));
-});
-self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key.startsWith(CACHE_PREFIX) && key!==CACHE_NAME).map(key=>caches.delete(key)));
-    await self.clients.claim();
+    const cache = await caches.open(CACHE);
+    const response = await fetch(shell, {cache: 'reload'});
+    if (!response.ok) throw new Error('Cannot cache app shell');
+    await cache.put(shell, response);
+    await Promise.allSettled(assets.map(async url => {
+      const res = await fetch(url, {cache: 'reload'});
+      if (res.ok) await cache.put(url, res);
+    }));
   })());
 });
 self.addEventListener('message', event => {
-  if (event.data?.type==='SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'SKIP_WAITING') event.waitUntil(self.skipWaiting());
+});
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    for (const key of await caches.keys()) {
+      if (key.startsWith(PREFIX) && key !== CACHE) await caches.delete(key);
+    }
+    await self.clients.claim();
+  })());
 });
 self.addEventListener('fetch', event => {
-  const req=event.request;
-  if(req.method!=='GET') return;
-  const url=new URL(req.url);
-  // 不拦截云服务、账号/数据库请求；绝不缓存私人笔记、密码或 Token。
-  if(url.origin!==self.location.origin) return;
-  // 版本文件永远走网络，以便检测新版本。
-  if(url.pathname.endsWith('/version.json') || url.pathname.endsWith('/service-worker.js')) return;
-  if(req.mode==='navigate' || url.pathname.endsWith('/index.html')) {
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== scope.origin || !url.pathname.startsWith(scope.pathname)) return;
+  if (url.pathname === new URL('version.json', scope).pathname) {
+    event.respondWith(fetch(req, {cache:'no-store'}));
+    return;
+  }
+  if (req.mode === 'navigate' && (url.pathname === scope.pathname || url.pathname === new URL(shell).pathname)) {
     event.respondWith((async () => {
-      const cache=await caches.open(CACHE_NAME);
+      const cache = await caches.open(CACHE);
       try {
-        const online=await fetch(req, {cache:'no-store'});
-        if(online.ok && online.type==='basic') await cache.put('./index.html',online.clone());
-        return online;
-      } catch(error) {
-        const offline=await cache.match('./index.html');
-        if(offline) return offline;
-        return Response.error();
+        const res = await fetch(req, {cache:'no-store'});
+        if (res.ok) { await cache.put(shell, res.clone()); return res; }
+        return (await cache.match(shell)) || res;
+      } catch (err) {
+        return (await cache.match(shell)) || new Response('Offline', {status:503});
       }
     })());
     return;
   }
-  if(url.pathname.includes('/icons/') || url.pathname.endsWith('/manifest.webmanifest')) {
+  if (assets.includes(url.href)) {
     event.respondWith((async () => {
-      const cache=await caches.open(CACHE_NAME);
-      const hit=await cache.match(req);
-      if(hit) return hit;
-      const resp=await fetch(req);
-      if(resp.ok && resp.type==='basic') await cache.put(req,resp.clone());
-      return resp;
+      const cache = await caches.open(CACHE);
+      try {
+        const res = await fetch(req);
+        if (res.ok) { await cache.put(url.href, res.clone()); return res; }
+        return (await cache.match(url.href)) || res;
+      } catch (err) { return (await cache.match(url.href)) || Response.error(); }
     })());
   }
 });
