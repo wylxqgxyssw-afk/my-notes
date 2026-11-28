@@ -1,6 +1,6 @@
-/* DIY记录 V111 — same-scope PWA cache, no cloud API caching. */
+/* DIY记录 V112 — same-scope PWA cache, no cloud API caching. */
 'use strict';
-const VERSION = '1.0.111';
+const VERSION = '1.0.112';
 const PREFIX = 'diyrecord-pwa-shell-';
 const CACHE = PREFIX + VERSION;
 const scope = new URL(self.registration.scope);

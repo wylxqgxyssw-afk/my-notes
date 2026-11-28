@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
 <meta name="theme-color" content="#333436">
-<title>DIY记录 V111</title>
+<title>DIY记录 V112</title>
 <style>
   :root {
     color-scheme: dark;
@@ -953,7 +953,7 @@ body.v98-drawing-open{overflow:hidden;}
 <meta name="apple-mobile-web-app-title" content="DIY记录">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="个人思维导图、可编辑横纵表格、多画布和跨设备云同步。">
-<meta name="app-build" content="1.0.111">
+<meta name="app-build" content="1.0.112">
 
 <style>
 /* PWA 安装 / 更新提示，仅添加样式，不改变导图已有样式。 */
@@ -2225,6 +2225,18 @@ body.v107-link-picking .plan-mini-block,body.v107-link-picking .quadrant-item{cu
 .plan-node.plan-inline .plan-block-wrap .plan-mini-block.plan-link-target>.plan-link-edge-bar,.quadrant-node .quadrant-item.plan-link-target>.plan-link-edge-bar,.topic.plan-link-target>.plan-link-edge-bar{right:1px!important;left:auto!important;opacity:.75;}
 .v110-topic-link{position:absolute;right:5px;top:-10px;font-size:12px;line-height:17px;width:19px;height:19px;padding:0;border:1px solid #8ec7ef;border-radius:50%;background:#e9f4ff;color:#327db3;z-index:13;}
 .topic.v110-topic-related{box-shadow:0 0 0 2px #6cb5f988;}
+</style>
+<style>
+/* V112: preset management and gesture isolation */
+.rich-popover .rich-preset{position:relative;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab;}
+.rich-popover .v112-preset-grip{margin-left:auto;color:#a4adba;font-size:18px;flex:none;}
+.rich-popover .v112-preset-moving{opacity:.45;cursor:grabbing;}
+.rich-popover .v112-preset-before{box-shadow:0 -3px 0 #2499ed;}
+.rich-popover .v112-preset-after{box-shadow:0 3px 0 #2499ed;}
+.rich-popover .v112-preset-menu{display:flex;flex-wrap:wrap;gap:5px;padding:3px 0 7px;}
+.rich-popover .v112-preset-menu button{font-size:12px;padding:7px;flex:1;}
+.plan-mini-block:not(.is-editing) .plan-mini-text,.plan-mini-block:not(.is-editing) .plan-mini-text *,.topic:not(.editing) .topic-text,.topic:not(.editing) .topic-text *{user-select:none!important;-webkit-user-select:none!important;}
+.plan-mini-block:not(.is-editing) .plan-mini-text{cursor:inherit;}
 </style>
 </head>
 <body>
@@ -6003,7 +6015,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     const name=axis==='categories'?'分类'+(list.length+1):(t.plan.periodKind==='month'?'第'+(list.length+1)+'周':'时间段'+(list.length+1));
     const next={id:makeId(),name};
     const afterIndex=afterId===null?-1:list.findIndex(item=>item.id===afterId);
-    if(afterIndex>=0)list.splice(afterIndex+1,0,next);else list.push(next);
+    if(afterId==='__v112_first__')list.unshift(next);else if(afterIndex>=0)list.splice(afterIndex+1,0,next);else list.push(next);
+    if(axis===planAxes(t).colAxis&&list.indexOf(next)>=3)planColumnsExpanded.add(t.id);
     syncPlanNewCategory(t,axis,next);
     scheduleSave('计划 · 新增'+name);render();
     // 添加后直接进入新标题的编辑，不再要求先去管理菜单。
@@ -7377,6 +7390,9 @@ function toggleDoc35Plan(owner,key,block){
     const label=document.createElement('span');label.className='plan-link-tag';label.textContent=String(block.text||'未命名').slice(0,24);tag.append(label);
     menu.append(tag);
     const makeItem=(label,fn,disabled=false)=>{const btn=document.createElement('button');btn.type='button';btn.textContent=label;if(disabled)btn.disabled=true;btn.addEventListener('click',e=>{e.stopPropagation();if(btn.disabled)return;hidePlanBlockMenu();fn&&fn();});return btn;};
+    const v112Header=document.elementFromPoint(clientX,clientY)?.closest('th[data-v112-column-id]');
+    const v112HeaderPlan=topicById(v112Header?.dataset.v112PlanId);
+    if(v112HeaderPlan?.kind==='plan'&&v112Header.dataset.v112ColumnId!==MONTH_MEMO_PERIOD.id)menu.append(makeItem('＋ 在此列后插入新列',()=>planAddAxis(v112HeaderPlan,planAxes(v112HeaderPlan).colAxis,v112Header.dataset.v112ColumnId)));
     menu.append(makeItem('编辑这个小块标题',()=>{const row=[...document.querySelectorAll('.plan-mini-block[data-block-id]')].find(el=>el.dataset.planOwnerId===owner.id&&el.dataset.planKey===key&&el.dataset.blockId===block.id);if(row)openPlanMiniEditor(owner,key,block.id,row);}));
     menu.append(makeItem('复制',()=>copyPlanMiniBlock(owner,key,block)));
     if(planMiniClipboard?.items?.length)menu.append(makeItem('粘贴到这个小块后面',()=>pastePlanMiniBlock(owner,key,block.id)));
@@ -7656,7 +7672,7 @@ function toggleDoc35Plan(owner,key,block){
     if(planMiniDrag||(e.pointerType==='mouse'&&e.button!==0)||
         (!fromDrawingGrip&&e.target.closest('button,textarea,input,[contenteditable]')))return;
     const touch=e.pointerType==='touch';
-    if(fromDrawingGrip&&e.cancelable)e.preventDefault();
+    if((fromDrawingGrip||e.pointerType==='mouse')&&e.cancelable)e.preventDefault();
     const d={pointerId:e.pointerId,ownerId:owner.id,key,blockId,row,fromDrawingGrip,
       startX:e.clientX,startY:e.clientY,x:e.clientX,y:e.clientY,active:false,armed:false,target:null,ghost:null,timer:null,menuTimer:null};
     planMiniDrag=d;
@@ -8165,6 +8181,7 @@ function toggleDoc35Plan(owner,key,block){
     hidePlanViewMenu();settlePlanEditor();
     const menu=document.createElement('div');menu.className='plan-view-menu';menu.setAttribute('role','menu');
     const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='⇄ 切换横纵';menu.append(title);
+    menu.append(makePlanButton('＋ 在此列后插入新列',()=>{hidePlanViewMenu();planAddAxis(t,planAxes(t).colAxis,'__v112_first__');}));
     for(const [group,label] of [['date','日期横向 · 分类纵向'],['category','分类横向 · 日期纵向']]){
       const selected=t.plan.group===group;
       const button=makePlanButton((selected?'✓  ':'　　')+label,()=>{
@@ -8335,14 +8352,14 @@ function toggleDoc35Plan(owner,key,block){
     return payload;
   }
   // 插入的下标按显示方向定义，转置表格仍修改正确的原始 rowHeaders/colHeaders/cells。
-  function matrixPasteAxis(t,axis,after,payload){
+  function matrixPasteAxis(t,axis,after,payload,blank=false){
     if(!matrixAxisValid(payload)||payload.axis!==axis)throw Error('请先复制对应的整行或整列');
     if(!t||t.kind!=='matrix')throw Error('请选择目标横纵表格');
     const a=tableAxes(t),m=t.matrix;
     const originalLength=axis==='col'?a.colNames.length:a.rowNames.length;
     const crossLength=axis==='col'?a.rowNames.length:a.colNames.length;
     if(originalLength>=24)throw Error('表格最多允许 24 '+(axis==='col'?'列':'行'));
-    if(!Number.isInteger(after)||after<1||after>originalLength)throw Error('请先选中目标'+(axis==='col'?'列':'行')+'的表头');
+    if(!Number.isInteger(after)||after<(blank?0:1)||after>originalLength)throw Error('请先选中目标'+(axis==='col'?'列':'行')+'的表头');
     if(payload.values.length!==crossLength+1)throw Error('目标表格'+(axis==='col'?'行':'列')+'数与复制内容不一致，已取消以保护数据');
     settleMatrixEditor(true);
     ensuredMatrixWidths(t);ensuredMatrixHeights(t);
@@ -8380,9 +8397,9 @@ function toggleDoc35Plan(owner,key,block){
       JSON.parse(JSON.stringify(validMarks(marks,values[i])))));
     state.selected=t.id;
     state.matrixSelection=matrixTarget(t.id,axis==='col'?0:newIndex,axis==='col'?newIndex:0);
-    scheduleSave('粘贴横纵表格 · 整'+(axis==='col'?'列':'行')+'（包含所有单元格）');
+    scheduleSave(blank?'横纵表格 · 插入空白列':'粘贴横纵表格 · 整'+(axis==='col'?'列':'行')+'（包含所有单元格）');
     render();ensureVisible(t.id);
-    notify('已粘贴整'+(axis==='col'?'列':'行')+'，插入在选中'+(axis==='col'?'列':'行')+'后面');
+    notify(blank?'已在当前列后插入新列':'已粘贴整'+(axis==='col'?'列':'行')+'，插入在选中'+(axis==='col'?'列':'行')+'后面');
     return true;
   }
   async function matrixAxisReadSystem(){
@@ -8414,12 +8431,18 @@ function toggleDoc35Plan(owner,key,block){
     catch(err){notify('粘贴失败：'+err.message);}
     return true;
   }
+  function v112InsertMatrixColumn(t,index){
+    const a=tableAxes(t),values=['标签 '+(a.colNames.length+1),...a.rowNames.map(()=> '')];
+    try{if(matrixPasteAxis(t,'col',index,{app:'DIY记录',format:'matrix-axis-v1',axis:'col',values,marks:values.map(()=>[]),size:MATRIX_CONTENT_WIDTH},true))startMatrixEditing(t.id,0,index+1);}
+    catch(err){notify(err.message);}
+  }
   function openMatrixAxisMenu(t,axis,index,x,y){
     hideDeleteContext();hidePlanViewMenu();
     const menu=document.createElement('div');menu.className='plan-view-menu matrix-axis-copy-menu';menu.setAttribute('role','menu');
     const name=axis==='col'?'列':'行';
     const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='第 '+index+' '+name+' · 整'+name+'操作';menu.append(title);
     if(axis==='col'){
+      menu.append(makePlanButton('＋ 在此列后插入新列',()=>{hidePlanViewMenu();v112InsertMatrixColumn(t,index);}));
       const hint=document.createElement('div');hint.className='plan-menu-subtitle';
       hint.textContent='按住列标题拖到其他主题：生成“最左列＋本列”的新表格（原表保留）';
       menu.append(hint);
@@ -8446,6 +8469,7 @@ function toggleDoc35Plan(owner,key,block){
     hidePlanViewMenu();
     const menu=document.createElement('div');menu.className='plan-view-menu';menu.setAttribute('role','menu');
     const title=document.createElement('div');title.className='plan-view-menu-caption';title.textContent='⇄ 切换横纵';menu.append(title);
+    menu.append(makePlanButton('＋ 在此列后插入新列',()=>{hidePlanViewMenu();v112InsertMatrixColumn(t,0);}));
     const btn=makePlanButton('⇄　交换行与列',()=>{
       hidePlanViewMenu();settleMatrixEditor(true);
       t.matrix.orientation=t.matrix.orientation==='normal'?'transpose':'normal';
@@ -8589,6 +8613,8 @@ function toggleDoc35Plan(owner,key,block){
     const menu=document.createElement('div');menu.className='plan-view-menu matrix-axis-copy-menu';menu.setAttribute('role','menu');
     const title=document.createElement('div');title.className='plan-view-menu-caption';
     title.textContent='第 '+snapshot.index+' 列 · '+column.name;menu.append(title);
+    if(column.id!==MONTH_MEMO_PERIOD.id)menu.append(makePlanButton('＋ 在此列后插入新列',()=>{hidePlanViewMenu();planAddAxis(t,planAxes(t).colAxis,column.id);}));
+    else {const hint=document.createElement('div');hint.className='plan-menu-subtitle';hint.textContent='月计划、周计划为固定共享列；从周计划列后插入普通列。';menu.append(hint);}
     menu.append(makePlanButton('复制整列',()=>{hidePlanViewMenu();void v100CopyPlanColumn(t,column);},
       '复制列头和完整列内容，保留原有换行，不自动添加短横线'));
     document.body.append(menu);planViewMenu=menu;
@@ -8597,7 +8623,7 @@ function toggleDoc35Plan(owner,key,block){
     menu.style.top=Math.max(8,Math.min(y,innerHeight-rect.height-8))+'px';
   }
   function v100AttachPlanColumnHold(th,t,column){
-    th.title='手机长按列头：复制整列；电脑右键：复制整列';
+    th.title='手机长按 / 电脑右键：列操作';th.dataset.v112ColumnId=column.id;th.dataset.v112PlanId=t.id;
     let hold=null;
     const clear=()=>{
       if(!hold)return;
@@ -9361,6 +9387,7 @@ function toggleDoc35Plan(owner,key,block){
   function prepareTopicDrag(e,id,el,allowMatrixCorner=false){
     if((e.pointerType==='mouse'&&e.button!==0)||(!allowMatrixCorner&&e.target.closest('button,input,.topic-editor')))return;
     e.stopPropagation();
+    if(e.pointerType==='mouse'&&e.cancelable&&!e.target.closest('input,textarea,[contenteditable="true"]'))e.preventDefault();
     if(currentFreeMode()){startFreeNodeDrag(e,id,el,allowMatrixCorner);return;}
     if(id===activeRootId())return; // 当前画布中心主题固定；其余主题可重组。
     if(state.editing||state.matrixEditing||state.planEditing)return;
@@ -9894,7 +9921,7 @@ function toggleDoc35Plan(owner,key,block){
     richMobileHelper.hidden=!active;
   }
   const richBar=$('richToolbar'),richPopover=$('richPopover');
-  function hideRichBar(clear=true){richBar.hidden=true;richPopover.hidden=true;$('richCustom').hidden=true;
+  function hideRichBar(clear=true){richBar.hidden=true;richPopover.hidden=true;$('richCustom').hidden=true;v112PresetEdit=-1;v112ClosePresetMenu();
     $('richExpand').setAttribute('aria-expanded','false');if(clear)richSelection=null;
     requestAnimationFrame(showRichMobileHelper); }
   function selectedTextCoordinates(field,index){
@@ -10075,6 +10102,58 @@ function toggleDoc35Plan(owner,key,block){
   }
   $('richStrike').addEventListener('pointerdown',e=>e.preventDefault());
   $('richStrike').addEventListener('click',applyRichStrikethrough);
+  let v112PresetEdit=-1,v112PresetSuppress=0,v112PresetGesture=null;
+  function v112ClosePresetMenu(){ $('richPresetList').querySelector('.v112-preset-menu')?.remove(); }
+  function v112PresetForm(index=-1){
+    v112ClosePresetMenu();v112PresetEdit=index;
+    const p=currentPresets()[index];
+    if(p){$('richPresetName').value=p.name;$('richForeground').value=p.fg;$('richBackground').value=p.bg;}
+    else {$('richPresetName').value='我的标注';}
+    $('richSavePreset').textContent=p?'保存修改':'保存组合并应用到选中文字';
+    $('richCustom').hidden=false;updateRichPreview();placeRichPopover();
+    $('richCustom').scrollIntoView({block:'nearest'});
+  }
+  function v112SavePresets(items,last,label){
+    const root=topicById(ROOT_ID);if(!root)return;
+    root.formatPresets=items;richLastPreset=Math.max(0,Math.min(last,items.length-1));
+    scheduleSave(label);showRichPresets();
+    const active=items[richLastPreset]||DEFAULT_MARK_PRESETS[0];
+    $('richApply').style.borderBottomColor=active.bg;$('richApply').style.color=active.fg;
+  }
+  function v112PresetMenu(btn,index){
+    v112ClosePresetMenu();const menu=document.createElement('div');menu.className='v112-preset-menu';
+    const add=(text,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=text;b.addEventListener('pointerdown',e=>e.preventDefault());b.addEventListener('click',e=>{e.stopPropagation();fn();});menu.append(b);};
+    add('修改颜色组合',()=>v112PresetForm(index));
+    add('删除颜色组合',()=>{const arr=[...currentPresets()];const [removed]=arr.splice(index,1);if(!removed)return;
+      if(v112PresetEdit===index){v112PresetEdit=-1;$('richCustom').hidden=true;}else if(v112PresetEdit>index)v112PresetEdit--;
+      v112SavePresets(arr,richLastPreset>index?richLastPreset-1:richLastPreset,'删除颜色组合 · '+removed.name);});
+    add('取消',v112ClosePresetMenu);btn.after(menu);placeRichPopover();
+  }
+  function v112WirePreset(btn,index){
+    btn.dataset.presetIndex=String(index);btn.title='点击应用；按住上下拖动排序；右键或静止长按修改/删除';
+    const grip=document.createElement('small');grip.className='v112-preset-grip';grip.textContent='⠿';grip.setAttribute('aria-hidden','true');btn.append(grip);
+    btn.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();v112PresetSuppress=Date.now()+500;v112PresetMenu(btn,index);});
+    btn.addEventListener('pointerdown',e=>{
+      if(e.button!==0||!e.isPrimary||v112PresetGesture)return;
+      e.preventDefault();v112ClosePresetMenu();
+      const touch=e.pointerType!=='mouse',d={id:e.pointerId,x:e.clientX,y:e.clientY,lastY:e.clientY,from:index,to:index,active:false,scroll:false,armed:!touch,menu:false};v112PresetGesture=d;
+      try{btn.setPointerCapture(d.id);}catch{}
+      let arm,hold;
+      const mark=y=>{const rows=[...$('richPresetList').querySelectorAll('.rich-preset')];rows.forEach(r=>r.classList.remove('v112-preset-before','v112-preset-after'));
+        const others=rows.filter(r=>r!==btn);let pos=others.findIndex(r=>y<r.getBoundingClientRect().top+r.getBoundingClientRect().height/2);if(pos<0)pos=others.length;d.to=pos;
+        if(others[pos])others[pos].classList.add('v112-preset-before');else others.at(-1)?.classList.add('v112-preset-after');};
+      const clean=()=>{clearTimeout(arm);clearTimeout(hold);btn.removeEventListener('pointermove',move);btn.removeEventListener('pointerup',up);btn.removeEventListener('pointercancel',cancel);btn.removeEventListener('lostpointercapture',cancel);btn.classList.remove('v112-preset-moving');$('richPresetList').querySelectorAll('.v112-preset-before,.v112-preset-after').forEach(r=>r.classList.remove('v112-preset-before','v112-preset-after'));v112PresetGesture=null;};
+      const move=ev=>{if(ev.pointerId!==d.id||d.menu)return;const dist=Math.hypot(ev.clientX-d.x,ev.clientY-d.y);if(dist<6&&!d.active&&!d.scroll)return;clearTimeout(hold);
+        if(touch&&!d.armed&&!d.active)d.scroll=true;
+        if(d.scroll){richPopover.scrollTop+=d.lastY-ev.clientY;d.lastY=ev.clientY;return;}
+        d.active=true;btn.classList.add('v112-preset-moving');const r=richPopover.getBoundingClientRect();if(ev.clientY<r.top+35)richPopover.scrollTop-=12;else if(ev.clientY>r.bottom-35)richPopover.scrollTop+=12;mark(ev.clientY);};
+      const up=ev=>{if(ev.pointerId!==d.id)return;const moved=d.active,scrolled=d.scroll,menu=d.menu;if(moved)mark(ev.clientY);clean();if(moved||scrolled||menu)v112PresetSuppress=Date.now()+650;
+        if(moved&&d.to!==d.from){const arr=[...currentPresets()],last=arr[richLastPreset],editing=arr[v112PresetEdit];const [p]=arr.splice(d.from,1);arr.splice(d.to,0,p);if(editing)v112PresetEdit=arr.indexOf(editing);v112SavePresets(arr,arr.indexOf(last),'调整颜色组合顺序');}};
+      const cancel=ev=>{if(ev.pointerId!==d.id)return;if(d.active||d.scroll||d.menu)v112PresetSuppress=Date.now()+650;clean();};
+      btn.addEventListener('pointermove',move);btn.addEventListener('pointerup',up);btn.addEventListener('pointercancel',cancel);btn.addEventListener('lostpointercapture',cancel);
+      if(touch){arm=setTimeout(()=>{if(!d.scroll)d.armed=true;},280);hold=setTimeout(()=>{if(!d.active&&!d.scroll){d.menu=true;v112PresetSuppress=Date.now()+900;v112PresetMenu(btn,index);}},620);}
+    });
+  }
   function showRichPresets(){
     const list=$('richPresetList');list.replaceChildren();
     currentPresets().forEach((preset,index)=>{
@@ -10083,7 +10162,7 @@ function toggleDoc35Plan(owner,key,block){
       const name=document.createElement('small');name.textContent=preset.name;
       btn.append(preview,name);
       btn.addEventListener('pointerdown',e=>e.preventDefault());
-      btn.addEventListener('click',()=>{richLastPreset=index;applyColorPreset(preset);});list.append(btn);
+      btn.addEventListener('click',()=>{if(Date.now()<v112PresetSuppress)return;v112ClosePresetMenu();richLastPreset=index;applyColorPreset(preset);});v112WirePreset(btn,index);list.append(btn);
     });
   }
   function placeRichPopover(){const bar=richBar.getBoundingClientRect(),popover=richPopover;
@@ -10098,14 +10177,15 @@ function toggleDoc35Plan(owner,key,block){
   $('richExpand').addEventListener('pointerdown',e=>e.preventDefault());
   $('richExpand').addEventListener('click',()=>{
     const open=richPopover.hidden;
-    if(!open){richPopover.hidden=true;$('richExpand').setAttribute('aria-expanded','false');return;}
+    if(!open){richPopover.hidden=true;$('richCustom').hidden=true;v112PresetEdit=-1;v112ClosePresetMenu();$('richExpand').setAttribute('aria-expanded','false');return;}
     showRichPresets();richPopover.hidden=false;$('richExpand').setAttribute('aria-expanded','true');placeRichPopover();
   });
   $('richAddPreset').addEventListener('pointerdown',e=>e.preventDefault());
-  $('richAddPreset').addEventListener('click',()=>{$('richCustom').hidden=!$('richCustom').hidden;placeRichPopover();});
+  $('richAddPreset').addEventListener('click',()=>{if(!$('richCustom').hidden&&v112PresetEdit<0){$('richCustom').hidden=true;return;}v112PresetForm();});
   function updateRichPreview(){const p=$('richLivePreview');p.style.color=$('richForeground').value;p.style.backgroundColor=$('richBackground').value;}
   // V60：自定义颜色滑动时直接显示到正在编辑的小块，调色操作不必先“保存颜色组合”。
   function applyRichCustomLive(){
+    if(v112PresetEdit>=0)return;
     const sel=richSelection;
     if(sel?.kind!=='planBlock'||!sel.field?.isConnected)return;
     const owner=topicById(sel.id);
@@ -10122,7 +10202,7 @@ function toggleDoc35Plan(owner,key,block){
   ['richForeground','richBackground'].forEach(id=>{
     $(id).addEventListener('input',()=>{updateRichPreview();applyRichCustomLive();});
     $(id).addEventListener('change',()=>{
-      if(richSelection?.kind==='planBlock'&&richSelection.field?.isConnected){
+      if(v112PresetEdit<0&&richSelection?.kind==='planBlock'&&richSelection.field?.isConnected){
         applyRichCustomLive();scheduleSave('计划小块 · 实时修改文字颜色');
       }
     });
@@ -10130,7 +10210,9 @@ function toggleDoc35Plan(owner,key,block){
   $('richSavePreset').addEventListener('click',()=>{
     const p={name:$('richPresetName').value.trim()||'我的标注',fg:$('richForeground').value,bg:$('richBackground').value};
     const root=topicById(ROOT_ID);if(!root)return;
-    const old=currentPresets();root.formatPresets=[...old.slice(-23),p];
+    const old=currentPresets();
+    if(v112PresetEdit>=0&&v112PresetEdit<old.length){const arr=[...old];arr[v112PresetEdit]=p;const idx=v112PresetEdit;v112PresetEdit=-1;$('richCustom').hidden=true;v112SavePresets(arr,richLastPreset,'修改颜色组合 · '+p.name);notify('已修改颜色组合');return;}
+    root.formatPresets=[...old.slice(-23),p];
     richLastPreset=root.formatPresets.length-1;
     scheduleSave('保存颜色组合 · '+p.name);
     if(richSelection)applyColorPreset(p);
@@ -12665,7 +12747,7 @@ function toggleDoc35Plan(owner,key,block){
     if(e.target.closest('button,input,textarea,[contenteditable],.branch-fold-button,.hud,.plan-node,.matrix-node,.quadrant-node,.topic,.inline-outline-node,.zoom-tools,.free-wire-grip'))return;
     // Only blank canvas layers; don't steal actions from contextual overlays.
     if(!e.target.matches('#stage,#world,#topicLayer,#connections,#freeWireLayer,#branchFoldLayer'))return;
-    if(state.editing||state.matrixEditing||state.planEditing||freeNodeDrag||freeWireDrag||topicDrag||planMiniDrag?.active)return;
+    if(state.editing||state.matrixEditing||state.planEditing||freeNodeDrag||freeWireDrag||topicDrag||planMiniDrag||v54GroupDrag||v53GroupDrag)return;
     e.preventDefault();e.stopImmediatePropagation();
     v54ClearSelection(); // V69: 新的普通节点框选覆盖旧的计划小块框选。
     const overlay=document.createElement('div');overlay.className='v53-marquee';
@@ -12805,7 +12887,7 @@ function toggleDoc35Plan(owner,key,block){
   function v54MarqueeCancel(e){v54FinishMarquee(e,true);}
   stage.addEventListener('pointerdown',e=>{
     if(e.pointerType!=='mouse'||e.button!==0||v53SpaceDown||e.ctrlKey||e.metaKey||e.altKey||e.shiftKey)return;
-    if(state.planEditing||state.matrixEditing||state.editing||planMiniDrag?.active||v54GroupDrag)return;
+    if(state.planEditing||state.matrixEditing||state.editing||planMiniDrag||topicDrag||freeNodeDrag||v54GroupDrag||v53GroupDrag)return;
     const cell=e.target.closest('.plan-mini-drop-cell[data-plan-key][data-plan-owner-id]');
     if(!cell||!stage.contains(cell)||e.target.closest('button,input,textarea,[contenteditable],.plan-mini-block,.plan-axis-label,.plan-axis-input,.plan-resizer,.plan-row-resizer,.plan-col-resizer,.plan-category-inline-actions'))return;
     e.preventDefault();e.stopImmediatePropagation();
@@ -12889,6 +12971,12 @@ function toggleDoc35Plan(owner,key,block){
     }
   },true);
 
+  // V112: a gesture originating in a node is a node gesture, not browser text selection.
+  document.addEventListener('selectstart',e=>{
+    const el=e.target instanceof Element?e.target:e.target?.parentElement;
+    if(!el||el.closest('textarea:not([readonly]),input:not([readonly]),[contenteditable="true"]'))return;
+    if(el.closest('.topic,.plan-mini-block,.quadrant-item,.v53-marquee,.v54-plan-marquee')||topicDrag?.moved||planMiniDrag?.active||v53GroupDrag?.active||v54GroupDrag?.active)e.preventDefault();
+  },true);
   const insideActiveBoard=(id)=>{
     const root=activeRootId();let cur=topicById(id),guard=0;
     while(cur && guard++<5000){if(cur.id===root)return true;cur=cur.parentId?topicById(cur.parentId):null;}
